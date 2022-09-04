@@ -1,0 +1,3951 @@
+/*
+*
+* TABLE OF CONTENTS:
+* 1. Fonts
+* 2. General Styling
+* 3. Product Visibility
+* 4. Group Visibility
+* 5. Conversations
+* 6. Offers
+* 7. Rules
+* 8. Customer groups
+* 9. User shipping and payment methods
+* 10. Registration Options
+* 11. Registration Fields
+* 12. Registration User Data
+* 13. User Settings
+* 14. Customers
+* 15. Groups page
+* 16. Product Page
+* 17. Media Queries
+*
+*/
+
+/* 1. Fonts */
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Roboto'), local('Roboto-Regular'), url(../../../includes/assets/fonts/Roboto/KFOmCnqEu92Fr1Mu72xKOzY.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Roboto'), local('Roboto-Regular'), url(../../../includes/assets/fonts/Roboto/KFOmCnqEu92Fr1Mu5mxKOzY.woff2) format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Roboto'), local('Roboto-Regular'), url(../../../includes/assets/fonts/Roboto/KFOmCnqEu92Fr1Mu7mxKOzY.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Roboto'), local('Roboto-Regular'), url(../../../includes/assets/fonts/Roboto/KFOmCnqEu92Fr1Mu4WxKOzY.woff2) format('woff2');
+  unicode-range: U+0370-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Roboto'), local('Roboto-Regular'), url(../../../includes/assets/fonts/Roboto/KFOmCnqEu92Fr1Mu7WxKOzY.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Roboto'), local('Roboto-Regular'), url(../../../includes/assets/fonts/Roboto/KFOmCnqEu92Fr1Mu7GxKOzY.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Roboto'), local('Roboto-Regular'), url(../../../includes/assets/fonts/Roboto/KFOmCnqEu92Fr1Mu4mxK.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* 2. General Styling */
+.marketking_page_marketking_groups, .admin_page_marketking_b2c_users {
+    background-color: #202224;
+}
+.marketking_dashboard_page_wrapper{
+    min-height: 100vh;
+}
+.marketking_pro_features_container {
+    clear: both;
+    display: inline-block;
+}
+#marketking_backend_box_img{
+    width: 556px;
+    border-radius: 7px;
+}
+.marketking_page_marketking_payouts, .marketking_page_marketking_vendors{
+    background-color:#202224;
+}
+.marketking_vendor_profile{
+    width: 80px;
+    max-height: 80px;
+    margin-right: 20px;
+}
+img.marketking_settings_color_scheme {
+    width: 80px;
+    cursor: pointer;
+}
+img.marketking_settings_color_scheme:hover{
+    border: 1px dashed #ccc;
+    border-radius: 5px;
+}
+.marketking_color_scheme_container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 187px !important;
+    margin-bottom: 12px;
+}
+span.marketking_color_scheme_description {
+    color: #7a7a7a;
+    font-weight: 300 !important;
+}
+button.marketking_color_scheme_button {
+    clear: both;
+    display: flex;
+    position: relative;
+    left: -7px;
+    border: 0px !important;
+    background: white !important;
+}
+
+.marketking_vendor_td{
+    height: 80px;
+    display: flex;
+    align-items: center;
+}
+#marketing_admin_header_bar{
+    padding: 10px; background: #191821; margin-left: -20px;box-shadow: 0 3px 6px rgb(0 0 0 / 7%);
+    display: flex;
+    justify-content: space-between;
+}
+div#marketking_admin_header_version {
+    display: inline-block;
+    background: #ab7d1f;
+    padding: 1px 5px;
+    margin-left: 10px;
+    font-weight: bold;
+    position: relative;
+    color: #191821;
+    font-size: 13px;
+    border-radius: 3px;
+    bottom: 2px;
+    font-family: 'Lato','Helvetica Neue','Arial','Helvetica','sans-serif';
+    letter-spacing: 0.8px;
+}
+div#marketking_admin_header_version2 {
+    display: inline-block;
+    background: #292929;
+    padding: 1px 5px;
+    margin-left: 10px;
+    position: relative;
+    color: #C9C8CC;
+    font-size: 13px;
+    border-radius: 3px;
+    bottom: 2px;
+    font-family: 'Lato','Helvetica Neue','Arial','Helvetica','sans-serif';
+    letter-spacing: 0.8px;
+}
+
+.marketking_page_marketking_dashboard #wpbody-content, .marketking_page_marketking_reports #wpbody-content{
+    padding-bottom:0px;
+}
+.marketking_page_marketking_reports #wpcontent{
+    background:#202224;
+}
+div#marketking_admin_header_bar_right {
+    display: flex;
+    align-items: center;
+}
+.dl.marketking_reports_topright {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-left:50px;
+}
+input.marketking_reports_date_input {
+    min-height: 35px;
+}
+.marketking_reports_fromto {
+    display: inline-flex;
+    align-items: center;
+}
+.marketking_reports_fromto_text {
+    margin: 0px 10px;
+}
+div#marketking_reports_quick_links {
+    display: flex;
+    justify-content: space-evenly;
+    margin-left: 30px;
+    font-size: 12px;
+    padding-top: 10px;
+}
+.marketking_reports_link, a.marketking_reports_link {
+    color: #777 !important;
+}
+.marketking_reports_link:hover{
+    cursor: pointer;
+    font-weight: bold;
+}
+a.marketking_admin_header_right_element {
+    color: #c9c8cf;
+    background: #292929;
+    border-radius: 3px;
+    padding: 4px 6px;
+    text-decoration: none;
+    font-family: 'Lato','Helvetica Neue','Arial','Helvetica','sans-serif';
+    margin: 0px 10px;
+    letter-spacing: 0.3px;
+    font-size: 13px;
+}
+a.marketking_admin_header_right_element_button {
+    color: #c9c8cf;
+    background: #292929;
+    border-radius: 3px;
+    text-decoration: none;
+    font-family: 'Lato','Helvetica Neue','Arial','Helvetica','sans-serif';
+    margin: 0px 10px;
+    letter-spacing: 0.3px;
+    font-size: 13px;
+}
+a.marketking_admin_header_right_element:hover{
+    background: #444546;
+}
+a.marketking_admin_header_right_element_button:hover button{
+    background: #b07d15;
+    cursor: pointer;
+    color:#ffffff;
+}
+.marketking_page_title {
+    color: #ffffff;
+    margin: 50px 0px 28px 50px;
+    font-size: 29px;
+}
+select[name="marketking_elementor_page_setting"] {
+    margin-left: 22px;
+}
+div#marketking_admin_payouts_table_container, div#marketking_admin_vendors_table_container{
+    margin: 0px 50px 50px 50px;
+    padding: 20px;
+    font-size: 14px;
+    background: #fff;
+    box-shadow: 0 3px 6px rgb(0 0 0 / 17%);
+    border-radius: 5px;
+}
+[data-tooltip]:hover:after, [data-tooltip][data-position="bottom center"]:hover:after{
+    z-index: 9999;
+}
+.marketking-dashboard-icon {
+    color: #fff;
+    margin-top: 20px;
+    display: block;
+    font-size: 34px;
+}
+.marketking_preload_module{
+    display:none !important;
+    visibility: hidden !important;
+}
+.marketking_manage_payouts_button, .marketking_manage_vendors_button{
+    background-color: #2185d0;
+    color: #fff;
+    text-shadow: none;
+    background-image: none;
+    font-size: 13px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 12px;
+    cursor: pointer;
+    display: inline-block;
+    min-height: 1em;
+    outline: 0;
+    vertical-align: baseline;
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+    margin: 0 .25em 0 0;
+    text-transform: none;
+    line-height: 1em;
+    font-style: normal;
+    text-align: center;
+    text-decoration: none;
+}
+.marketking_manage_payouts_button:hover, .marketking_manage_vendors_button:hover{
+    background-color: #1576be;
+}
+div#marketking_admin_payouts_table_container td , div#marketking_admin_vendors_table_container td {
+    padding: 11px 13px;
+}
+div#marketking_admin_payouts_table_container th , div#marketking_admin_vendors_table_container th {
+    text-align: left;
+}
+table#marketking_admin_payouts_table , table#marketking_admin_vendors_table {
+    padding-top: 10px;
+    border-top: ;
+    width: 100%;
+}
+.marketking_payout_requested_text{
+    font-weight: bold;
+    color:#c9962d;
+}
+.marketking_header_icon {
+    margin-right: 7px;
+    font-size:18px;
+}
+.marketking_header_icon_button {
+    margin-right: 4px;
+    font-size:18px;
+    position: relative;
+    top:1px;
+}
+button.marketking_header_button_admin {
+    border: none;
+    padding: 4px 6px;
+    display: flex;
+    align-items: center;
+    border-radius: 2px;
+    background: #c9962d;
+    color: #f6eddb;
+}
+.marketking_vendor_settings_customer{
+    display:none;
+}
+.marketking_inline_header{
+    display: inline-block;
+}
+.marketking_switch-field {
+    display: inline-flex;
+    margin-left:15px;
+    margin-bottom: 36px;
+    overflow: hidden;
+}
+
+.marketking_switch-field input {
+    position: absolute !important;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    width: 1px;
+    border: 0;
+    overflow: hidden;
+}
+
+.marketking_switch-field label {
+    background-color: #e4e4e4;
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 14px;
+    line-height: 1;
+    text-align: center;
+    padding: 8px 16px;
+    margin-right: -1px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px rgba(255, 255, 255, 0.1);
+    transition: all 0.1s ease-in-out;
+}
+
+.marketking_switch-field label:hover {
+    cursor: pointer;
+}
+span.marketking_availability {
+    margin-left: 10px;
+}
+span.marketking_availability.marketking_url_available {
+    color: #008000;
+}
+span.marketking_availability.marketking_url_unavailable {
+    color: #ff0000;
+}
+
+.marketking_switch-field input#marketking_radio-two:checked + label {
+    background-color: #7446cd;
+    color: #fff;
+    box-shadow: none;
+}
+.marketking_switch-field input#marketking_radio-one:checked + label {
+    background-color: #7d7d7d;
+    color: #fff;
+    box-shadow: none;
+}
+
+.marketking_switch-field label:first-of-type {
+    border-radius: 4px 0 0 4px;
+}
+
+.marketking_switch-field label:last-of-type {
+    border-radius: 0 4px 4px 0;
+}
+.marketking-vendor-image .picture.banner{
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+}
+.marketking_clear_image {
+    color: #c9c9c9;
+    position: absolute;
+    cursor: pointer;
+    right: 9px;
+    top: 1px;
+}
+
+#marketking_vitem_visibility_metabox, #marketking_badge_description_metabox, #marketking_mpack_description_metabox, #marketking_vitem_description_metabox, #marketking_group_users_metabox,#marketking_group_permissions_metabox, #marketking_group_assigned_vendor_metabox, #marketking_group_settings_metabox, .post-type-marketking_group #submitdiv{
+    border-radius: 5px;
+    border-color: #e9ebec;
+    box-shadow: 0 3px 6px rgba(0,0,0,.07);
+}
+
+.post-type-marketking_group #titlewrap input, .post-type-marketking_announce #titlewrap input{
+    border-radius: 5px;
+    border-color: #dedede;
+}
+
+#marketking_announcement_visibility_metabox, .post-type-marketking_announce #submitdiv {
+    border-radius: 5px;
+    border-color: #e9ebec;
+    box-shadow: 0 3px 6px rgb(0 0 0 / 7%);
+}
+/* 3.Announcements */
+#marketking_announcement_visibility_metabox, .post-type-marketking_announce #submitdiv{
+    border-radius: 5px;
+    border-color: #e9ebec;
+    box-shadow: 0 3px 6px rgba(0,0,0,.07);
+}
+
+.post-type-marketking_announce #titlewrap input{
+    border-radius: 5px;
+    border-color: #dedede;
+}
+
+.post-type-marketking_announce #post-status-info{
+    border-radius: 0px 0px 5px 5px;
+    border-color: #e9ebec;
+    box-shadow: 0 3px 6px rgb(0 0 0 / 7%);
+}
+.post-type-marketking_announce #wp-content-editor-container{
+    border-color: #e9ebec;
+}
+
+.marketking_group_visibility_container {
+    border-radius: 5px;
+    background: #ffffff;
+    max-width: 1040px;
+    border-color: #e9ebec;
+    box-shadow: 0 3px 6px rgba(0,0,0,.07);
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+    margin-top: 15px;
+}
+.marketking_group_visibility_container_top {
+    background: #7D7D7D;
+    border-radius: 5px 5px 0px 0px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 13.5px;
+    line-height: 21px;
+    color: #FFFFFF;
+}
+.marketking_group_visibility_container_content {
+    padding: 13px;
+}
+.marketking_group_visibility_container_content_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 12px;
+    margin-bottom: 17px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+.marketking_group_visibility_container_content_title_icon{
+    position: absolute;
+    width: 26px;
+    left: 1px;
+    top: -13px;
+}
+.marketking_group_visibility_container_content_checkbox {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+}
+.marketking_group_visibility_container_content_checkbox_name {
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+input.marketking_group_visibility_container_content_checkbox_input {
+    background: #C4C4C4;
+    border-radius: 3px;
+    border: none;
+    top: 2px;
+    box-shadow: none;
+    position: relative;
+}
+input.marketking_group_visibility_container_content_checkbox_input:focus{
+    box-shadow: none;
+}
+.marketking_user_visibility_container_content_title_icon{
+    position: absolute;
+    width: 29px;
+    left: 1px;
+    top: -4px;
+}
+textarea#marketking_category_users_textarea {
+    width: 100%;
+    background: #ececec;
+    border: none;
+    resize: vertical;
+    margin-bottom: 15px;
+}
+select#marketking_all_users_dropdown {
+    background-color: #ececec;
+    border: none;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    min-height: 36px;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+    width: 75.5%;
+    max-width: 1000px;
+}
+button#marketking_category_add_user {
+    background: #7d7d7d;
+    color: #ffffff;
+    min-height: 36px;
+    width: 24.5%;
+    min-width: 80px;
+    border: none;
+    margin-left: 3px;
+}
+.marketking_category_users_textarea_buttons_container {
+    display: flex;
+}
+.marketking_core_modules_header {
+    display: flex;
+    justify-content: space-between;
+    align-items:center;
+    margin-bottom: 10px;
+}
+.marketking_modules_buttons button {
+    margin-left: 3px !important;
+}
+
+.marketking_group_payment_shipping_methods_container {
+    margin: 20px 0px 10px 10px;
+    display: flex;
+}
+.marketking_user_payment_shipping_methods_container{
+    margin: 20px 0px 45px 10px;
+    display: flex;
+}
+.marketking_group_payment_shipping_methods_container_element {
+    width: 50%;
+}
+.marketking_group_payment_shipping_methods_container_element_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 17px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+.marketking_group_payment_shipping_methods_container_element_title_empty{
+    visibility: hidden;
+}
+svg.marketking_group_payment_shipping_methods_container_element_title_icon_shipping {
+    position: absolute;
+    width: 28px;
+    left: 0px;
+    top: -2px;
+}
+svg.marketking_group_payment_shipping_methods_container_element_title_icon_payment {
+    position: absolute;
+    width: 27px;
+    left: 0px;
+    top: -4px;
+}
+.marketking_group_payment_shipping_methods_container_element_method {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+}
+.marketking_group_payment_shipping_methods_container_element_method_name {
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+input.marketking_group_payment_shipping_methods_container_element_method_checkbox {
+    background: #C4C4C4;
+    border-radius: 3px;
+    border: none;
+    top: 2px;
+    box-shadow: none;
+    position: relative;
+}
+input.marketking_group_payment_shipping_methods_container_element_method_checkbox:focus{
+    box-shadow:none;
+}
+.marketking_field_settings_metabox_bottom_user_choices_title, .marketking_field_settings_metabox_bottom_field_label_title,.marketking_field_settings_metabox_bottom_field_placeholder_title, .marketking_field_settings_metabox_bottom_field_type_title, .marketking_field_settings_metabox_top_column_status_title, .marketking_field_settings_metabox_top_column_registration_option_title,.marketking_field_settings_metabox_top_column_required_title, .marketking_field_settings_metabox_top_column_sort_title, .marketking_field_settings_metabox_top_column_editable_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 13px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+input.marketking_field_settings_metabox_top_column_sort_text {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    width: 100%;
+    border: none;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+.post-type-shop_order .wp-list-table .column-earnings {
+    width: 8ch;
+    text-align: center;
+}
+svg.marketking_field_settings_metabox_top_column_required_title_icon {
+    position: absolute;
+    width: 26px;
+    left: 0px;
+    top: -7px;
+}
+svg.marketking_field_settings_metabox_top_column_sort_title_icon {
+    position: absolute;
+    width: 25px;
+    left: 0px;
+    top: -8px;
+}
+svg.marketking_field_settings_metabox_top_column_editable_title_icon {
+    position: absolute;
+    width: 28px;
+    left: 0px;
+    top: -8px;
+}
+input.marketking_field_settings_metabox_top_column_sort_text::placeholder{
+    color: #A8A8A8;
+}
+input.marketking_field_settings_metabox_top_column_sort_text:focus{
+    box-shadow: none;
+    outline: none;
+}
+input.marketking_field_settings_metabox_top_column_sort_text::-webkit-outer-spin-button, input.marketking_field_settings_metabox_top_column_sort_text::-webkit-inner-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+.marketking_975{
+    width: 97.5% !important;
+}
+
+/* MarketKing icon */
+#toplevel_page_marketking .wp-menu-image img{
+    position: relative;
+    bottom: 3px;
+    width: 21px !important;
+}
+#toplevel_page_marketking img{
+	position: relative;
+	bottom: 2px;
+}
+.marketking_spacer_10{
+    width: 10px;
+    display: inline-block;
+}
+div#marketking_admin_overlay {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    min-height: 360px;
+    background-color: #000;
+    background-color: rgba(0,0,0,.5);
+    z-index: 99900;
+}
+.marketking_loader_icon_button{
+    width: 200px;
+}
+
+.notice-marketking {
+  box-shadow: none;
+  border-color: #f15d30;
+  background-color: #fff8e5; 
+}
+.notice-marketking p:before {
+    content: "\f153";
+    display: inline-block;
+    width: 25px;
+    height: 20px;
+    background-size: 20px; 
+}
+.notice-marketking p a {
+    display: inline-block;
+    color: #f15d30;
+    font-weight: 600;
+    margin-left: 5px; 
+}
+.notice-marketking p a:hover {
+    opacity: 0.8; 
+}
+.marketking_small_input_size{
+    max-width: 320px;
+}
+
+.marketking-checkbox-switch {
+    cursor: pointer;
+    display: inline-block;
+    overflow: hidden;
+    position: relative;
+    text-align: left;
+    width: 80px;
+    height: 30px;
+    -webkit-border-radius: 30px;
+    border-radius: 30px;
+    line-height: 1.2;
+    font-size: 14px;
+    transform: scale(0.85);
+}
+
+.marketking-checkbox-switch input.marketking-input-checkbox {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80px;
+    height: 30px;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.marketking-checkbox-switch .marketking-checkbox-animate {
+    position: relative;
+    width: 80px;
+    height: 30px;
+    background-color: #95a5a6;
+    -webkit-transition: background 0.25s ease-out 0s;
+    transition: background 0.25s ease-out 0s;
+}
+
+.marketking-checkbox-switch .marketking-checkbox-animate:before {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    background-color: #7f8c8d;
+    top: 5px;
+    left: 5px;
+     -webkit-transition: left 0.3s ease-out 0s;
+    transition: left 0.3s ease-out 0s;
+}
+
+.marketking-checkbox-switch input.marketking-input-checkbox:checked + .marketking-checkbox-animate {
+    background-color: #D6BF6D;
+}
+
+.marketking-checkbox-switch input.marketking-input-checkbox:checked + .marketking-checkbox-animate:before {
+    left: 55px;
+    background-color: #F9DE99;
+}
+.marketking-checkbox-animate.marketking-pro-checkbox{
+    background-color: #3c3f3e;
+}
+.marketking-checkbox-switch .marketking-checkbox-animate.marketking-pro-checkbox:before {
+    background-color:#1d1f1e;
+}
+.marketking-checkbox-switch .marketking-checkbox-off,
+.marketking-checkbox-switch .marketking-checkbox-on {
+    float: left;
+    color: #fff;
+    font-weight: 700;
+    padding-top: 6px;
+     -webkit-transition: all 0.3s ease-out 0s;
+    transition: all 0.3s ease-out 0s;
+}
+
+.marketking-checkbox-switch .marketking-checkbox-off {
+    margin-left: 30px;
+    opacity: 1;
+}
+div#marketking_pro_upgrade_modal {
+    padding: 22px;
+    height: 541px;
+    width: 490px;
+    background: #ffffff;
+    border-radius: 10px;
+    flex-direction: column;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 40px;
+    position: relative;
+    z-index: 999999;
+}
+div#marketking_pro_upgrade_header {
+    font-size: 20.5px;
+}
+.marketking_upgrade_header_description {
+    font-size: 16px;
+    color: #f8903b;
+}
+.marketking_upgrade_header_small_description {
+    font-size: 14px;
+    color: #7c7c7c;
+    margin: 27px 27px;
+    line-height: 23px;
+    text-align: center;
+}
+.marketking_modal_bottom_half {
+    width: 100%;
+    padding: 22px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 22px;
+    background: #f6f1eb;
+    height: 100%;
+    border-radius: 0px 0px 10px 10px;
+}
+button#marketking_modal_upgrade_now_button {
+    width: 221px;
+    background: #e78539;
+    height: 42px;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 15.5px;
+    font-weight: 500;
+}
+button#marketking_modal_upgrade_now_button:hover {
+    background: #da7a2f;
+    cursor: pointer;
+}
+img.marketking_pro_upgrade_modal_img {
+    width: 200px;
+    height: 200px;
+    margin-bottom: 2px;
+}
+#marketking_pro_upgrade_modal_container{
+    display: none;
+}
+
+.marketking-checkbox-switch .marketking-checkbox-on {
+    display: none;
+    float: right;
+    margin-right: 35px;
+    opacity: 0;
+}
+
+.marketking-checkbox-switch input.marketking-input-checkbox:checked + .marketking-checkbox-animate .marketking-checkbox-off {
+    display: none;
+    opacity: 0;
+}
+
+.marketking-checkbox-switch input.marketking-input-checkbox:checked + .marketking-checkbox-animate .marketking-checkbox-on {
+    display: block;
+    opacity: 1;
+}
+.marketking_core_plugin_cards .plugin-card-bottom{
+    display: flex;
+    justify-content: center;
+}
+.wrap.plugin-install-tab-featured.marketking_pro_modules_container {
+    display: inline-block;
+}
+/* 3. Product Visibility */
+#marketking_product_visibility_metabox h2, #marketking_product_dynamic_rules_metabox h2{
+    background: #7D7D7D;
+    border-radius: 5px 5px 0px 0px;
+    align-items: center;
+    padding-left: 10px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 13.5px;
+    line-height: 21px;
+    color: #FFFFFF;
+}
+#marketking_metabox_product_categories_wrapper{
+	width: 100%;
+}
+#marketking_metabox_product_categories_wrapper_top{
+	width: 100%;
+	min-height: 40px;
+
+	background: #EFEFEF;
+}
+#marketking_metabox_product_categories_wrapper_top_text{
+	min-height: 40px;
+	height: 40px;
+	vertical-align: middle;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 12px;
+	color: #5C5C5C;
+	display: table-cell;
+    padding-left: 20px;
+    font-family: Roboto, sans-serif;
+    line-height: 2em;
+}
+.marketking_metabox_product_categories_wrapper_top_category{
+	min-width: 70px;
+	height: 16px;
+	background: #898989;
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	border-radius: 3px;
+	margin: 0px 3px;
+	padding: 1px 10px;
+	letter-spacing: 0.05em;
+	color: #ffffff;
+	font-style: normal;
+	font-weight: 500;
+	font-size: 10px;
+}
+#marketking_metabox_product_categories_wrapper_content{
+	width: 100%;
+	padding: 5px 10px 10px 5px;
+}
+#marketking_metabox_product_categories_wrapper_content_headline{
+	font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    color: #5C5C5C;
+    padding-top: 7px;
+    padding-bottom: 9px;
+}
+.marketking_metabox_product_categories_wrapper_content_category {
+    min-width: 100px;
+    height: 25px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 5px 5px;
+    padding: 2px 10px;
+    background: #aaaaaa;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 21px;
+    color: #ffffff;
+    text-decoration: none;
+}
+.marketking_metabox_product_categories_wrapper_content_category:hover{
+    background: #6c6c6c;
+    cursor:pointer;
+}
+.marketking_metabox_product_categories_wrapper_content_category:focus{
+    box-shadow: none;
+    outline: none;
+    border: none;
+}
+
+.marketking_metabox_product_categories_wrapper_content_category_user {
+    min-width: 100px;
+    height: 25px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 5px 5px;
+    padding: 2px 10px;
+    background: #f6f6f6;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 21px;
+    color: #555555;
+    text-decoration: none;
+}
+.marketking_metabox_product_categories_wrapper_content_category_user:hover{
+    background: #dbdbdb;
+}
+.marketking_metabox_product_categories_wrapper_content_category_user:focus{
+    box-shadow: none;
+    outline: none;
+    border: none;
+}
+.marketking_metabox_product_categories_wrapper_content_category_user_link{
+    text-decoration: none;
+}
+.marketking_metabox_product_categories_wrapper_content_line_start{
+	width: 55px;
+	min-height: 25px;
+	display: inline-block;
+}
+.marketking_metabox_product_categories_wrapper_content_line{
+	min-height: 35px;
+    display: block;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 13px;
+    line-height: 15px;
+    color: #4F4F4F;
+    align-items: center;
+    margin: 5px 0px;
+}
+#marketking_product_visibility_override_options_wrapper{
+	display: none;
+}
+#marketking_product_visibility_selector_wrapper{
+	margin-top: 15px;
+	background: #367fc2;
+	color: white;
+	padding-bottom: 7px;
+	padding-top: 7px;
+	border-radius: 2px;
+	display: flex;
+	align-items: center;
+	margin-bottom: 10px;
+}
+#marketking_product_visibility_override{
+	font-weight: 500;
+}
+#marketking_set_product_visibility_text_before_select{
+	font-size: 14px;
+    font-weight: 500;
+    margin-left: 10px;
+}
+/* 4. Group visibility */
+.marketking_group_visibility_container {
+    border-radius: 5px;
+    background: #ffffff;
+    max-width: 1040px;
+    border-color: #e9ebec;
+    box-shadow: 0 3px 6px rgba(0,0,0,.07);
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+}
+.marketking_group_visibility_container_top {
+    background: #7D7D7D;
+    border-radius: 5px 5px 0px 0px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 13.5px;
+    line-height: 21px;
+    color: #FFFFFF;
+}
+.marketking_group_visibility_container_content {
+    padding: 13px;
+}
+.marketking_group_visibility_container_content_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 12px;
+    margin-bottom: 17px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+.marketking_group_visibility_container_content_title_icon{
+    position: absolute;
+    width: 26px;
+    left: 1px;
+    top: -13px;
+}
+.marketking_group_visibility_container_content_checkbox {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+}
+.marketking_group_visibility_container_content_checkbox_name {
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+input.marketking_group_visibility_container_content_checkbox_input {
+    background: #C4C4C4;
+    border-radius: 3px;
+    border: none;
+    top: 2px;
+    box-shadow: none;
+    position: relative;
+}
+input.marketking_group_visibility_container_content_checkbox_input:focus{
+    box-shadow: none;
+}
+.marketking_user_visibility_container_content_title_icon{
+    position: absolute;
+    width: 29px;
+    left: 1px;
+    top: -4px;
+}
+textarea#marketking_category_users_textarea {
+    width: 100%;
+    background: #ececec;
+    border: none;
+    resize: vertical;
+    margin-bottom: 15px;
+}
+select#marketking_all_users_dropdown {
+    background-color: #ececec;
+    border: none;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    min-height: 36px;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+    width: 75.5%;
+    max-width: 1000px;
+}
+button#marketking_category_add_user {
+    background: #7d7d7d;
+    color: #ffffff;
+    min-height: 36px;
+    width: 24.5%;
+    min-width: 80px;
+    border: none;
+    margin-left: 3px;
+}
+.marketking_category_users_textarea_buttons_container {
+    display: flex;
+}
+
+/* 5. Conversations */
+table.wp-list-table #marketking_user, table.wp-list-table #marketking_status, table.wp-list-table #marketking_lastreplydate{
+	width: 15%;
+}
+span.marketking_quote_request_column {
+    font-weight: bold;
+    color: #882aeb;
+}
+.marketking_message_system_message {
+    background: #d7eeff !important;
+}
+.marketking_conversation_quote_first_message{
+    background: #faf4ff !important;
+}
+span.marketking_message_column, span.marketking_inquiry_column {
+    font-weight: bold;
+    color: #248ce9;
+}
+button.marketking_make_offer {
+    margin-left: 10px !important;
+}
+.marketking_conversation_status_resolved{
+	font-weight: bold;
+	color:#646464 !important;
+}
+.marketking_conversation_status_open{
+	font-weight: bold;
+	color:#7ad03a;
+}
+.marketking_conversation_status_new{
+	font-weight: bold;
+	color:#ffa500;
+}
+#marketking_conversation_start_message{
+	width: 100%;
+    resize: vertical;
+    border: 1px solid #eeeeee;
+    margin-top: 10px;
+    background: #fcfcfc;    
+    padding: 10px;
+    min-height: 125px;
+}
+#marketking_conversation_admin_new_message{
+	width: 97%;
+	resize: vertical;
+	min-height: 125px;
+	margin: 10px;
+	border: 1px solid #eeeeee;
+    background: #fcfcfc;
+	padding: 15px;
+}
+#marketking_conversation_messages_container{
+	max-height: 500px;
+	overflow-y: scroll;
+}
+.marketking_conversation_message{
+    background: #eeeeee;
+    margin: 10px;
+    padding: 15px;
+    padding-right: 10%;
+    border-radius: 8px;
+    width: 70%;
+    position: relative;
+}
+.marketking_conversation_message_self{
+	margin-left: auto;
+    background: #e9f1f8;
+}
+.marketking_conversation_message_time{
+	position: absolute;
+    right: 10px;
+    color: #888f92;
+    font-weight: bold;
+    bottom: 10px;
+}
+#marketking_conversation_details_wrapper{
+	display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#marketking_conversation_user_container{
+	display: inline-flex;
+    align-items: center;
+    font-size: 20px;
+}
+#marketking_conversation_user_status_container{
+	display: inline-flex;
+    font-weight: 500;
+    align-items: center;
+    font-size: 17px;
+}
+#marketking_conversation_status_select{
+	width: 130px;
+	margin-left: 10px;
+	background-color: #4fa7df;
+    border: none;
+    box-shadow: 0 2px 0px rgba(0, 0, 0, 0.08);
+    color: #ffffff;
+    font-weight: bold;
+}
+#marketking_conversation_status_select option{
+	background-color: #ffffff;
+	color: #222;
+}
+#marketking_conversation_user_input{
+	font-size: 18px;
+    margin-left: 10px;
+    font-weight: 500;
+    border: 1px solid #e6e6e6;
+}
+
+.post-type-marketking_conversation #titlewrap input{
+    border-radius: 5px;
+    border-color: #dedede;
+}
+
+#marketking_message_details_metabox, #marketking_message_messaging_metabox, .post-type-marketking_message #submitdiv{
+    border-radius: 5px;
+    border-color: #e9ebec;
+    box-shadow: 0 3px 6px rgba(0,0,0,.07);
+}
+
+.post-type-marketking_message #titlewrap input{
+    border-radius: 5px;
+    border-color: #dedede;
+}
+
+#marketking_message_start_message{
+    width: 100%;
+    resize: vertical;
+    border: 1px solid #eeeeee;
+    background: #fcfcfc;
+    margin-top: 10px;
+    padding: 10px;
+    min-height: 125px;
+}
+#marketking_message_admin_new_message{
+    width: 97%;
+    resize: vertical;
+    min-height: 125px;
+    margin: 10px;
+    border: 1px solid #eeeeee;
+    background: #fcfcfc;
+    padding: 15px;
+}
+#marketking_message_messages_container{
+    max-height: 500px;
+    overflow-y: scroll;
+}
+.marketking_message_message{
+    background: #eeeeee;
+    margin: 10px;
+    padding: 15px;
+    padding-right: 10%;
+    border-radius: 8px;
+    width: 70%;
+    position: relative;
+}
+.marketking_message_message_self{
+    margin-left: auto;
+    background: #e9f1f8;
+}
+.marketking_message_message_time{
+    position: absolute;
+    right: 10px;
+    color: #888f92;
+    font-weight: bold;
+    bottom: 10px;
+}
+#marketking_message_details_wrapper{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#marketking_message_user_container{
+    display: inline-flex;
+    align-items: center;
+    font-size: 20px;
+}
+#marketking_message_user_status_container{
+    display: inline-flex;
+    font-weight: 500;
+    align-items: center;
+    font-size: 17px;
+}
+#marketking_message_status_select{
+    width: 130px;
+    margin-left: 10px;
+    background-color: #4fa7df;
+    border: none;
+    box-shadow: 0 2px 0px rgba(0, 0, 0, 0.08);
+    color: #ffffff;
+    font-weight: bold;
+}
+#marketking_message_status_select option{
+    background-color: #ffffff;
+    color: #222;
+}
+#marketking_message_user_input{
+    font-size: 18px;
+    margin-left: 10px;
+    font-weight: 500;
+    border: 1px solid #e6e6e6;
+}
+
+/* 6. Offers */
+
+#marketking_admin_offer_textarea{
+	width: 100%;
+    resize: vertical;
+    min-height: 100px;
+    display: none;
+}
+.marketking_offer_input_container{
+    max-width: 20%;
+    margin-right: 25px;
+    display: inline-block;
+    font-weight: 500;
+    color: #666666;
+    vertical-align: top;
+}
+input.marketking_offer_text_input{
+    background-color: #f4f4f4;
+    border: none;
+    box-shadow: 0 2px 0px rgba(0, 0, 0, 0.08);
+    color: #4a4a4a;
+    font-weight: bold;
+    margin-top: 1px;
+    width: 100%;
+}
+.marketking_offer_line_number{
+    display: flex;
+    margin-bottom: 15px;
+}
+.marketking_item_subtotal{
+    font-size: 22px;
+}
+#marketking_offer_total_text{
+    text-align: right;
+    padding-right: 27%;
+    font-size: 16px;
+}
+#marketking_offer_total_text_number{
+    display: inline-block;
+    font-weight: 700;
+    font-size: 22px;
+}
+.marketking_offer_input_container button.marketking_offer_add_item_button{
+    margin-right: 5px;
+}
+
+
+/* 7. Rules */
+#marketking_select_multiple_product_categories_selector li.select2-selection__choice, #marketking_select_multiple_users_selector li.select2-selection__choice{
+    font-size:14px;
+    background-color:#ffffff;
+    font-family: "Roboto Medium", Roboto;
+}
+#marketking_select_multiple_vendors_selector li.select2-selection__choice{
+    font-size:14px;
+    background-color:#ffffff;
+    font-family: "Roboto Medium", Roboto;
+}
+.marketking_hidden_img{
+    display: none !important;
+}
+.marketking_commission_rule_metabox_content_container .selection .select2-selection, .marketking_offer_line_number .selection .select2-selection{
+    background-color: #f4f4f4;
+    border: none;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+    color: #3b3b3b;
+    min-height: 35px;
+    margin-top: 1px;
+    font-size: 13.5px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    display: flex;
+    align-items: center;
+}
+.marketking_commission_rule_metabox_content_container .select2-search__field{
+    background-color: #f4f4f4;
+}
+.marketking_commission_rule_metabox_content_container .selection .select2-selection:hover .select2-search__field, .marketking_offer_line_number .selection .select2-selection:hover .select2-search__field{
+    background-color: #eaeaea;
+}
+.marketking_commission_rule_metabox_content_container .selection .select2-selection .select2-selection__arrow, .marketking_offer_line_number .selection .select2-selection .select2-selection__arrow{
+    top:inherit;
+}
+.marketking_commission_rule_metabox_content_container .selection .select2-selection:focus, .marketking_offer_line_number .selection .select2-selection:focus{
+    border: none;
+    background-color: #eaeaea;
+    color: #3b3b3b;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+    outline: none;
+}
+.marketking_commission_rule_metabox_content_container .selection .select2-selection:hover, .marketking_offer_line_number .selection .select2-selection:hover{
+    border: none;
+    background-color: #eaeaea;
+    color: #3b3b3b;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+}
+.post-type-marketking_rule #postcustom{
+display:none;
+}
+
+.marketking_dynamic_rule_metabox_content_container .selection .select2-selection, .marketking_offer_line_number .selection .select2-selection{
+    background-color: #f4f4f4;
+    border: none;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+    color: #3b3b3b;
+    min-height: 35px;
+    margin-top: 1px;
+    font-size: 13.5px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    display: flex;
+    align-items: center;
+}
+.marketking_dynamic_rule_metabox_content_container .select2-search__field{
+    background-color: #f4f4f4;
+}
+.marketking_dynamic_rule_metabox_content_container .selection .select2-selection:hover .select2-search__field, .marketking_offer_line_number .selection .select2-selection:hover .select2-search__field{
+    background-color: #eaeaea;
+}
+.marketking_dynamic_rule_metabox_content_container .selection .select2-selection .select2-selection__arrow, .marketking_offer_line_number .selection .select2-selection .select2-selection__arrow{
+    top:inherit;
+}
+.marketking_dynamic_rule_metabox_content_container .selection .select2-selection:focus, .marketking_offer_line_number .selection .select2-selection:focus{
+    border: none;
+    background-color: #eaeaea;
+    color: #3b3b3b;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+    outline: none;
+}
+.marketking_dynamic_rule_metabox_content_container .selection .select2-selection:hover, .marketking_offer_line_number .selection .select2-selection:hover{
+    border: none;
+    background-color: #eaeaea;
+    color: #3b3b3b;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+}
+.marketking_rule_select_container{
+	max-width: 20%;
+	margin-right: 15px;
+	display: inline-block;
+	font-weight: 500;
+	color: #666666;
+	vertical-align: top;
+}
+#marketking_rule_select_container_tags{
+    width: 100%;
+    max-width: 100%;
+}
+#marketking_rule_select_tags{
+    width: 100%;
+}
+
+.marketking_rule_select_container select{
+	background-color: #f4f4f4;
+    border: none;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+    color: #3b3b3b;
+    height: 35px;
+    margin-top: 1px;
+    font-size: 13.5px;
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: bold;
+}
+.marketking_rule_select_container select:focus{
+	border: none;
+    background-color: #eaeaea;
+    color: #3b3b3b;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+}
+.marketking_rule_select_container select:hover{
+	border: none;
+    background-color: #eaeaea;
+    color: #3b3b3b;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+}
+#marketking_rule_select_applies, #marketking_rule_select_who{
+	font-weight: 500;
+}
+.marketking_rule_select_container select option, .marketking_rule_select_container select optgroup{
+	background-color:#FFFFFF;
+}
+.post-type-marketking_conversation #submitdiv, #marketking_product_visibility_metabox, #marketking_product_dynamic_rules_metabox, #marketking_field_billing_connection_metabox, #marketking_rule_details_metabox, #marketking_field_settings_metabox, #marketking_option_settings_metabox, #marketking_offer_details_metabox, #marketking_offer_customtext_metabox, #marketking_offer_access_metabox, #marketking_conversation_messaging_metabox, #marketking_credit_limit_metabox, #marketking_conversation_details_metabox, #marketking_group_users_metabox, #marketking_group_permissions_metabox, #marketking_group_panels_metabox, #marketking_group_rules_metabox, #marketking_group_offers_metabox, #marketking_group_payment_shipping_metabox{
+	border-radius: 5px;
+    border-color: #e9ebec;
+    box-shadow: 0 3px 6px rgba(0,0,0,.07);
+}
+.marketking_offers_metabox_padding {
+    padding: 5px;
+}
+.marketking_pack_description_padding {
+    padding: 5px;
+    margin-left: 5px;
+    margin-right: 22px;
+}
+svg.marketking_offers_metabox_icon {
+    position: absolute;
+    width: 29px;
+    left: 1px;
+    top: -12px;
+}
+textarea#marketking_offer_customtext_textarea, textarea#marketking_vitem_description_textarea, textarea#marketking_pack_description, textarea#marketking_badge_description {
+    width: 100%;
+    background: #ececec;
+    border: none;
+    resize: vertical;
+    margin-bottom: 15px;
+    min-height: 120px;
+}
+.marketking_thumbnail_backend{
+    width: 50px;
+    height: 50px;
+}
+div#marketking_rule_select_applies_replaced_container {
+    margin-bottom: 20px;
+}
+input#marketking_rule_select_applies_replaced {
+    width: 100%;
+}
+#marketking_rule_select_howmuch, input.marketking_dynamic_rule_condition_number, #marketking_rule_select_tags, #marketking_rule_select_applies_replaced, #marketking_container_tax_shipping_rate input{
+	background-color: #f4f4f4;
+    border: none;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+    color: #252525;
+    height: 35px;
+    font-weight: bold;
+    margin-top: 1px;
+
+}
+#marketking_rule_select_howmuch, #marketking_rule_select_quantity_value{
+	width: 150px;
+}
+#marketking_rule_select_conditions{
+	display: none;
+}
+#marketking_rule_select_conditions_container{
+	width: 100%;
+	max-width: 100%;
+}
+#marketking_rule_select_conditions{
+	width: 100%;
+	height: 50px;
+}
+#marketking_container_taxname, #marketking_container_discountname, #marketking_container_currency{
+    display: none;
+}
+input#marketking_rule_select_taxname, input#marketking_rule_select_discountname {
+    width: 140px;
+    background-color: #f4f4f4;
+    border: none;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+    color: #252525;
+    font-weight: bold;
+    margin-top: 1px;
+    height: 35px;
+}
+div#marketking_container_tax_shipping {
+    margin-top: 15px;
+}
+div#marketking_container_tax_shipping_rate {
+    margin-top: 15px;
+}
+
+.marketking_dynamic_rule_column_text_bogo_discount, .marketking_dynamic_rule_column_text_discount_amount, .marketking_dynamic_rule_column_text_discount_percentage{
+	font-weight: bold;
+	color:#ff2539;
+}
+.marketking_dynamic_rule_column_text_free_shipping{
+	font-weight: bold;
+	color:#0c7fff;
+}
+.marketking_dynamic_rule_column_text_fixed_price{
+	font-weight: bold;
+	color:#51db07;
+}
+.marketking_dynamic_rule_column_text_hidden_price{
+	font-weight: bold;
+	color:#3f3f3f;
+}
+.marketking_dynamic_rule_column_text_minimum_order, .marketking_dynamic_rule_column_text_maximum_order{
+	font-weight: bold;
+	color:#c50aff;
+}
+.marketking_dynamic_rule_column_text_required_multiple{
+	font-weight: bold;
+	color:#ffc47c;
+}
+.marketking_dynamic_rule_column_text_payment_method_discount, .marketking_dynamic_rule_column_text_rename_purchase_order, .marketking_dynamic_rule_column_text_payment_method_minmax_order, .marketking_dynamic_rule_column_text_tax_exemption_user, .marketking_dynamic_rule_column_text_tax_exemption, .marketking_dynamic_rule_column_text_add_tax_percentage, .marketking_dynamic_rule_column_text_add_tax_amount, .marketking_dynamic_rule_column_text_replace_prices_quote, .marketking_dynamic_rule_column_text_set_currency_symbol {
+    color: #0000cb;
+    font-weight: bold;
+}
+
+#marketking_rule_select_conditions_container .marketking_rule_condition_container .marketking_dynamic_rule_condition_name, #marketking_rule_select_conditions_container .marketking_rule_condition_container .marketking_dynamic_rule_condition_operator, #marketking_rule_select_conditions_container .marketking_rule_condition_container .marketking_dynamic_rule_condition_number {
+  	font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 13.5px;
+    line-height: 21px;
+    color: #6A6A6A;
+    box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.09);
+}
+.marketking_dynamic_rule_condition_add_button {
+    background: #61ACD6;
+    border-radius: 3px;
+    color: #ffffff;
+    border: none;
+    padding: 0px 18px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 13.5px;
+    margin-right: 5%;
+    min-width: 121px;
+}
+.marketking_dynamic_rule_condition_delete_button{
+    background: #7d7d7d;
+    border-radius: 3px;
+    color: #ffffff;
+    border: none;
+    padding: 0px 18px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 13.5px;
+    margin-right: 5%;
+    min-width: 121px;
+}
+
+.marketking_rule_condition_container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.marketking_dynamic_rule_condition_name{
+    width: 33%;
+}
+.marketking_dynamic_rule_condition_operator{
+    width: 11%;
+}
+.marketking_dynamic_rule_condition_number{
+    width: 33%;
+}
+.marketking_dynamic_rule_metabox_content_container {
+    padding-top: 10px;
+}
+.marketking_rule_label {
+    margin-bottom: 4px;
+    color: #6c6c6c;
+    font-size: 13.5px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+}
+.marketking_rule_label_discount, .marketking_rule_label_minimum {
+    margin-bottom: 4px;
+    color: #6c6c6c;
+    font-size: 13.5px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    display:none;
+}
+/* dynamic rule tax exemption*/
+select#marketking_rule_select_requires, select#marketking_rule_select_showtax {
+    width: 100px;
+}
+select#marketking_rule_select_countries {
+    height: 200px;
+}
+/* dynamic rule discount checkbox */
+.marketking_dynamic_rule_discount_show_everywhere_checkbox_container, .marketking_dynamic_rule_minimum_all_checkbox_container {
+    background: #f4f4f4;
+    border-radius: 3px;
+    justify-content: space-between;
+    display: none;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+    margin-right: 30px;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 35px;
+}
+.marketking_dynamic_rule_discount_show_everywhere_checkbox_name, .marketking_dynamic_rule_minimum_all_checkbox_name {
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #6A6A6A;
+}
+input#marketking_dynamic_rule_discount_show_everywhere_checkbox_input, input#marketking_dynamic_rule_minimum_all_checkbox_input {
+    background: #C4C4C4;
+    border-radius: 3px;
+    border: none;
+    top: 2px;
+    box-shadow: none;
+    position: relative;
+}
+
+/* 8. Customer Groups */
+#marketking_user_number.column-marketking_user_number{
+	width: 75%;
+}
+.marketking_group_payment_shipping_methods_container {
+    margin: 20px 0px 10px 10px;
+    display: flex;
+}
+.marketking_user_payment_shipping_methods_container{
+	margin: 20px 0px 45px 10px;
+    display: flex;
+}
+.marketking_group_payment_shipping_methods_container_element {
+    width: 50%;
+}
+.marketking_group_payment_shipping_methods_container_element_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 17px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+svg.marketking_group_payment_shipping_methods_container_element_title_icon_shipping {
+    position: absolute;
+    width: 28px;
+    left: 0px;
+    top: -10px;
+}
+svg.marketking_group_payment_shipping_methods_container_element_title_icon_group_settings {
+    position: absolute;
+    width: 30px;
+    left: 0px;
+    top: -12px;
+}
+svg.marketking_group_payment_shipping_methods_container_element_title_icon_payment {
+    position: absolute;
+    width: 27px;
+    left: 0px;
+    top: -4px;
+}
+.marketking_group_payment_shipping_methods_container_element_method {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+}
+.marketking_group_payment_shipping_methods_container_element_method_name {
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+input.marketking_group_payment_shipping_methods_container_element_method_checkbox {
+    background: #C4C4C4;
+    border-radius: 3px;
+    border: none;
+    top: 2px;
+    box-shadow: none;
+    position: relative;
+}
+input.marketking_group_payment_shipping_methods_container_element_method_checkbox:focus{
+	box-shadow:none;
+}
+
+/* Information Box */
+.marketking_group_payment_shipping_information_box{
+	background: #E0F3FE;
+    border-radius: 2px;
+    min-height: 53px;
+    margin-left: 10px;
+    font-family: "Roboto Medium", Roboto;
+    margin-right: 30px;
+    font-style: normal;
+    font-weight: 500;
+    display: flex;
+    font-size: 14px;
+    padding-left: 50px;
+    line-height: 21px;
+    color: #579DC3;
+    align-items: center;
+    margin-bottom: 10px;
+    position: relative;
+}
+.marketking_group_payment_shipping_information_box_icon{
+	position: absolute;
+    top: 8px;
+    width: 28px;
+    left: 11px;
+    background: #579DC300;
+}
+
+/* 9. User shipping and payment methods */
+.marketking_user_shipping_payment_methods_container {
+    border-radius: 5px;
+    background: #ffffff;
+    max-width: 1040px;
+    border-color: #e9ebec;
+    box-shadow: 0 3px 6px rgba(0,0,0,.07);
+    padding-bottom: 12px;
+}
+.marketking_user_shipping_payment_methods_container_top {
+    background: #7D7D7D;
+    border-radius: 5px 5px 0px 0px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 13.5px;
+    line-height: 21px;
+    color: #FFFFFF;
+}
+.marketking_user_shipping_payment_methods_container_content_override {
+    margin: 12px 30px 30px 10px;
+}
+
+select.marketking_user_shipping_payment_methods_container_content_override_select {
+    background-color: #ECECEC;
+    border-radius: 3px;
+    height: 40px;
+    border: none;
+    padding: 0px 15px;
+    width: 100%;
+    max-width: 100%;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+#marketking_user_shipping_payment_methods_override:focus{
+	color: #252525;
+	box-shadow: none;
+}
+select.marketking_user_shipping_payment_methods_container_content_override_select option{
+	min-height: 40px;
+	padding: 10px;
+}
+svg.marketking_user_shipping_payment_methods_container_content_override_title_icon {
+    position: absolute;
+    width: 28px;
+    left: 0px;
+}
+.marketking_user_shipping_payment_methods_container_content_override_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    display: flex;
+    font-weight: 500;
+    align-items: center;
+    font-size: 16px;
+    height: 45px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+.marketking_user_shipping_payment_methods_container_content {
+    padding: 0 12px;
+}
+
+/* 10. Registration Options */
+.marketking_option_settings_metabox_container, .marketking_option_approval_sort_container {
+    margin: 25px 10px 10px 10px;
+    display: flex;
+}
+.marketking_option_settings_metabox_container_element, .marketking_option_approval_sort_container_element {
+    width: 50%;
+}
+.marketking_option_approval_sort_container_element_select_container{
+    margin-right: 30px;
+}
+.marketking_option_settings_metabox_container_element_credit {
+    width: 100%;
+}
+.marketking_option_approval_sort_container_element_credit {
+    padding-top: 10px;
+}
+.marketking_option_settings_metabox_container_element_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 17px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+svg.marketking_option_settings_metabox_container_element_title_icon {
+    position: absolute;
+    width: 28px;
+    left: 0px;
+    top: -8px;
+}
+.marketking_option_settings_metabox_container_element_checkbox_container {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+}
+.marketking_option_settings_metabox_container_element_checkbox_name {
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+input.marketking_option_settings_metabox_container_element_checkbox {
+    background: #C4C4C4;
+    border-radius: 3px;
+    border: none;
+    top: 2px;
+    box-shadow: none;
+    position: relative;
+    transform: scale(1.3);
+}
+input.marketking_option_settings_metabox_container_element_checkbox:focus{
+	box-shadow: none;
+}
+select.marketking_option_settings_metabox_container_element_select {
+    background-color: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    width: 100%;
+    border: none;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+select.marketking_option_settings_metabox_container_element_select:focus{
+	outline: none;
+	box-shadow: none;
+	color: #252525;
+}
+#marketking_select_multiple_options_selector{
+    display: none;
+}
+#marketking_select_multiple_product_categories_selector, #marketking_select_multiple_users_selector{
+    display: none;
+    margin-top: 0px;
+    margin-right: 30px;
+    margin-bottom: 20px;
+}
+/* Information Box */
+.marketking_option_settings_metabox_information_box{
+	background: #E0F3FE;
+    border-radius: 2px;
+    min-height: 53px;
+    margin-left: 10px;
+    font-family: "Roboto Medium", Roboto;
+    margin-right: 10px;
+    font-style: normal;
+    font-weight: 500;
+    display: flex;
+    font-size: 14px;
+    padding-left: 50px;
+    line-height: 21px;
+    color: #579DC3;
+    align-items: center;
+    margin-bottom: 15px;
+    position: relative;
+    margin-top: 10px;
+}
+.marketking_option_settings_metabox_information_box_icon{
+	position: absolute;
+    top: 8px;
+    width: 28px;
+    left: 11px;
+    background: #579DC300;
+}
+.marketking_automatic_approval_customer_group_container {
+    margin: 35px 10px;
+}
+select.marketking_automatic_approval_customer_group_select {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    width: 100%;
+    border: none;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+select.marketking_automatic_approval_customer_group_select:focus{
+    box-shadow: none;
+    outline: none;
+    color: #252525;
+}
+span.marketking_option_column_approval_manual {
+    font-weight: bold;
+    color: #0f0f0f;
+}
+span.marketking_option_column_approval_automatic {
+    font-weight: bold;
+    color:#009bdd;
+}
+span.marketking_option_column_status_enabled {
+    font-weight: bold;
+    color: #00df00;
+}
+span.marketking_option_column_status_disabled{
+	font-weight: bold;
+	color: red;
+}
+.marketking_users_column_waiting_approval{
+	color:#e7b400;
+	font-weight: bold;
+}
+
+/* 11. Registration fields */
+input.marketking_field_mapping_input {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    width: 100%;
+    border: none;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+.marketking_field_settings_metabox_container {
+    margin: 25px 10px 10px 10px;
+    margin-bottom: 35px;
+}
+.marketking_field_settings_metabox_top {
+    display: flex;
+    padding-bottom: 35px;
+    border-bottom: 1px solid #e5e5e5;
+}
+.marketking_field_settings_metabox_top_column {
+    width: 50%;
+}
+.marketking_field_settings_metabox_bottom_user_choices_title, .marketking_field_settings_metabox_bottom_field_label_title,.marketking_field_settings_metabox_bottom_field_placeholder_title, .marketking_field_settings_metabox_bottom_field_type_title, .marketking_field_settings_metabox_top_column_status_title, .marketking_field_settings_metabox_top_column_registration_option_title,.marketking_field_settings_metabox_top_column_required_title, .marketking_field_settings_metabox_top_column_sort_title, .marketking_field_settings_metabox_top_column_editable_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 13px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+.marketking_select_multiple_products_categories_title{
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    margin-top: 5px;
+    margin-bottom: 4px;
+    line-height: 21px;
+    color: #6c6c6c;
+    font-size: 13.5px;
+    font-weight: 500;
+}
+
+svg.marketking_field_settings_metabox_top_column_status_title_icon{
+    position: absolute;
+    width: 24px;
+    left: 0px;
+    top: -8px;
+}
+svg.marketking_field_settings_metabox_top_column_registration_option_title_icon {
+	position: absolute;
+    width: 24px;
+    left: 1px;
+    top: -5px;
+}
+.marketking_field_settings_metabox_top_column_status_checkbox_container {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+}
+.marketking_field_settings_metabox_top_column_status_checkbox_name {
+	font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+input.marketking_field_settings_metabox_top_column_status_checkbox_input, input.marketking_field_settings_metabox_top_column_required_checkbox_input, input.marketking_field_settings_metabox_top_column_editable_checkbox_input {
+    background: #C4C4C4;
+    border-radius: 3px;
+    border: none;
+    top: 2px;
+    box-shadow: none;
+    position: relative;
+    transform: scale(1.3);
+}
+input.marketking_field_settings_metabox_top_column_status_checkbox_input:focus, input.marketking_field_settings_metabox_top_column_required_checkbox_input:focus, input.marketking_field_settings_metabox_top_column_editable_checkbox_input:focus{
+	box-shadow: none;
+}
+select.marketking_field_settings_metabox_top_column_registration_option_select {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    width: 100%;
+    border: none;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+select.marketking_field_settings_metabox_top_column_registration_option_select:focus{
+	box-shadow: none;
+	color:#252525;
+}
+select.marketking_select_multiple_product_categories_selector_select {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    width: 100%;
+    border: none;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 200px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+select.marketking_select_multiple_product_categories_selector_select:focus{
+    box-shadow: none;
+    color:#252525;
+}
+.marketking_field_settings_metabox_top_column_registration_option {
+    margin-top: 35px;
+    margin-right: 30px;
+}
+.marketking_field_settings_metabox_top_column_required, .marketking_field_settings_metabox_top_column_sort{
+	display: inline-block;
+    width: 49%;
+}
+.marketking_field_settings_metabox_top_column_editable{
+	width: 100%;
+	margin-top: 35px;
+}
+svg.marketking_field_settings_metabox_top_column_required_title_icon {
+    position: absolute;
+    width: 26px;
+    left: 0px;
+    top: -7px;
+}
+svg.marketking_field_settings_metabox_top_column_sort_title_icon {
+    position: absolute;
+    width: 25px;
+    left: 0px;
+    top: -5px;
+}
+svg.marketking_field_settings_metabox_top_column_editable_title_icon {
+    position: absolute;
+    width: 28px;
+    left: 0px;
+    top: -8px;
+}
+input.marketking_field_settings_metabox_top_column_sort_text {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    width: 100%;
+    border: none;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+input.marketking_field_settings_metabox_top_column_sort_text::placeholder{
+	color: #A8A8A8;
+}
+input.marketking_field_settings_metabox_top_column_sort_text:focus{
+	box-shadow: none;
+	outline: none;
+}
+input.marketking_field_settings_metabox_top_column_sort_text::-webkit-outer-spin-button, input.marketking_field_settings_metabox_top_column_sort_text::-webkit-inner-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+.marketking_field_settings_metabox_top_column_editable_checkbox_container {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+}
+.marketking_field_settings_metabox_bottom {
+    margin-top: 35px;
+}
+svg.marketking_field_settings_metabox_bottom_field_type_title_icon{
+	position: absolute;
+    width: 24px;
+    left: 1px;
+    top: -5px;
+}
+svg.marketking_field_settings_metabox_bottom_field_placeholder_title_icon {
+    position: absolute;
+    width: 28px;
+    left: 0px;
+    top: -8px;
+}
+svg.marketking_field_settings_metabox_bottom_field_label_title_icon{
+	position: absolute;
+    width: 24px;
+    left: 1px;
+    top: -5px;
+}
+svg.marketking_field_settings_metabox_bottom_user_choices_title_icon {
+    position: absolute;
+    width: 26px;
+    left: 1px;
+    top: -6px;
+}
+select.marketking_field_settings_metabox_bottom_field_type_select {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    width: 100%;
+    border: none;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+select.marketking_field_settings_metabox_bottom_field_type_select:focus{
+	box-shadow: none;
+	color:#252525;
+}
+.marketking_field_settings_metabox_bottom_label_and_placeholder_container {
+    display: flex;
+}
+.marketking_field_settings_metabox_bottom_field_label {
+    width: 50%;
+    margin-top: 35px;
+    margin-right: 10px;
+}
+.marketking_field_settings_metabox_bottom_field_placeholder {
+    width: 50%;
+    margin-top: 35px;
+}
+.marketking_field_settings_metabox_bottom_field_label_input_container {
+    margin-right: 20px;
+}
+.marketking_field_settings_metabox_bottom_user_choices {
+    margin-top: 35px;
+}
+/* billing connection metabox */
+.marketking_field_billing_connection_metabox_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+svg.marketking_field_billing_connection_metabox_title_icon {
+    position: absolute;
+    width: 23px;
+    left: 1px;
+    top: -12px;
+}
+.marketking_field_billing_connection_metabox_container {
+    margin: 30px 10px 10px 10px;
+}
+select.marketking_field_billing_connection_metabox_select {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    width: 100%;
+    border: none;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+select.marketking_field_billing_connection_metabox_select:focus{
+    box-shadow: none;
+    color:#252525;
+}
+.marketking_billing_connection_information_box{
+        background: #E0F3FE;
+    border-radius: 2px;
+    min-height: 53px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    left: 1px;
+    margin-top: 25px;
+    font-weight: 500;
+    display: flex;
+    font-size: 14px;
+    padding-left: 50px;
+    line-height: 21px;
+    color: #579DC3;
+    align-items: center;
+    margin-bottom: 10px;
+    position: relative;
+}
+/* add to billing */
+.marketking_add_to_billing_container_element {
+    display: inline-block;
+    width: 31%;
+}
+.marketking_add_to_billing_container_element_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 13px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+.marketking_field_billing_connection_groups{
+    width: 100%;
+    font-size: 15px;
+    border: 4px solid #ececec !important;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    min-height: 200px;
+}
+svg.marketking_add_to_billing_container_element_title_icon {
+    position: absolute;
+    width: 27px;
+    left: 1px;
+    top: -8px;
+}
+.marketking_add_to_billing_container {
+    margin-top: 25px;
+    justify-content: space-between;
+}
+.marketking_billing_checkout_countries{
+    flex: 1 1 100%;
+    margin-top: 25px;
+}
+.marketking_add_to_billing_container_element_checkbox_container {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+}
+.marketking_add_to_billing_container_element_checkbox_name {
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+input.marketking_add_to_billing_container_element_checkbox_input {
+    background: #C4C4C4;
+    border-radius: 3px;
+    border: none;
+    top: 2px;
+    box-shadow: none;
+    position: relative;
+    transform: scale(1.3);
+}
+input.marketking_add_to_billing_container_element_checkbox_input:focus{
+    box-shadow: none;
+    outline: none;
+}
+
+
+/* vat container */
+.marketking_VAT_container_column_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 13px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+.marketking_VAT_container {
+    display: flex;
+    justify-content: space-between;
+}
+.marketking_VAT_container_column {
+    width: 48%;
+    margin-top: 25px;
+}
+svg.marketking_VAT_container_column_title_icon {
+    position: absolute;
+    width: 27px;
+    left: 1px;
+    top: -8px;
+}
+.marketking_VAT_container_VIES_validation_checkbox_container {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+}
+.marketking_VAT_container_VIES_validation_checkbox_name {
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+input.marketking_VAT_container_VIES_validation_checkbox_input {
+    background: #C4C4C4;
+    border-radius: 3px;
+    border: none;
+    top: 2px;
+    box-shadow: none;
+    position: relative;
+    transform: scale(1.3);
+}
+input.marketking_VAT_container_VIES_validation_checkbox_input:focus{
+    box-shadow: none;
+    outline: none;
+}
+select.marketking_VAT_container_countries_select {
+    width: 100%;
+    font-size: 15px;
+    border: 4px solid #ececec;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    min-height: 200px;
+}
+select.marketking_VAT_container_countries_select:focus{
+    box-shadow: none;
+    outline: none;
+    color:#252525;
+    border: 4px solid #ececec;
+}
+
+/* 12. Registration User Data  */
+.marketking_user_registration_user_data_container {
+    margin: 25px 20px 1px 20px;
+}
+.marketking_user_registration_user_data_container_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 17px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dedede;
+}
+svg.marketking_user_registration_user_data_container_title_icon {
+    position: absolute;
+    width: 27px;
+    left: 0px;
+    top: -8px;
+}
+.marketking_user_registration_user_data_container_element_label {
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 13.5px;
+    line-height: 21px;
+    color: #818181;
+}
+input.marketking_user_registration_user_data_container_element_text {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 4px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+    border: none;
+    width: 100%;
+    font-weight: 500;
+    line-height: 21px;
+    color: #252525;
+}
+input.marketking_user_registration_user_data_container_element_text:focus, textarea.marketking_user_registration_user_data_container_element_textarea:focus{
+	box-shadow: none;
+	color:#252525;
+}
+textarea.marketking_user_registration_user_data_container_element_textarea {
+    background: #ECECEC;
+    border-radius: 3px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    align-items: center;
+    padding: 15px 15px;
+    min-height: 125px;
+    resize: vertical;
+    border: none;
+    width: 100%;
+    font-weight: 500;
+    line-height: 21px;
+    color: #252525;
+}
+.marketking_user_registration_user_data_container_element {
+    margin-bottom: 16px;
+}
+.marketking_user_registration_user_data_container_element_group{
+    margin-right: 30px;
+}
+select#marketking_group_allowed_products_type {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 4px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+    border: none;
+    width: 100%;
+    font-weight: 500;
+    line-height: 21px;
+    color: #252525;
+}
+
+select.marketking_select_group_multiple_vendor_selectors {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 12px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    width: 100%;
+    border: none;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 200px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+select.marketking_select_group_multiple_vendor_selectors:focus{
+    box-shadow: none;
+    color:#252525;
+}
+.marketking_select_group_multiple_vendor_selectors_container .selection .select2-selection{
+    background-color: #ececec;
+    border: none;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.1);
+    color: #3b3b3b;
+    min-height: 35px;
+    margin-top: 1px;
+    font-size: 13.5px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    display: flex;
+    align-items: center;
+}
+.marketking_select_group_multiple_vendor_selectors_container li.select2-selection__choice {
+    font-size: 14px;
+    background-color: #ffffff !important;
+    font-family: "Roboto Medium", Roboto;
+}
+
+button.marketking_user_registration_user_data_container_element_download {
+    background: #6FB8E1;
+    border-radius: 3px;
+    width: 100%;
+    min-height: 40px;
+    text-align: left;
+    padding-left: 55px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-size: 13.5px;
+    border: none;
+    margin-top: 2px;
+    line-height: 21px;
+    color: #FFFFFF;
+}
+button.marketking_user_registration_user_data_container_element_download:hover{
+	background: #358bbc;
+	cursor: pointer;
+}
+button.marketking_user_registration_user_data_container_element_download:focus{
+	box-shadow: none;
+	outline: none;
+}
+svg.marketking_user_registration_user_data_container_element_download_icon {
+    position: absolute;
+    width: 30px;
+    left: 15px;
+}
+.marketking_user_registration_user_data_container_element_approval {
+    background: #F6F6F6;
+    border: 1px solid #F2F2F2;
+    box-sizing: border-box;
+    border-radius: 3px;
+    padding: 10px;
+    margin-top: 4px;
+}
+select.marketking_user_registration_user_data_container_element_select_group {
+    background-color: #E7e7e7;
+    border-radius: 3px;
+    display: inline-block;
+    margin-right: 30px;
+    width: 100%;
+    border: none;
+    max-width: 100%;
+    margin-bottom: 10px;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+select.marketking_user_registration_user_data_container_element_select_group:focus{
+	box-shadow: none;
+	color: #252525;
+}
+button.marketking_user_registration_user_data_container_element_approval_button_approve {
+    background: #A5CD05;
+    border-radius: 2px;
+    width: 75%;
+    border: none;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    padding-left: 55px;
+    font-weight: 400;
+    font-size: 14px;
+    min-height: 40px;
+    line-height: 23px;
+    color: #FFFFFF;
+}
+svg.marketking_user_registration_user_data_container_element_approval_button_approve_icon, svg.marketking_user_registration_user_data_container_element_approval_button_reject_icon, svg.marketking_user_registration_user_data_container_element_approval_button_deactivate {
+    position: absolute;
+    width: 22px;
+    left: 15px;
+}
+.marketking_user_registration_user_data_container_element_approval_buttons_container {
+    display: flex;
+    justify-content: space-between;
+}
+button.marketking_user_registration_user_data_container_element_approval_button_reject, button.marketking_user_registration_user_data_container_element_approval_button_deactivate {
+    background: #797979;
+    border-radius: 2px;
+    width: 24%;
+    border: none;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    padding-left: 55px;
+    font-weight: 400;
+    font-size: 14px;
+    min-height: 40px;
+    line-height: 23px;
+    color: #FFFFFF;
+}
+
+button.marketking_user_registration_user_data_container_element_approval_button_deactivate {
+    width: 100%;
+}
+.marketking_user_registration_user_data_container_element_approval_button_approve, .marketking_user_registration_user_data_container_element_approval_button_reject, .marketking_user_registration_user_data_container_element_approval_button_deactivate{
+    cursor: pointer;
+}
+.marketking_user_registration_user_data_container_element_approval_button_approve:hover{
+    background: #90b400;
+}
+.marketking_user_registration_user_data_container_element_approval_button_approve:focus, .marketking_user_registration_user_data_container_element_approval_button_reject:focus, .marketking_user_registration_user_data_container_element_approval_button_deactivate:focus{
+    box-shadow: none;
+    outline: none;
+}
+.marketking_user_registration_user_data_container_element_approval_button_reject:hover, .marketking_user_registration_user_data_container_element_approval_button_deactivate:hover{
+    background: #414141;
+}
+
+/* 13. User Settings */
+.marketking_user_settings_container {
+    margin: 20px 20px 20px 20px;
+    display: flex;
+}
+.marketking_user_settings_container_column {
+    width: 100%;
+}
+.marketking_user_settings_container_column_title {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 17px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+
+.marketking_user_settings_container_column_title_subaccounts {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 17px;
+    line-height: 21px;
+    color: #6B6B6B;
+}
+.marketking_user_settings_container_column_title_option {
+    font-family: "Roboto Medium", Roboto;
+    position: relative;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 13px;
+    line-height: 21px;
+    padding-left: 38px;
+    color: #6B6B6B;
+}
+svg.marketking_user_settings_container_column_title_icon {
+    position: absolute;
+    width: 26px;
+    left: 1px;
+    top: -6px;
+}
+svg.marketking_user_settings_container_column_title_icon_right {
+    position: absolute;
+    width: 26px;
+    left: 1px;
+    top: -12px;
+}
+button.marketking_add_button {
+    margin-top: 50px;
+    text-shadow: none;
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: baseline;
+    font-style: normal;
+    text-decoration: none;
+    line-height: 15px;
+    width: 110px;
+    background: #7e7e7e;
+    text-align: center;
+    height: 30px;    
+    color: #FFFFFF;
+    box-shadow: 2px 2px 2px rgb(0 0 0 / 12%);
+    border-radius: 3px;
+    position: relative;
+    outline: none;
+    border: none;
+    font-family: "Roboto";
+    font-weight: 500;
+    font-size: 14px;
+    padding: 5px 16px;
+    text-transform: none;
+    min-height: 0;
+}
+button.marketking_add_button:hover{
+    background: #666;
+
+}
+.marketking_page_title_container {
+    display: flex;
+    padding-right: 50px;
+    justify-content: space-between;
+}
+select.marketking_user_settings_select{
+	background-color: #ECECEC;
+    border-radius: 3px;
+    height: 40px;
+    border: none;
+    padding: 0px 15px;
+    width: 100%;
+    max-width: 100%;
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 21px;
+    color: #252525;
+}
+select.marketking_user_settings_select:focus{
+	box-shadow: none;
+	color:#252525;
+}
+.marketking_user_settings_information_box{
+	background: #E0F3FE;
+    border-radius: 2px;
+    min-height: 53px;
+    margin-left: 20px;
+    font-family: "Roboto Medium", Roboto;
+    margin-right: 43px;
+    font-style: normal;
+    font-weight: 500;
+    display: flex;
+    font-size: 14px;
+    padding-left: 50px;
+    line-height: 21px;
+    color: #579DC3;
+    align-items: center;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.marketking_discount_options_information_box, .marketking_minimum_options_information_box{
+    background: #E0F3FE;
+    border-radius: 2px;
+    min-height: 53px;
+    font-family: "Roboto Medium", Roboto;
+    margin-right: 30px;
+    font-style: normal;
+    font-weight: 500;
+    display: none;
+    font-size: 14px;
+    margin-top: 12px;
+    padding-left: 50px;
+    line-height: 21px;
+    color: #579DC3;
+    align-items: center;
+    margin-bottom: 10px;
+    position: relative;
+}
+.marketking_information_box_link{
+    text-decoration: none;
+}
+.marketking_rule_conditions_information_box{
+    background: #E0F3FE;
+    border-radius: 2px;
+    min-height: 53px;
+    font-family: "Roboto Medium", Roboto;
+    margin-right: 30px;
+    font-style: normal;
+    font-weight: 500;
+    display: flex;
+    font-size: 14px;
+    margin-top: 2px;
+    padding-left: 50px;
+    line-height: 21px;
+    color: #579DC3;
+    align-items: center;
+    margin-bottom: 10px;
+    position: relative;
+}
+.admin_page_marketking_view_payouts, .admin_page_marketking_view_earnings, .marketking_page_marketking_view_payouts{
+    background-color:#202224;
+}
+input#marketking_bonus_payment {
+    background: #C4C4C4;
+    border-radius: 3px;
+    border: none;
+    top: 2px;
+    box-shadow: none;
+    transform: scale(1.3);
+    position: relative;
+    margin: 4px;
+}
+.marketking_user_payouts_container{
+    margin: 25px 20px 1px 20px;
+}
+.marketking_above_top_title_button {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    width: 100%;
+    top: -50px;
+    align-items: center;
+}
+.marketking_above_top_title_button_left {
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 25px;
+    line-height: 45px;
+    color: #ffffff;
+}
+button.marketking_above_top_title_button_right_button {
+    line-height: 15px;
+    width: 130px;
+    background: #9E9E9E;
+    text-align: end;
+    height: 35px;
+    color: #FFFFFF;
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.12);
+    border-radius: 3px;
+    position: relative;
+    outline: none;
+    border: none;
+    font-family: "Roboto";
+    font-weight: 500;
+    font-size: 15.5px;
+    padding: 5px 16px;
+    text-transform: none;
+    min-height: 0;
+}
+button.marketking_above_top_title_button_right_button:hover{
+    background-color: #6c6c6c;
+    cursor: pointer;
+}
+.marketking_back_button{
+    background: #7d7d7d !important;
+    border-color:#7d7d7d !important;
+    color: #FFFFFF !important;
+}
+.marketking_back_button:hover{
+    background: #555 !important;
+    border-color:#555 !important;
+}
+/* 14. Customers */
+div#marketking_admin_customers_table_container {
+    margin: 50px;
+    padding: 20px;
+    font-size: 14px;
+    background: #fff;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.17);
+    border-radius: 5px;
+}
+div#marketking_admin_customers_table_container td {
+    padding: 11px 13px;
+}
+div#marketking_admin_customers_table_container th {
+    text-align: left;
+}
+table#marketking_admin_customers_table {
+    padding-top: 10px;
+    border-top: ;
+    width: 100%;
+}
+.marketking_page_marketking_customers{
+    background-color:#202224;
+}
+.marketkingpreloader{width:100%;height:100%;top:0;position:fixed; margin-left:-20px;z-index:99999;background:#202224;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    position: fixed;
+    top: 0;
+    min-height: 360px;
+    z-index: 99900;
+}
+/* 15. Groups page */
+.marketking_page_marketking_registration, .admin_page_marketking_b2c_users, .admin_page_marketking_logged_out_users{
+    background-color:#202224;
+}
+.marketking_container_element_100{
+    width: 100%;
+}
+div#marketking_admin_groups_main_container {
+    margin: 50px 100px;
+}
+.marketking_admin_groups_main_title {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 39px;
+    line-height: 76px;
+    color: #E7E7E7;
+}
+.marketking_admin_groups_main_container_main_row {
+    margin-top: 80px;
+    justify-content: space-between;
+}
+.marketking_admin_groups_main_container_main_row_left, .marketking_admin_groups_main_container_main_row_right{
+    width: 50%;
+    min-width: 355px;
+    margin-right: 50px;
+}
+.marketking_admin_groups_main_container_main_row_left_box {
+    background: #0D3C83;
+    min-height: 150px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 33px;
+    color: #E4EDF8;
+    flex-flow: column;
+}
+.marketking_admin_groups_box_link{
+    text-decoration: none;
+    display: contents;
+}
+.marketking_admin_groups_box_link:focus, .marketking_admin_groups_box_link:active, .marketking_admin_groups_main_container_main_row_right_box:focus, .marketking_admin_groups_main_container_main_row_right_box:active{
+    outline: 0;
+    border: none;
+    -moz-outline-style: none; 
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    box-shadow: none;
+}
+.marketking_admin_groups_main_container_main_row_left_box:hover, .marketking_admin_groups_main_container_main_row_right_box:hover {
+    cursor: pointer;
+    background:#1654b2;
+}
+.marketking_admin_groups_main_container_main_row_left_box:hover .marketking_admin_groups_main_container_main_row_left_box_icon{
+    fill: #fff;
+}
+.marketking_admin_groups_main_container_main_row_left_box:hover .marketking_admin_groups_main_container_main_row_box_text{
+    color:#fff;
+}
+.marketking_admin_groups_main_container_main_row_right_box_first:hover .marketking_admin_groups_main_container_main_row_right_box_icon_first{
+    fill: #fff !important;
+}
+.marketking_admin_groups_main_container_main_row_right_box_second:hover .marketking_admin_groups_main_container_main_row_right_box_icon_second{
+    fill: #fff;
+}
+.marketking_admin_groups_main_container_main_row_right_box_first:hover .marketking_admin_groups_main_container_main_row_right_box_first_text{
+    color: #fff;
+}
+.marketking_admin_groups_main_container_main_row_right_box_second:hover .marketking_admin_groups_main_container_main_row_right_box_second_text{
+    color: #fff;
+}
+
+.marketking_admin_groups_main_container_main_row_right_box {
+    background: #282A2D;
+    min-height: 150px;
+    margin-top: 10px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 33px;
+    color: #B7BBC0;
+    flex-flow: column;
+}
+svg.marketking_admin_groups_main_container_main_row_left_box_icon {
+    width: 35px;
+}
+svg.marketking_admin_groups_main_container_main_row_right_box_icon_first{
+    width: 32px;
+}
+.marketking_page_marketking_groups svg.marketking_admin_groups_main_container_main_row_right_box_icon_first{
+    width: 46px;
+}
+svg.marketking_admin_groups_main_container_main_row_right_box_icon_second {
+    width: 30px;
+    position: relative;
+    top: 3px;
+}
+.marketking_admin_groups_main_container_main_row_title {
+    font-family: "Roboto Medium",Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 42px;
+    color: #E7E7E7;
+}
+.marketking_user_registration_user_data_container_element_group_after_checkbox {
+    margin-top: 18px;
+}
+.marketking_select_group_single_vendor_selectors select {
+    background: #ECECEC;
+    border-radius: 3px;
+    margin-top: 4px;
+    justify-content: space-between;
+    display: flex;
+    margin-right: 30px;
+    align-items: center;
+    padding: 0px 15px;
+    min-height: 40px;
+    border: none;
+    width: 100%;
+    font-weight: 500;
+    line-height: 21px;
+    color: #252525;
+}
+.marketking_admin_groups_main_container_main_row_subtitle {
+    font-family: "Roboto Medium",Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 28px;
+    color: #797B7E;
+}
+.marketking_special_group_container {
+    margin: 100px 75px 10px 75px;
+    position: relative;
+}
+.marketking_above_top_title_button {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    width: 100%;
+    top: -50px;
+    align-items: center;
+}
+.marketking_above_top_title_button_left {
+    font-family: "Roboto Medium", Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 25px;
+    line-height: 45px;
+    color: #ffffff;
+}
+button.marketking_above_top_title_button_right_button {
+    line-height: 15px;
+    width: 130px;
+    background: #9E9E9E;
+    text-align: end;
+    height: 35px;
+    color: #FFFFFF;
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.12);
+    border-radius: 3px;
+    position: relative;
+    outline: none;
+    border: none;
+    font-family: "Roboto";
+    font-weight: 500;
+    font-size: 15.5px;
+    padding: 5px 16px;
+    text-transform: none;
+    min-height: 0;
+}
+button.marketking_above_top_title_button_right_button:hover{
+    background-color: #6c6c6c;
+    cursor: pointer;
+}
+button.button-primary.marketking_b2c_special_group_container_save_settings_button, button.button-primary.marketking_logged_out_special_group_container_save_settings_button {
+    margin: 5px 75px;
+}
+#marketking_custom_method_title{
+    width: 50%;
+    margin: 10px 0px;
+}
+textarea#marketking_custom_method_description {
+    width: 50%;
+    height: 50px;
+}
+/* 16. Product Page */
+.marketking_options.marketking_tab a::before {
+    background-image: url('../../../includes/assets/images/marketking-icon-gray2.svg') !important;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 15px 15px;
+    display: inline-block;
+    width: 14px; 
+    height: 15px;
+    content:"" !important;
+}
+.marketking_product_wrap{
+    width: 50%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px !important;
+}
+.marketking_customrows_wrap{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px !important;
+}
+.marketking_product_wrap_variation{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px !important;
+}
+.marketking_product_button_wrap{
+    width: 50%;
+    display:block;
+    margin-top: 15px !important;
+    margin-bottom: 15px !important;
+}
+.marketking_tiered_pricing_element{
+    width: 47% !important;
+}
+.marketking_customrow_element {
+    width: 48% !important;
+}
+.marketking_tiered_pricing_element_variation{
+    width: 48% !important;
+}
+.marketking_tiered_pricing_variation{
+    display: inline-block;
+    width:100%;
+}
+.marketking-vendor h1 {
+  font-size: 23px;
+  font-weight: 400;
+}
+.marketking-vendor .tab-header .tab-list {
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+}
+.marketking-vendor .tab-header .tab-list .tab-title {
+  height: 50px;
+  list-style-type: none;
+  position: relative;
+  background-color: #1a9ed4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.marketking-vendor .tab-header .tab-list .tab-title .icon {
+  position: relative;
+  top: 1px;
+}
+.marketking-vendor .tab-header .tab-list .tab-title a {
+  color: #fff;
+  text-decoration: none;
+  padding: 75px;
+}
+.marketking-vendor .tab-header .tab-list .tab-title a:active,
+.marketking-vendor .tab-header .tab-list .tab-title a:focus {
+  outline: none;
+  outline-style: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+.marketking-vendor .tab-header .tab-list .tab-title a span {
+  position: relative;
+  top: -1px;
+  left: -3px;
+}
+.marketking-vendor .tab-header .tab-list .tab-title:first-child {
+  padding-left: 5px;
+}
+.marketking-vendor .tab-header .tab-list .tab-title:nth-child(n+2)::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  border-left: 25px solid white;
+  /* width: arrow width, color: background of document */
+  border-top: 25px solid transparent;
+  /* width: half height */
+  border-bottom: 25px solid transparent;
+  /* width: half height */
+  width: 0;
+  height: 0;
+  content: " ";
+}
+.marketking-vendor .tab-header .tab-list .tab-title:after {
+  z-index: 1;
+  /* need to bring this above the next item */
+  position: absolute;
+  top: 0;
+  right: -25px;
+  /* arrow width (negated) */
+  display: block;
+  border-left: 25px solid #f5f5f5;
+  /* width: arrow width */
+  border-top: 25px solid transparent;
+  /* width: half height */
+  border-bottom: 25px solid transparent;
+  /* width: half height */
+  width: 0;
+  height: 0;
+  content: " ";
+  border-left-color: #1a9ed4;
+}
+.marketking-vendor .tab-header .tab-list .tab-title.active {
+  background-color: #2C70A3;
+}
+.marketking-vendor .tab-header .tab-list .tab-title.active a {
+  color: #fff;
+}
+.marketking-vendor .tab-header .tab-list .tab-title.active:after {
+  border-left-color: #2C70A3;
+}
+.marketking-vendor .tab-header .tab-list .tab-title.last:after {
+  border-left: 0;
+}
+.marketking-vendor .tab-header .tab-list .tab-title.active ~ .tab-title {
+  background-color: #f5f5f5;
+}
+.marketking-vendor .tab-header .tab-list .tab-title.active ~ .tab-title:after {
+  border-left-color: #f5f5f5;
+}
+.marketking-vendor .tab-header .tab-list .tab-title.active ~ .tab-title a {
+  color: #000;
+}
+.marketking-vendor .marketking-tab-contents {
+  border: 1px solid #e5e5e5;
+  border-radius: 3px;
+  min-height: 130px;
+}
+.marketking-vendor .marketking-tab-contents .loading {
+  position: relative;
+  left: 46%;
+  top: 160px;
+}
+#marketking_other_product_sellers{
+    width:600px; 
+}
+.marketking_tooltip {
+    display: inline;
+    color: #5c5c5c;
+    font-size: 11px;
+    margin-left: 3px;
+}
+.marketking-form-checkbox-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px;
+    height: 25px;
+    border-radius: 5px;
+    background: #f7f7f7;
+}
+.marketking-checkbox-input {
+    margin: 0 !important;
+    transform: scale(1.15);
+    border: 1px solid #ccc !important;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-header {
+  background: #F9F9F9;
+  margin: 0;
+  padding: 10px;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+svg.marketking_admin_groups_main_container_main_row_left_box_icon {
+    width: 40px;
+}
+.marketking_page_marketking_groups svg.marketking_admin_groups_main_container_main_row_left_box_icon{
+    width: 61px;
+}
+.marketking_admin_groups_main_title {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 43px;
+    line-height: 76px;
+    color: #E7E7E7;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group {
+  margin: 0 10px;
+  overflow: hidden;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group:after,
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group:before {
+  display: table;
+  content: " ";
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column {
+  float: left;
+  width: 47%;
+  padding: 0 10px;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .marketking-store-avaibility-info {
+  display: flex;
+  justify-content: space-between;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .marketking-store-avaibility-info .marketking_store_url,
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .marketking-store-avaibility-info span {
+  margin: 0;
+  padding: 0;
+  position: relative;
+  bottom: 10px;
+  font-style: italic;
+  color: #a09f9f;
+  font-size: 12px;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .marketking-store-avaibility-info .is-available {
+  color: green;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .marketking-store-avaibility-info .marketking-not-available {
+  color: red;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .password-generator {
+  margin-top: 6px;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .password-generator .regen-button {
+  margin-right: 5px;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .password-generator .regen-button span {
+  line-height: 26px;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .checkbox-left.notify-vendor {
+  margin-top: 6px;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .multiselect {
+  margin-top: 5px;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .multiselect__option--highlight {
+  background: #3c9fd4;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .multiselect__tags {
+  min-height: 45px;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .multiselect__single {
+  padding-top: 3px;
+}
+.marketking_group_settings_checkbox{
+    margin-top: 39px;
+}
+.marketking_group_settings_checkbox:nth-child(2){
+    margin-top: 42px;
+}
+.marketking_group_settings_checkbox .woocommerce-help-tip {
+    position: absolute;
+    right: 90px;
+}
+span.marketking_group_setting_description {
+    font-size: 11px;
+    font-weight: 300;
+    color: #919191;
+    font-style: italic;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .multiselect__select:before {
+  top: 70%;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column .multiselect__input:focus {
+  box-shadow: none;
+  border: none;
+  outline: none;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .bank-info {
+  padding-left: 10px;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-input {
+  width: 100%;
+  /* Full width */
+  padding: 7px 12px;
+  /* Some padding */
+  border: 1px solid #ccc;
+  /* Gray border */
+  border-radius: 4px;
+  /* Rounded borders */
+  box-sizing: border-box;
+  /* Make sure that padding and width stays in place */
+  margin-top: 6px;
+  /* Add a top margin */
+  margin-bottom: 16px;
+  /* Bottom margin */
+  resize: vertical;
+  /* Allow the user to vertically resize the textarea (not horizontally) */
+  height: auto;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-input::placeholder {
+  color: #bcbcbc;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-input.has-error::placeholder {
+  color: red;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-vendor-image {
+  display: flex;
+  padding-bottom: 20px;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-vendor-image .picture {
+  background: #fcfcfc;
+  border-radius: 3px;
+  padding: 5px 10px;
+  border: 2px dashed #d2d2d2;
+  text-align: center;
+  flex-grow: 1;
+  width: 150px;
+  margin-left: 20px;
+  position: relative;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-vendor-image .picture .marketking-profile-image {
+  max-width: 100px;
+  margin: 0 auto;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-vendor-image .picture .marketking-profile-image img {
+  border: 1px solid #E5E5E5;
+  padding: 15px 10px 0;
+  cursor: pointer;
+  width: 100%;
+  padding: 5px;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-vendor-image .picture.banner {
+  padding: 0;
+  flex-grow: 10;
+  margin-right: 20px;
+  height: 200px;
+  padding-top: 5%;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-vendor-image .picture.banner .marketking-banner-image img {
+  width: 100%;
+  height: 223px;
+  padding: 0;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-vendor-image .picture.banner .marketking-banner-image button {
+  background: #007cba;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 3px;
+  margin: 20px 0;
+  cursor: pointer;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-vendor-image .picture.banner.has-banner {
+  padding-top: 0;
+}
+.marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-vendor-image .marketking-picture-footer {
+  color: #808080;
+  font-weight: 300;
+}
+.marketking-vendor .marketking-btn {
+  background: #1a9ed4;
+  padding: 10px 20px;
+  color: white;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.marketking-vendor .marketking-btn:active,
+.marketking-vendor .marketking-btn:focus {
+  outline: none;
+  outline-style: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+.marketking-vendor .marketking-modal .marketking-modal-content {
+  height: 640px !important;
+}
+.marketking-vendor .marketking-modal .marketking-modal-content .modal-body {
+  max-height: 500px;
+  min-height: 200px;
+}
+.marketking-vendor .marketking-modal .marketking-modal-content .modal-footer {
+  padding: 15px;
+  bottom: 0;
+  border-top: none;
+  box-shadow: none;
+}
+.marketking-vendor .component-fade-enter-active,
+.marketking-vendor .component-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.marketking-vendor .component-fade-enter,
+.marketking-vendor .component-fade-leave-to {
+  opacity: 0;
+}
+.marketking_vendor_link{
+    text-decoration: none;
+}
+.marketking_add_new_container{
+    margin-top: 50px;
+}
+span.dashicons.marketking_vendor_icon {
+    font-size: 11px;
+    display: inline;
+    margin-right: 4px;
+}
+
+/* Media Queries */
+@media only screen and (max-width: 660px) {
+
+    div#marketking_admin_groups_main_container{
+        margin: 50px 15px;
+    }
+}
+@media only screen and (max-width: 600px) {
+    .marketking-vendor .marketking-modal .marketking-modal-content {
+        height: 400px;
+    }
+    .marketking-vendor .marketking-modal .marketking-modal-content .modal-body {
+        max-height: 300px;
+    }
+}
+@media only screen and (max-width: 500px) {
+    .marketking-vendor .tab-list .tab-title .tab-link {
+        display: flex;
+    }
+    .marketking-vendor .tab-list .tab-title .tab-link a {
+        padding: 12px;
+        margin-left: 17px;
+    }
+    .marketking-vendor .tab-list .tab-title .tab-link a span {
+        display: block;
+        margin: 0 auto;
+    }
+    .marketking-vendor .marketking-tab-contents p,
+      .marketking-vendor .marketking-tab-contents input,
+      .marketking-vendor .marketking-tab-contents button {
+        font-size: 13px;
+    }
+    .marketking-vendor .marketking-tab-contents .marketking-vendor-image {
+        display: block !important;
+    }
+    .marketking-vendor .marketking-tab-contents .marketking-vendor-image .picture {
+        margin-right: 20px !important;
+        width: auto !important;
+    }
+    .marketking-vendor .marketking-tab-contents .marketking-vendor-image .picture.banner {
+        margin-top: 15px;
+    }
+}
+@media only screen and (max-width: 375px) {
+    .marketking-vendor .tab-list .tab-title .tab-link {
+        display: flex;
+    }
+    .marketking-vendor .tab-list .tab-title .tab-link a {
+        padding: 5px;
+        margin-left: 20px;
+        font-size: 12px;
+    }
+    .marketking-vendor .marketking-tab-contents p,
+      .marketking-vendor .marketking-tab-contents input,
+      .marketking-vendor .marketking-tab-contents button {
+        font-size: 12px;
+    }
+}
+@media only screen and (max-width: 320px) {
+.marketking-vendor .tab-list .tab-title .tab-link {
+        display: flex;
+    }
+    .marketking-vendor .tab-list .tab-title .tab-link a {
+        padding: 2px;
+        margin-left: 20px;
+        font-size: 10px;
+    }
+}
+
+@media screen and (max-width: 780px) { 
+    .marketking_conversation_message_time{
+        font-size:10px !important;
+        margin-top: 8px;
+        position: relative;
+        right: 1px;
+        bottom: 1px;
+    }
+    .marketking-vendor .marketking-tab-contents .marketking-content-body .marketking-form-group .column {
+      width: 45%;
+    }
+    .marketking_group_visibility_container_content_checkbox_input, input.marketking_option_settings_metabox_container_element_checkbox {
+        transform: none; 
+    }
+    input.marketking_VAT_container_VIES_validation_checkbox_input, input.marketking_group_payment_shipping_methods_container_element_method_checkbox, input.marketking_field_settings_metabox_top_column_status_checkbox_input, input.marketking_field_settings_metabox_top_column_required_checkbox_input, input.marketking_field_settings_metabox_top_column_editable_checkbox_input, input.marketking_add_to_billing_container_element_checkbox_input{
+        transform: none;
+    }
+    .marketking_rule_select_container{
+        max-width: 100%;
+        width: 100%;
+    }
+    .marketking_dynamic_rule_metabox_content_container .selection .select2-selection{
+        margin-bottom: 10px;
+    }
+    .marketking_rule_select_container select, #marketking_rule_select_howmuch, #marketking_rule_select_quantity_value, input#marketking_rule_select_taxname, input#marketking_rule_select_discountname, select#marketking_rule_select_requires, select#marketking_rule_select_showtax {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    #marketking_rule_select_conditions_container .marketking_rule_condition_container .marketking_dynamic_rule_condition_name, #marketking_rule_select_conditions_container .marketking_rule_condition_container .marketking_dynamic_rule_condition_operator, #marketking_rule_select_conditions_container .marketking_rule_condition_container .marketking_dynamic_rule_condition_number{
+        width: 100%;
+    }
+    div.marketking_add_to_billing_container{
+        display: block;
+    }
+    .marketking_add_to_billing_container_element{
+        width: 100%;
+    }
+    .marketking_add_to_billing_container_element_checkbox_container{
+        margin-bottom: 20px;
+    }
+    div.marketking_field_settings_metabox_top_column {
+        width: 100%;
+        margin-top: 30px;
+    }
+    div.marketking_field_settings_metabox_top {
+        display: block;
+    }
+    div.marketking_field_settings_metabox_top_column_status_checkbox_container, div.marketking_field_settings_metabox_top_column_registration_option{
+        margin-right: 0;
+    }
+} 
+@media screen and (min-width: 781px) { 
+    .marketking_group_visibility_container_content_checkbox_input {
+        transform: scale(1.3); 
+    } 
+    input.marketking_group_payment_shipping_methods_container_element_method_checkbox{
+        transform: scale(1.3);
+    }
+    div.marketking_add_to_billing_container{
+        display: flex;
+        flex-wrap: wrap;
+    }
+    input#marketking_dynamic_rule_discount_show_everywhere_checkbox_input, input#marketking_dynamic_rule_minimum_all_checkbox_input{
+        transform:scale(1.3);
+    } 
+} 
+@media screen and (min-width: 1290px) { 
+    .marketking_admin_groups_main_container_main_row{
+        display: flex;
+    }
+    .marketking_admin_groups_main_container_main_row_right{
+        margin-top: 0px;
+    }
+    .marketking_admin_groups_main_container_main_row_right_box{
+        margin-right: 45px;
+        width: 100%;
+    }
+} 
+@media screen and (max-width: 1290px) { 
+    .marketking_admin_groups_main_container_main_row{
+        display: block;
+    }
+    .marketking_product_wrap{
+        width:80%;
+    }
+    .marketking_admin_groups_main_container_main_row_right{
+        margin-top: 30px;
+    }
+    .marketking_admin_groups_main_container_main_row_right_box{
+        margin-right: 5px;
+        width: 100%;
+    }
+    .marketking_admin_groups_main_container_main_row_right_boxes{
+        display: flex;
+        justify-content: space-between;
+    }
+} 
+
+
+
+
