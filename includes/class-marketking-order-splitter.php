@@ -398,8 +398,8 @@ class Marketking_Order_Splitter{
 			$order->set_customer_ip_address( $parent_order->get_customer_ip_address() );
 			$order->set_customer_user_agent( $parent_order->get_customer_user_agent() );
 			$order->set_customer_note( $parent_order->get_customer_note() );
-			$order->set_payment_method( $parent_order->get_payment_method() );
-			$order->set_payment_method_title( $parent_order->get_payment_method_title() );
+			$order->set_payment_method( esc_html__('Payment','marketking-multivendor-marketplace-for-woocommerce').' - '.$parent_order->get_payment_method_title() );
+			$order->set_payment_method_title( esc_html__('Payment','marketking-multivendor-marketplace-for-woocommerce').' - '.$parent_order->get_payment_method_title() );
 
 			$order->set_status( $parent_order->get_status() );
 			$order->set_parent_id( $parent_order->get_id() );
@@ -420,6 +420,27 @@ class Marketking_Order_Splitter{
 
 			remove_action('woocommerce_order_item_shipping_after_calculate_taxes', array($this, 'set_shipping_tax_false'), 10, 2);
 
+			//  check if order is paid for and entirely virtual / downloadable, and if so, automatically complete it
+			/*
+			if($order->is_paid()){
+				$virtual = 'yes';
+				foreach ($order->get_items() as $order_item){
+				    $item = wc_get_product($order_item->get_product_id());
+				    if (!$item->is_virtual()) {
+				       $virtual = 'no';
+				    }
+				}
+				if ($virtual === 'yes'){
+					if ($parent_order->get_status() === 'completed'){
+						$order->set_status('completed');
+					}
+				}
+			}
+			*/
+			
+
+
+
 		}
 
 		// set parent order note
@@ -439,25 +460,26 @@ class Marketking_Order_Splitter{
 
 	function create_fees($order, $parent_order, $vendor_id, $fees){
 
-		$item = new \WC_Order_Item_Fee();
-		$item->set_props( array(
-			'name'      => esc_html__('Fees','marketking-multivendor-marketplace-for-woocommerce'),
-			'tax_class' => 0,
-			'total'     => $fees,
-			'total_tax' => 0,
-			'taxes'     => array(
-				'total' => 0,
-			),
-			'tax_status' => 'none',
-			'order_id'  => $order_id,
-		) );
-		$item->set_tax_status('none');
-		$item->save();
-		$order->add_item( $item );
+		if (floatval($fees) > 0){
+			$item = new \WC_Order_Item_Fee();
+			$item->set_props( array(
+				'name'      => esc_html__('Fees','marketking-multivendor-marketplace-for-woocommerce'),
+				'tax_class' => 0,
+				'total'     => $fees,
+				'total_tax' => 0,
+				'taxes'     => array(
+					'total' => 0,
+				),
+				'tax_status' => 'none',
+				'order_id'  => $order_id,
+			) );
+			$item->set_tax_status('none');
+			$item->save();
+			$order->add_item( $item );
 
-		$order->calculate_totals();
-		$order->save();
- 
+			$order->calculate_totals();
+			$order->save();
+		}
 	}
 
 	public static function set_shipping_tax_false($obj, $calculate_tax_for){

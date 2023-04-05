@@ -5,9 +5,9 @@
 Profile Dashboard Page
 * @version 1.0.0
 
-This template file can be edited and overwritten with your own custom template. To do this, simply copy this file directly under your theme (or child theme) folder and then edit it there. 
+This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
 
-For example, if your theme is storefront, you can copy this file directly under wp-content/themes/storefront/ and then edit it with your own custom content and changes.
+For example, if your theme is storefront, you can copy this file under wp-content/themes/storefront/marketking/ and then edit it with your own custom content and changes.
 
 */
 
@@ -39,7 +39,7 @@ if(marketking()->vendor_has_panel('profile')){
                                                 </div>
                                             </div>
                                             <div class="nk-block-head-content align-self-start d-lg-none">
-                                                <a href="#" class="toggle btn btn-icon btn-trigger mt-n1" data-target="userAside"><em class="icon ni ni-menu-alt-r"></em></a>
+                                                <a href="#" class="toggle btn btn-icon btn-trigger mt-n1" data-target="userAside"><?php esc_html_e('Menu','marketking-multivendor-marketplace-for-woocommerce');?><em class="icon ni ni-menu-alt-r"></em></a>
                                             </div>
                                         </div>
                                     </div><!-- .nk-block-head -->
@@ -112,7 +112,8 @@ if(marketking()->vendor_has_panel('profile')){
 
                                                             $imageprof = get_user_meta($user_id,'marketking_profile_logo_image', true);
                                                             if (empty($imageprof)){
-                                                                $imageprof = plugins_url('../../includes/assets/images/store-profile.png', __FILE__);
+                                                                $imageprof = MARKETKINGCORE_URL.'includes/assets/images/store-profile.png';
+
                                                             }
                                                             echo esc_attr($imageprof);
 
@@ -145,7 +146,11 @@ if(marketking()->vendor_has_panel('profile')){
                                         </div><!-- data-list -->
                                     </div><!-- .nk-block -->
                                 </div>
-                                <?php include('templates/profile-sidebar.php'); ?>
+                                <?php 
+
+                                include(apply_filters('marketking_dashboard_template','templates/profile-sidebar.php'));
+
+                                ?>
                                 <div class="modal fade" tabindex="-1" role="dialog" id="profile-edit">
                                     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                                         <div class="modal-content">
@@ -242,7 +247,7 @@ if(marketking()->vendor_has_panel('profile')){
 
                                                                         $imageprof = get_user_meta($user_id,'marketking_profile_logo_image', true);
                                                                         if (empty($imageprof)){
-                                                                            $imageprof = plugins_url('../../includes/assets/images/store-profile.png', __FILE__);
+                                                                            $imageprof = MARKETKINGCORE_URL.'includes/assets/images/store-profile.png';
                                                                         }
                                                                         echo esc_attr($imageprof);
 
@@ -303,7 +308,7 @@ if(marketking()->vendor_has_panel('profile')){
                                                             <div class="col-md-12">
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="billing_country"><?php esc_html_e('Country and State','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
-                                                                    <div class="form-control-wrap">
+                                                                    <div class="form-control-wrap country_state_wrap">
                                                                         <?php
                                                                         woocommerce_form_field( 'billing_country', array( 'type' => 'country', 'default' =>get_user_meta($user_id,'billing_country', true), 'input_class' => array('form-control')));
 
@@ -332,7 +337,15 @@ if(marketking()->vendor_has_panel('profile')){
                                                             <div class="col-12">
                                                                 <ul class="flex-wrap flex-sm-nowrap gx-4 gy-2">
                                                                     <li>
-                                                                        <div class="form-group"><label class="form-label" for="default-textarea"><?php esc_html_e('About Us','marketking-multivendor-marketplace-for-woocommerce');?></label><div class="form-control-wrap"><textarea class="form-control form-control-simple no-resize" id="aboutusdescription" placeholder="<?php esc_html_e('Enter a description / about us here. Selected HTML tags can be used to format the above text: h2, h3, h4, i, strong.','marketking-multivendor-marketplace-for-woocommerce');?>"><?php 
+                                                                        <div class="form-group"><label class="form-label" for="default-textarea"><?php esc_html_e('About Us','marketking-multivendor-marketplace-for-woocommerce');?></label><div class="form-control-wrap"><textarea class="form-control form-control-simple no-resize" id="aboutusdescription" placeholder="<?php esc_html_e('Enter a description / about us here. Selected HTML tags can be used to format the above text: h2, h3, h4, i, strong','marketking-multivendor-marketplace-for-woocommerce');
+
+                                                                        if (apply_filters('marketking_aboutus_allow_youtube', true)){
+                                                                            echo ', <youtube>SUKZqnuiwMI</youtube>';
+                                                                        }
+                                                                        ?>
+
+
+                                                                        "><?php 
 
                                                                         $aboutus = get_user_meta($user_id,'marketking_store_aboutus', true);
 
@@ -340,6 +353,13 @@ if(marketking()->vendor_has_panel('profile')){
 
                                                                         $allowed = array('<h2>','</h2>','<h3>','<h4>','<i>','<strong>','</h3>','</h4>','</i>','</strong>');
                                                                         $replaced = array('***h2***','***/h2***','***h3***','***h4***','***i***','***strong***','***/h3***','***/h4***','***/i***','***/strong***');
+
+                                                                        if (apply_filters('marketking_aboutus_allow_youtube', true)){
+                                                                            array_push($replaced,'***youtube***');
+                                                                            array_push($replaced,'***/youtube***');
+                                                                            array_push($allowed,'<youtube>');
+                                                                            array_push($allowed,'</youtube>');
+                                                                        }
 
                                                                         $aboutus = str_replace($replaced, $allowed, $aboutus);
 

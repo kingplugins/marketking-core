@@ -27,6 +27,12 @@ class Marketkingcore_Settings {
 		register_setting('marketking', 'marketking_vendor_registration_page_setting');
 		add_settings_field('marketking_vendor_registration_page_setting', esc_html__('Vendor Registration Page', 'marketking-multivendor-marketplace-for-woocommerce'), array($this,'marketking_vendor_registration_page_setting_content'), 'marketking', 'marketking_vendor_registration_page_settings_section');
 
+		// allow loggedin
+		register_setting('marketking', 'marketking_vendor_registration_loggedin_setting');
+		add_settings_field('marketking_vendor_registration_loggedin_setting', esc_html__('Existing Users Can Apply', 'marketking-multivendor-marketplace-for-woocommerce').'<div class="marketking_tooltip" data-tooltip="'.esc_html__('Existing users / customers will be able to apply to convert their account to a vendor account.','marketking-multivendor-marketplace-for-woocommerce').'" >
+			<i class="question circle icon"></i>
+		</div>', array($this,'marketking_vendor_registration_loggedin_setting_content'), 'marketking', 'marketking_vendor_registration_page_settings_section');
+
 		// Choose Stores page
 		register_setting('marketking', 'marketking_stores_page_setting');
 		add_settings_field('marketking_stores_page_setting', esc_html__('Vendor Stores Page', 'marketking-multivendor-marketplace-for-woocommerce'), array($this,'marketking_stores_page_setting_content'), 'marketking', 'marketking_vendordash_page_settings_section');
@@ -139,6 +145,17 @@ class Marketkingcore_Settings {
 			}
 		}
 
+		/* License Settings */
+		add_settings_section('marketking_license_settings_section', '',	'',	'marketking');
+		// Hide prices to guests text
+		register_setting('marketking', 'marketking_license_email_setting');
+		add_settings_field('marketking_license_email_setting', esc_html__('License email', 'marketking-multivendor-marketplace-for-woocommerce'), array($this,'marketking_license_email_setting_content'), 'marketking', 'marketking_license_settings_section');
+
+		register_setting('marketking', 'marketking_license_key_setting');
+		add_settings_field('marketking_license_key_setting', esc_html__('License key', 'marketking-multivendor-marketplace-for-woocommerce'), array($this,'marketking_license_key_setting_content'), 'marketking', 'marketking_license_settings_section');
+
+
+
 		// memberships
 		add_settings_section('marketking_memberships_settings_section', '',	'',	'marketking');
 
@@ -181,7 +198,17 @@ class Marketkingcore_Settings {
 
 		// Exclude COD settings
 		register_setting('marketking', 'marketking_cod_behaviour_setting');
-		add_settings_field('marketking_cod_behaviour_setting', esc_html__('COD Orders', 'marketking-multivendor-marketplace-for-woocommerce'), array($this,'marketking_cod_behaviour_setting_content'), 'marketking', 'marketking_main_settings_section_commissions');
+		add_settings_field('marketking_cod_behaviour_setting', esc_html__('COD Orders', 'marketking-multivendor-marketplace-for-woocommerce'), array($this,'marketking_cod_behaviour_setting_content'), 'marketking', 'marketking_main_settings_section_commissions');	
+
+		// when using complex commissions, give option to reverse if rules apply to vendor or to admin // default is to admin
+		if(defined('MARKETKINGPRO_DIR') && (intval(get_option( 'marketking_enable_complexcommissions_setting', 1 )) === 1)){
+
+			register_setting('marketking', 'marketking_reverse_commission_rules_setting');
+			add_settings_field('marketking_reverse_commission_rules_setting', esc_html__('Rules Set Vendor Commission', 'marketking-multivendor-marketplace-for-woocommerce').'<div class="marketking_tooltip" data-tooltip="'.esc_html__('By default, rules set the admin commission. Enabling this reverses it, and rules set the vendor commission.','marketking-multivendor-marketplace-for-woocommerce').'" >
+				<i class="question circle icon"></i>
+			</div>', array($this,'marketking_reverse_commission_rules_setting_content'), 'marketking', 'marketking_main_settings_section_commissions');
+
+		}
 
 		/* Shipping Tracking */
 		add_settings_section('marketking_shippingtracking_setings_section', '',	'',	'marketking');
@@ -200,6 +227,14 @@ class Marketkingcore_Settings {
 		add_settings_field('marketking_customers_mark_order_received_setting', esc_html__('Customers mark orders as received', 'marketking-multivendor-marketplace-for-woocommerce').'<div class="marketking_tooltip" data-tooltip="'.esc_html__('Customers have a button to mark that they have received a particular order','marketking-multivendor-marketplace-for-woocommerce').'" >
 			<i class="question circle icon"></i>
 		</div>', array($this,'marketking_customers_mark_order_received_setting_content'), 'marketking', 'marketking_shippingtracking_setings_section');
+
+		/* Invoices */
+		add_settings_section('marketking_invoices_setings_section', '',	'',	'marketking');
+
+		register_setting('marketking', 'marketking_enable_commission_invoices_setting');
+		add_settings_field('marketking_enable_commission_invoices_setting', esc_html__('Enable commission invoices', 'marketking-multivendor-marketplace-for-woocommerce').'<div class="marketking_tooltip" data-tooltip="'.esc_html__('Commission invoices between sellers and marketplace are auto-generated.','marketking-multivendor-marketplace-for-woocommerce').'" >
+			<i class="question circle icon"></i>
+		</div>', array($this,'marketking_enable_commission_invoices_setting_content'), 'marketking', 'marketking_invoices_setings_section');
 
 		/* Single Product Multiple Vendors */
 		add_settings_section('marketking_spmv_setings_section', '',	'',	'marketking');
@@ -240,6 +275,7 @@ class Marketkingcore_Settings {
 
 		/* Vendor Capabilities */
 		add_settings_section('marketking_vendor_capabilities_settings_section', '',	'',	'marketking');
+		add_settings_section('marketking_vendor_capabilities_shipping_settings_section', '',	'',	'marketking');
 
 		// Choose Sales vendors Page
 		register_setting('marketking', 'marketking_vendor_publish_direct_setting');
@@ -285,7 +321,21 @@ class Marketkingcore_Settings {
 			add_settings_field('marketking_vendors_can_reviews_setting', esc_html__('Turn Reviews On/Off', 'marketking-multivendor-marketplace-for-woocommerce').'<div class="marketking_tooltip" data-tooltip="'.esc_html__('Vendors can enable or disable reviews for their own products.','marketking-multivendor-marketplace-for-woocommerce').'" >
 				<i class="question circle icon"></i>
 			</div>', array($this,'marketking_vendors_can_reviews_setting_content'), 'marketking', 'marketking_vendor_capabilities_product_settings_section');
+
+			// Store Categories
+			if (intval(get_option('marketking_enable_storecategories_setting', 1)) === 1){
+				register_setting('marketking', 'marketking_store_categories_singlemultiple_setting');
+				add_settings_section('marketking_vendor_capabilities_store_settings_section', '',	'',	'marketking');
+
+			}
 		}
+
+
+
+		register_setting('marketking', 'marketking_admin_only_shipping_methods_setting');
+		add_settings_field('marketking_admin_only_shipping_methods_setting', esc_html__('Admin-Only Shipping Methods', 'marketking-multivendor-marketplace-for-woocommerce').'<div class="marketking_tooltip" data-tooltip="'.esc_html__('If you are selling as the admin, which shipping methods are admin-only?','marketking-multivendor-marketplace-for-woocommerce').'" >
+			<i class="question circle icon"></i>
+		</div>', array($this,'marketking_admin_only_shipping_methods_setting_content'), 'marketking', 'marketking_vendor_capabilities_shipping_settings_section');
 
 
 		/* Refunds */
@@ -479,6 +529,28 @@ class Marketkingcore_Settings {
 		';
 	}
 
+
+	function marketking_license_email_setting_content(){
+		echo '
+		<div class="ui form">
+			<div class="field">
+				<input type="text" class="marketking_license_field" name="marketking_license_email_setting" value="'.esc_attr(get_option('marketking_license_email_setting', '')).'">
+			</div>
+		</div>
+		';
+	}
+
+
+	function marketking_license_key_setting_content(){
+		echo '
+		<div class="ui form">
+			<div class="field">
+				<input type="text" class="marketking_license_field" name="marketking_license_key_setting" value="'.esc_attr(get_option('marketking_license_key_setting', '')).'">
+			</div>
+		</div>
+		';
+	}
+
 	function marketking_enable_product_page_inquiries_setting_content(){
 
 		echo '
@@ -631,7 +703,25 @@ class Marketkingcore_Settings {
 		</div>
 		';
 	}
-	
+
+	function marketking_reverse_commission_rules_setting_content(){
+
+		echo '
+		<div class="ui toggle checkbox" >
+		  <input type="checkbox" name="marketking_reverse_commission_rules_setting" value="1" '.checked(1,get_option( 'marketking_reverse_commission_rules_setting', 0 ), false).'>
+		  <label></label>
+		</div>
+		';
+	}
+
+	function marketking_vendor_registration_loggedin_setting_content(){
+		echo '
+		<div class="ui toggle checkbox" >
+		  <input type="checkbox" name="marketking_vendor_registration_loggedin_setting" value="1" '.checked(1,get_option( 'marketking_vendor_registration_loggedin_setting', 0 ), false).'>
+		  <label></label>
+		</div>
+		';
+	}
 
 	function marketking_vendor_publish_direct_setting_content(){
 
@@ -673,6 +763,15 @@ class Marketkingcore_Settings {
 		echo '
 		<div class="ui toggle checkbox">
 		  <input type="checkbox" name="marketking_customers_mark_order_received_setting" value="1" '.checked(1,get_option( 'marketking_customers_mark_order_received_setting', 0 ), false).'">
+		  <label></label>
+		</div>
+		';
+	}
+
+	function marketking_enable_commission_invoices_setting_content(){
+		echo '
+		<div class="ui toggle checkbox">
+		  <input type="checkbox" name="marketking_enable_commission_invoices_setting" value="1" '.checked(1,get_option( 'marketking_enable_commission_invoices_setting', 0 ), false).'">
 		  <label></label>
 		</div>
 		';
@@ -749,24 +848,30 @@ class Marketkingcore_Settings {
 		      </div>
 		    </div>
 
-		    <div class="field">
-		      <div class="ui radio checkbox">
-		        <input type="radio" name="marketking_store_style_setting" value="4"  <?php checked(4,intval(get_option( 'marketking_store_style_setting', 1 )), true); ?>>
-		        <label><?php esc_html_e('Elementor - Choose An Elementor Page','marketking-multivendor-marketplace-for-woocommerce');?></label>
-		      </div>
-		    </div>
 		    <?php
-		    echo '<br><select name="marketking_elementor_page_setting">';
-		      	
-		    // get pages
-		    $pages = get_pages();
-		    foreach ($pages as $page){
-		    	echo '<option value="'.esc_attr($page->ID).'" '.selected($page->ID, apply_filters( 'wpml_object_id', get_option( 'marketking_elementor_page_setting', 'disabled' ), 'post' , true), false).'">'.esc_html($page->post_title).'</option>';
-		    }
+		    if (defined('MARKETKINGPRO_DIR')){
+		    	if (intval(get_option('marketking_enable_elementor_setting', 1)) === 1){
+			    	?>
+				    <div class="field">
+				      <div class="ui radio checkbox">
+				        <input type="radio" name="marketking_store_style_setting" value="4"  <?php checked(4,intval(get_option( 'marketking_store_style_setting', 1 )), true); ?>>
+				        <label><?php esc_html_e('Elementor - Choose An Elementor Page','marketking-multivendor-marketplace-for-woocommerce');?></label>
+				      </div>
+				    </div>
+				    <?php
+				    echo '<br><select name="marketking_elementor_page_setting">';
+				      	
+				    // get pages
+				    $pages = get_pages();
+				    foreach ($pages as $page){
+				    	echo '<option value="'.esc_attr($page->ID).'" '.selected($page->ID, apply_filters( 'wpml_object_id', get_option( 'marketking_elementor_page_setting', 'disabled' ), 'post' , true), false).'">'.esc_html($page->post_title).'</option>';
+				    }
 
-		    echo'</select><br>';
-		    ?>
-		   
+				    echo'</select><br>';
+				    
+				}
+			}
+			?>
 		  </div>
 		</div>
 		<?php
@@ -790,8 +895,95 @@ class Marketkingcore_Settings {
 		';
 	}
 
+	function marketking_admin_only_shipping_methods_setting_content(){
+		$selected = get_option('marketking_admin_only_shipping_methods_setting',array());
+		if (!is_array($selected)){
+			$selected = array();
+		}
+
+		$zone_methods = array();
+		?>
+		<select name="marketking_admin_only_shipping_methods_setting[]" class="ui fluid search dropdown" multiple="">
+			<?php
+			if (defined('MARKETKINGPRO_DIR')){
+				
+
+				// list all shipping methods
+				$methods_display = array();
+				$shipping_methods = array();
+				$zone_names = array();
+
+				$delivery_zones = WC_Shipping_Zones::get_zones();
+		        foreach ($delivery_zones as $key => $the_zone) {
+		            foreach ($the_zone['shipping_methods'] as $value) {
+		                array_push($shipping_methods, $value);
+		                array_push($zone_names, $the_zone['zone_name']);
+		            }
+		        }
+		        $zone = 0;
+				foreach ($shipping_methods as $shipping_method){
+					if( $shipping_method->enabled === 'yes' ){
+
+						$methods_display[esc_attr($shipping_method->id).esc_attr($shipping_method->instance_id)] = esc_html($shipping_method->title).' ('.esc_html($zone_names[$zone]).')';
+
+						array_push($zone_methods, $shipping_method->id);
+
+					}
+					$zone++;
+		
+				}
+
+				foreach ($methods_display as $slug => $provider){
+
+					// skip vendor shipping
+					if (explode('_', $slug)[0] === 'marketking'){
+						continue; // name is marketking_shipping
+					}
+					?>
+					<option value="<?php echo esc_attr($slug); ?>" <?php
+
+					if (in_array($slug, $selected)){
+						echo 'selected="selected"';	
+					}
+					?>><?php echo esc_html($provider); ?></option>
+					<?php
+				} 
+
+				// now include non-zone methods
+				$shipping_methods = WC()->shipping->get_shipping_methods();
+				foreach ($shipping_methods as $shipping_method){
+					
+					// skip vendor shipping
+					if (explode('_', $shipping_method->id)[0] === 'marketking'){
+						continue; // name is marketking_shipping
+					}
+
+					// don't show zone methods
+					if (in_array($shipping_method->id, $zone_methods)){
+					//	continue; // actually show them, so they can be enabled for vendor dashboard add removal
+					}
+
+					?>
+					<option value="<?php echo esc_attr($shipping_method->id); ?>" <?php
+
+					if (in_array($shipping_method->id, $selected)){
+						echo 'selected="selected"';	
+					}
+					?>><?php echo esc_html($shipping_method->method_title); ?></option>
+					<?php
+				}
+			}
+			?>
+		</select>
+		<?php
+	}
+
 	function marketking_shipping_providers_setting_content(){
 		$selected = get_option('marketking_shipping_providers_setting',array('sp-other'));
+		
+		if (!is_array($selected)){
+			$selected = array();
+		}
 		?>
 		<select name="marketking_shipping_providers_setting[]" class="ui fluid search dropdown" multiple="">
 			<?php
@@ -929,7 +1121,8 @@ class Marketkingcore_Settings {
 				<label><?php esc_html_e('Who receives the Shipping fees','marketking-multivendor-marketplace-for-woocommerce');?></label>
 				<select name="marketking_shipping_fee_recipient_setting">
 				<option value="vendor" <?php selected($type, 'vendor', true);?>><?php esc_html_e('Vendor', 'marketking-multivendor-marketplace-for-woocommerce');?></option>
-				<option value="admin" <?php selected($type, 'admin', true);?>><?php esc_html_e('Admin + Vendor (Shipping included in commission calculation)', 'marketking-multivendor-marketplace-for-woocommerce');?></option>
+				<option value="adminvendor" <?php selected($type, 'adminvendor', true);?>><?php esc_html_e('Admin + Vendor (Shipping included in commission calculation)', 'marketking-multivendor-marketplace-for-woocommerce');?></option>
+				<option value="admin" <?php selected($type, 'admin', true);?>><?php esc_html_e('Admin', 'marketking-multivendor-marketplace-for-woocommerce');?></option>
 				</select>
 			</div>
 		</div>
@@ -944,7 +1137,8 @@ class Marketkingcore_Settings {
 				<label><?php esc_html_e('Who receives the Tax fees','marketking-multivendor-marketplace-for-woocommerce');?></label>
 				<select name="marketking_tax_fee_recipient_setting">
 				<option value="vendor" <?php selected($type, 'vendor', true);?>><?php esc_html_e('Vendor', 'marketking-multivendor-marketplace-for-woocommerce');?></option>
-				<option value="admin" <?php selected($type, 'admin', true);?>><?php esc_html_e('Admin + Vendor (Tax included in commission calculation)', 'marketking-multivendor-marketplace-for-woocommerce');?></option>
+				<option value="adminvendor" <?php selected($type, 'adminvendor', true);?>><?php esc_html_e('Admin + Vendor (Tax included in commission calculation)', 'marketking-multivendor-marketplace-for-woocommerce');?></option>
+				<option value="admin" <?php selected($type, 'admin', true);?>><?php esc_html_e('Admin', 'marketking-multivendor-marketplace-for-woocommerce');?></option>
 				</select>
 			</div>
 		</div>
@@ -1122,6 +1316,7 @@ class Marketkingcore_Settings {
 						}
 					}
 
+
 					if (defined('MARKETKINGPRO_DIR')){
 						if (intval(get_option('marketking_enable_shippingtracking_setting', 1)) === 1){
 							?>
@@ -1147,6 +1342,18 @@ class Marketkingcore_Settings {
 
 					// optional modules
 					if (defined('MARKETKINGPRO_DIR')){
+						if (intval(get_option('marketking_enable_vendorinvoices_setting', 1)) === 1){
+							?>
+							<a class="green item <?php echo $this->marketking_isactivetab('invoices'); ?>" data-tab="invoices">
+								<i class="wpforms icon"></i>
+								<div class="header"><?php esc_html_e('Invoicing','marketking-multivendor-marketplace-for-woocommerce'); ?></div>
+							</a>
+							<?php
+						}
+					}
+
+					// optional modules
+					if (defined('MARKETKINGPRO_DIR')){
 						if (intval(get_option('marketking_enable_memberships_setting', 1)) === 1){
 							?>
 							<a class="green item <?php echo $this->marketking_isactivetab('memberships'); ?>" data-tab="memberships">
@@ -1156,6 +1363,17 @@ class Marketkingcore_Settings {
 							<?php
 						}
 					}
+
+
+					if (defined('MARKETKINGPRO_DIR')){
+						?>
+						<a class="green item marketking_license marketking_othersettings_margin <?php  echo $this->marketking_isactivetab('license'); ?>" data-tab="license">
+							<i class="key icon"></i>
+							<div class="header"><?php  esc_html_e('License','marketking-multivendor-marketplace-for-woocommerce'); ?></div>
+						</a>
+						<?php
+					}
+
 					/*
 					?>
 					<a class="green item <?php echo $this->marketking_isactivetab('other'); ?>" data-tab="other">
@@ -1323,7 +1541,51 @@ class Marketkingcore_Settings {
 								<table class="form-table marketking_vendor_capabilities_container">
 									<?php do_settings_fields( 'marketking', 'marketking_vendor_capabilities_product_settings_section' ); ?>
 								</table>
+
+								<h3 class="ui block header">
+									<i class="truck icon"></i>
+									<?php esc_html_e('Shipping Management','marketking-multivendor-marketplace-for-woocommerce'); ?>
+								</h3>
+								
+								<table class="form-table marketking_vendor_capabilities_container">
+									<?php do_settings_fields( 'marketking', 'marketking_vendor_capabilities_shipping_settings_section' ); ?>
+								</table>
 								<?php
+
+
+								
+
+								if (intval(get_option('marketking_enable_storecategories_setting', 1)) === 1){
+
+									?>
+									<h3 class="ui block header">
+										<i class="warehouse icon"></i>
+										<?php esc_html_e('Store Management','marketking-multivendor-marketplace-for-woocommerce'); ?>
+									</h3>
+									
+									<table class="form-table marketking_vendor_capabilities_container">
+										<div class="ui large form marketking_plugin_status_container">
+											<div class="inline fields">
+											  <label><?php esc_html_e('Store Categories','marketking-multivendor-marketplace-for-woocommerce'); ?><a href="https://woocommerce-multivendor.com/docs/store-categories/"><div class="marketking_tooltip" data-tooltip='Allow single or multiple categories for organizing vendor stores'><i class="question circle icon"></i></div></a></label>
+											  <div class="field">
+											    <div class="ui checkbox">
+											      <input type="radio" tabindex="0" class="hidden" name="marketking_store_categories_singlemultiple_setting" value="single" <?php checked('single',get_option( 'marketking_store_categories_singlemultiple_setting', 'single' ), true); ?>">
+											      <label><?php esc_html_e('Single Category','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
+											    </div>
+											  </div>
+											  <div class="field">
+											    <div class="ui checkbox">
+											      <input type="radio" tabindex="0" class="hidden" name="marketking_store_categories_singlemultiple_setting" value="multiple" <?php checked('multiple',get_option( 'marketking_store_categories_singlemultiple_setting', 'single' ), true); ?>">
+											      <label><?php esc_html_e('Multiple Categories','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
+											    </div>
+											  </div>
+											</div>
+										</div>
+										<?php do_settings_fields( 'marketking', 'marketking_vendor_capabilities_store_settings_section' ); ?>
+									</table>
+									<?php
+								}
+
 							}
 							?>						
 						</div>
@@ -1578,6 +1840,28 @@ class Marketkingcore_Settings {
 					</div>
 
 
+					<!-- Invoices Tab--> 
+					<div class="ui bottom attached tab segment <?php echo $this->marketking_isactivetab('invoices'); ?>" data-tab="invoices">
+						<div class="marketking_attached_content_wrapper">
+							<h2 class="ui block header">
+								<i class="wpforms icon"></i>
+								<div class="content">
+									<?php esc_html_e('Invoices','marketking-multivendor-marketplace-for-woocommerce'); ?>
+								</div>
+							</h2>
+							
+							<?php if (intval(get_option('marketking_enable_vendorinvoices_setting', 1)) === 1) {  ?>
+
+								<table class="form-table marketking_vendor_capabilities_container" >
+									<?php do_settings_fields( 'marketking', 'marketking_invoices_setings_section' ); ?>
+								</table>
+
+							<?php }	?>	
+
+						</div>
+					</div>
+
+
 					<!-- Shipping Tracking Tab--> 
 					<div class="ui bottom attached tab segment <?php echo $this->marketking_isactivetab('shippingtracking'); ?>" data-tab="shippingtracking">
 						<div class="marketking_attached_content_wrapper">
@@ -1596,6 +1880,76 @@ class Marketkingcore_Settings {
 
 							<?php }	?>	
 
+						</div>
+					</div>
+
+					<!-- License Tab--> 
+					<div class="ui bottom attached tab segment <?php echo $this->marketking_isactivetab('license'); ?>" data-tab="license">
+						<div class="marketking_attached_content_wrapper">
+							<h2 class="ui block header">
+								<i class="key icon"></i>
+								<div class="content">
+									<?php esc_html_e('License management','marketking-multivendor-marketplace-for-woocommerce'); ?>
+									<div class="sub header">
+										<?php esc_html_e('Activate the plugin','marketking-multivendor-marketplace-for-woocommerce'); ?>
+									</div>
+								</div>
+							</h2>
+							<table class="form-table">
+								<?php do_settings_fields( 'marketking', 'marketking_license_settings_section' ); ?>
+							</table>
+							<!-- License Status -->
+							<?php
+							$license = get_option('marketking_license_key_setting', '');
+							$email = get_option('marketking_license_email_setting', '');
+							$info = parse_url(get_site_url());
+							$host = $info['host'];
+							$host_names = explode(".", $host);
+							$bottom_host_name = $host_names[count($host_names)-2] . "." . $host_names[count($host_names)-1];
+
+							if (strlen($host_names[count($host_names)-2]) <= 3){    // likely .com.au, .co.uk, .org.uk etc
+							    $bottom_host_name_new = $host_names[count($host_names)-3] . "." . $host_names[count($host_names)-2] . "." . $host_names[count($host_names)-1];
+							    // legacy, do not deactivate existing sites
+							    if (get_option('pluginactivation_'.$email.'_'.$license.'_'.$bottom_host_name) === 'active'){
+							        // old activation active, proceed with old activation
+							    } else {
+							        $bottom_host_name = $bottom_host_name_new;
+							    }
+							}
+
+							
+							$activation = get_option('pluginactivation_'.$email.'_'.$license.'_'.$bottom_host_name);
+
+							if ($activation == 'active'){
+								?>
+								<div class="ui success message marketking_license_active">
+								  <div class="header">
+								    <?php esc_html_e('Your license is valid and active','marketking-multivendor-marketplace-for-woocommerce'); ?>
+								  </div>
+								  <p><?php esc_html_e('The plugin is registered to ','marketking-multivendor-marketplace-for-woocommerce'); echo esc_html($email); ?> </p>
+								</div>
+								<?php		
+							} else {
+								?>
+								<button type="button" name="marketking-activate-license" id="marketking-activate-license" class="ui teal button">
+									<i class="key icon"></i>
+									<?php esc_html_e('Activate License', 'marketking-multivendor-marketplace-for-woocommerce'); ?>
+								</button>
+								<?php
+							}
+							?>
+
+							<br><br><div class="ui info message">
+							  <i class="close icon"></i>
+							  <div class="header"> <i class="question circle icon"></i>
+							  	<?php esc_html_e('Documentation','marketking-multivendor-marketplace-for-woocommerce'); ?>
+							  </div>
+							  <ul class="list">
+							    <li><a href="https://kingsplugins.com/licensing-faq/" target="_blank"><?php esc_html_e('Licensing and Activation FAQ & Guide','marketking-multivendor-marketplace-for-woocommerce'); ?></a></li>
+							  </ul>
+							</div>
+							
+							
 						</div>
 					</div>
 

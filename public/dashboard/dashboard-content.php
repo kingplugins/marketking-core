@@ -5,9 +5,9 @@
 Main Dashboard Page
 * @version 1.0.0
 
-This template file can be edited and overwritten with your own custom template. To do this, simply copy this file directly under your theme (or child theme) folder and then edit it there. 
+This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
 
-For example, if your theme is storefront, you can copy this file directly under wp-content/themes/storefront/ and then edit it with your own custom content and changes.
+For example, if your theme is storefront, you can copy this file under wp-content/themes/storefront/marketking/ and then edit it with your own custom content and changes.
 
 */
 
@@ -242,7 +242,7 @@ For example, if your theme is storefront, you can copy this file directly under 
 
                             $vendor_orders = get_posts( array( 
                                 'post_type' => 'shop_order',
-                                'numberposts' => 5,
+                                'numberposts' => apply_filters('marketking_recent_orders_number', 5),
                                 'fields'    => 'ids',
                                 'post_status'    => 'any',
                                 'author'   => $user_id

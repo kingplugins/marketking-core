@@ -313,7 +313,10 @@ class Elementor_Store_Profile_Image_Widget extends \Elementor\Widget_Base {
 		$img = marketking()->get_store_profile_image_link($vendor_id);
 		if (empty($img)){
 			// show default image
-			$img = plugins_url('../../includes/assets/images/store-profile.png', __FILE__);
+			$img = MARKETKINGCORE_URL. 'includes/assets/images/store-profile.png';
+
+		} else {
+			$img = marketking()->get_resized_image($img, 'thumbnail');
 		}
 
 		$this->print_render_attribute_string( 'wrapper' );
@@ -418,7 +421,10 @@ class Elementor_Store_Banner_Image_Widget extends \Elementor\Widget_Base {
 		$vendor_id = marketking()->get_vendor_id_in_store_url();
 		$img = marketking()->get_store_banner_image_link($vendor_id);
 		if (empty($img)){
-			$img = plugins_url('../../includes/assets/images/store-banner.png', __FILE__);
+			$img = MARKETKINGCORE_URL. 'includes/assets/images/store-banner.png';
+
+		} else {
+			$img = marketking()->get_resized_image($img, 'large');
 		}
 
 		$this->print_render_attribute_string( 'wrapper' );
@@ -901,6 +907,31 @@ class Elementor_Store_Tabs_Content_Widget extends \Elementor\Widget_Base {
 				  	}
 			  	}
 
+			  	  	// Store Cat
+			  	  	if (defined('MARKETKINGPRO_DIR')){
+
+			  		  	if (intval(get_option('marketking_enable_storecategories_setting', 1)) === 1){
+			  		  		$selectedarr = get_user_meta($vendor_id,'marketking_store_categories', true);
+			  		  		if (empty($selectedarr)){
+			  		  			$selectedarr = array();
+			  		  		}
+			  		  		
+			  		  		if (count($selectedarr) == 1){
+			  		  			$text = esc_html__('Store Category','marketking-multivendor-marketplace-for-woocommerce');
+			  		  		} else {
+			  		  			$text = esc_html__('Store Categories','marketking-multivendor-marketplace-for-woocommerce');
+			  		  		}
+
+			  		  		foreach ($selectedarr as $index => $catid){
+			  		  			$catname = get_term($catid)->name;
+			  		  			$selectedarr[$index] = $catname;
+			  		  		}
+
+			  		  		$cats = implode(', ',$selectedarr);
+			  		  		echo '<strong>'.$text.':</strong> '.$cats.'<br>';
+
+			  		  	}
+			  		  }
 			  
 					if ($showphone === 'yes'){
 						echo '<strong>'.esc_html__('Phone:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($phone).'<br>';

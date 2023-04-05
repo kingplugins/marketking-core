@@ -660,7 +660,15 @@
 
   NioApp.Select2.init = function () {
     // NioApp.Select2('.select');
-    NioApp.Select2('.form-select');
+    NioApp.Select2('.form-select', {
+      templateResult: function(data, container) {
+        if (data.element) {
+          $(container).addClass($(data.element).attr("class"));
+        }
+
+        return data.text;
+      }
+    });
   }; // Slick Slider @v1.0.1
 
 

@@ -3,11 +3,11 @@
 /*
 
 Orders View Dashboard Page
-* @version 1.0.0
+* @version 1.0.2
 
-This template file can be edited and overwritten with your own custom template. To do this, simply copy this file directly under your theme (or child theme) folder and then edit it there. 
+This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
 
-For example, if your theme is storefront, you can copy this file directly under wp-content/themes/storefront/ and then edit it with your own custom content and changes.
+For example, if your theme is storefront, you can copy this file under wp-content/themes/storefront/marketking/ and then edit it with your own custom content and changes.
 
 */
 
@@ -126,6 +126,8 @@ if (intval(get_option( 'marketking_agents_can_manage_orders_setting', 1 )) === 1
                                                         <span class="tb-sub"><?php 
                                                         
                                                         echo $date->date_i18n( get_option('date_format'), $date->getTimestamp()+(get_option('gmt_offset')*3600) );
+
+                                                        
                                                         ?></span>
                                                     </div>
                                                 </td>
@@ -201,7 +203,7 @@ if (intval(get_option( 'marketking_agents_can_manage_orders_setting', 1 )) === 1
                                                 </td>
                                                 <td class="nk-tb-col" data-order="<?php echo esc_attr($orderobj->get_total());?>"> 
                                                     <div>
-                                                        <span class="tb-lead"><?php echo wc_price($orderobj->get_total());?></span>
+                                                        <span class="tb-lead"><?php echo wc_price($orderobj->get_total(), array('currency' => $orderobj->get_currency()));?></span>
                                                     </div>
                                                 </td>
                                                 <td class="nk-tb-col tb-col-md" data-order="<?php echo esc_attr(marketking()->get_order_earnings($orderobj->get_id()));?>"> 
@@ -212,7 +214,17 @@ if (intval(get_option( 'marketking_agents_can_manage_orders_setting', 1 )) === 1
                                                             echo '—';
                                                         } else {
                                                             echo wc_price($earnings);
+                                                        }
 
+                                                        $tax_fee_recipient = get_post_meta($orderobj->get_id(),'tax_fee_recipient', true);
+                                                        if (empty($tax_fee_recipient)){
+                                                            $tax_fee_recipient = get_option('marketking_tax_fee_recipient_setting', 'vendor');
+                                                        }
+                                                        if ($tax_fee_recipient === 'vendor'){
+                                                            $tax = $orderobj->get_total_tax();
+                                                            if (floatval($tax) > 0){
+                                                                echo ' ('.esc_html__('tax','marketking-multivendor-marketplace-for-woocommerce').' '.wc_price($tax).')';
+                                                            }
                                                         }
 
                                                         ?></span>

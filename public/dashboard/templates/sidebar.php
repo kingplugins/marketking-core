@@ -1,3 +1,16 @@
+<?php
+/*
+
+Sidebar Page
+* @version 1.0.1
+
+This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
+
+For example, if your theme is storefront, you can copy this file under wp-content/themes/storefront/marketking/ and then edit it with your own custom content and changes.
+
+*/
+?>
+
 <div class="nk-sidebar nk-sidebar-fixed is-light " data-content="sidebarMenu">
     <div class="nk-sidebar-element nk-sidebar-head">
         <div class="nk-sidebar-brand">
@@ -12,7 +25,7 @@
     </div><!-- .nk-sidebar-element -->
     <div class="nk-sidebar-element">
         <div class="nk-sidebar-content">
-            <div class="nk-sidebar-menu" >
+            <div class="nk-sidebar-menu" data-simplebar>
                 <ul class="nk-menu">
                     <?php
                     $show_announ = 'no';
@@ -122,6 +135,41 @@
                                 </a>
                             </li>
                             <?php
+                        }
+                    }
+
+                    if (defined('MARKETKINGPRO_DIR')){
+                        if (intval(get_option( 'marketking_enable_bookings_setting', 0 )) === 1){
+                            if(class_exists('WC_Bookings')){
+                                if(marketking()->vendor_has_panel('bookings')){
+
+                                    if ( marketking()->vendor_has_panel( 'products' ) ) {
+
+                                        $vendor_bookings_nr = count( get_posts( array(
+                                            'post_type'   => array( 'wc_booking', 'accommodation-booking' ),
+                                            'post_status' => array( 'pending-confirmation' ),
+                                            'numberposts' => - 1,
+                                            'author'      => $user_id,
+                                            'fields'      => 'ids'
+                                        ) ) );
+
+                                        ?>
+                                        <li class="nk-menu-item">
+                                            <a href="<?php echo esc_attr( get_page_link( apply_filters( 'wpml_object_id',
+                                                    get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post', true
+                                                ) ) ) . 'bookings'; ?>"
+                                               class="nk-menu-link" data-original-title="" title="">
+                                                <span class="nk-menu-icon"><em class="icon ni ni-calender-date-fill"></em></span>
+                                                <span class="nk-menu-text"><?php esc_html_e( 'Bookings', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></span>
+                                                <?php if ( $vendor_bookings_nr !== 0 ) { ?>
+                                                    <span class="nk-menu-badge badge-danger"><?php echo esc_html($vendor_bookings_nr ) . esc_html__( ' New', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></span>
+                                                <?php } ?>
+                                            </a>
+                                        </li>
+                                        <?php
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -258,6 +306,17 @@
                                     </a>
                                 </li><!-- .nk-menu-item -->
                                 <?php
+
+                                if (defined('WOOCOMMERCE_WARRANTY_VERSION')){
+                                    ?>
+                                    <li class="nk-menu-item">
+                                        <a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'rma';?>" class="nk-menu-link">
+                                            <span class="nk-menu-icon"><em class="icon ni ni-shield-check-fill"></em></span>
+                                            <span class="nk-menu-text"><?php echo apply_filters('marketking_menu_refunds_title',esc_html__('Warranty', 'marketking-multivendor-marketplace-for-woocommerce'));?></span>
+                                        </a>
+                                    </li><!-- .nk-menu-item -->
+                                    <?php
+                                }
                             }
                         }
                         if (intval(get_option( 'marketking_enable_vendordocs_setting', 1 )) === 1){
@@ -288,7 +347,7 @@
                     }
 
                     // if vendor or team has access to any of these, they should be able to see settings
-                    $profile_like_panels = array('shipping','vacation','storenotice','storepolicy','storeseo','verification','profile-settings');
+                    $profile_like_panels = array('shipping','vacation','storenotice','storepolicy','storeseo','verification','storecategories','profile-settings');
                     $has_vendor_like_panel = false;
                     $first_vendor_like_panel = '';
                     foreach ($profile_like_panels as $panel){

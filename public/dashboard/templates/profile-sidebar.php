@@ -1,12 +1,28 @@
+<?php
+/*
+
+Profile Sidebar Page
+* @version 1.0.1
+
+This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
+
+For example, if your theme is storefront, you can copy this file under wp-content/themes/storefront/marketking/ and then edit it with your own custom content and changes.
+
+*/
+?>
 <div class="card-aside card-aside-left user-aside toggle-slide toggle-slide-left toggle-break-lg" data-content="userAside" data-toggle-screen="lg" data-toggle-overlay="true">
     <div class="card-inner-group" data-simplebar>
         <div class="card-inner">
             <div class="user-card">
-                <div class="user-avatar">
+                <?php
+                $icon = marketking()->get_display_icon_image($user_id);
+                ?>
+                <div class="user-avatar" <?php
+                    if (strlen($icon)!=2){ echo 'style="background-image: url(\''.$icon.'\');background-size:contain !important;"';}
+                    ?>>
                     <span><?php 
-                    $profile_pic = get_user_meta($user_id,'marketking_profile_logo_image', true);
-                    if (empty($profile_pic)){
-                        echo esc_html(strtoupper(substr($currentuser->user_login, 0, 2)));
+                    if (strlen($icon)==2){
+                        echo $icon;
                     }
                     ?></span>
                 </div>
@@ -98,6 +114,15 @@
                         }
                     }
                 }
+                if (defined('MARKETKINGPRO_DIR')){
+                    if (intval(get_option('marketking_enable_storecategories_setting', 1)) === 1){
+                        if(marketking()->vendor_has_panel('storecategories')){
+                            ?>
+                            <li><a class="<?php if ($page ==='storecategories'){echo 'active';}?>" href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'storecategories';?>"><em class="icon ni ni-box-view-fill"></em><span><?php esc_html_e('Store Categories','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+                            <?php
+                        }
+                    }
+                }
 
                 if (defined('MARKETKINGPRO_DIR')){
                     if (intval(get_option('marketking_enable_storeseo_setting', 1)) === 1){
@@ -121,8 +146,32 @@
                 if(marketking()->vendor_has_panel('profile-settings')){
 
                     ?>
-                    <li><a class="<?php if ($page ==='profile-settings'){echo 'active';}?>" href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'profile-settings';?>"><em class="icon ni ni-opt-alt-fill"></em><span><?php esc_html_e('Settings','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+                    <li><a class="<?php if ($page ==='profile-settings'){echo 'active';}?>" href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'profile-settings';?>"><em class="icon ni ni-opt-alt-fill"></em><span><?php esc_html_e('Profile Settings','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
                     <?php
+                }
+
+
+                // TEMPORARILY DISABLED UNTIL PERFECTLY IMPLEMENTED false === true
+                if (defined('MARKETKINGPRO_DIR') && false === true){
+                    if (intval(get_option( 'marketking_enable_bookings_setting', 0 )) === 1){
+                        if(class_exists('WC_Bookings')){ 
+                            if(marketking()->vendor_has_panel('bookings')){
+
+                                if ( marketking()->vendor_has_panel( 'calendar-google-integration' ) ) {
+
+                                    ?>
+                                    <li><a class="<?php if ( $page === 'calendar-google-integration' ) {
+                                            echo 'active';
+                                        } ?>" href="<?php echo esc_attr( get_page_link( apply_filters( 'wpml_object_id',
+                                                get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post', true ) ) ) . 'calendar-google-integration'; ?>"><em
+                                                    class="icon ni ni-calendar-alt-fill"></em>
+                                            <span><?php esc_html_e( 'Google Calendar Integration', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></span>
+                                        </a></li>
+                                    <?php
+                                }
+                            }
+                        }
+                    }
                 }
                 ?>
             </ul>

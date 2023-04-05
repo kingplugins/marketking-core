@@ -35,6 +35,7 @@ class Marketking_New_Vendor_Requires_Approval_Email extends WC_Email {
         }
 
         add_action( 'woocommerce_created_customer_notification', array( $this, 'trigger'), 10, 3 );
+        add_action( 'marketking_new_user_requires_approval_notification', array( $this, 'trigger'), 10, 3 );
 
     }
 

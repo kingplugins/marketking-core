@@ -127,7 +127,7 @@ textarea { overflow: auto; resize: vertical; }
 
 fieldset { min-width: 0; padding: 0; margin: 0; border: 0; }
 
-legend { display: block; width: 100%; max-width: 100%; padding: 0; margin-bottom: .5rem; font-size: 1.5rem; line-height: inherit; color: inherit; white-space: normal; }
+legend { display: block; width: 100%; max-width: 100%; padding: 0; margin-bottom: .5rem; line-height: inherit; color: inherit; white-space: normal; }
 
 progress { vertical-align: baseline; }
 
@@ -177,7 +177,15 @@ small, .small { font-size: 85%; font-weight: 400; }
 
 mark, .mark { padding: 0.2em; background-color: #fcf8e3; }
 
-
+span.select2-container.select2-container--default.select2-container--open {
+    z-index: 99999999999;
+}
+span.select2-container--open{
+    z-index: 999999999;
+}
+.select2-results__option--highlighted { 
+    background-color: #ebeef2; !important;
+}
 
 .list-unstyled { padding-left: 0; list-style: none; }
 
@@ -205,6 +213,40 @@ mark, .mark { padding: 0.2em; background-color: #fcf8e3; }
 
 .figure-caption { font-size: 90%; color: #6c757d; }
 
+input.marketking_search_column {
+    max-width: 100% !important;
+}
+button.button.button-primary.marketking_add_resource {
+    float: right;
+    margin-left: 10px;
+}
+.woocommerce_booking_resource.postbox {
+    position: relative;
+    min-width: 255px;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    background: #fff;
+}
+#bookings_persons h3{
+    font-size: 18px;
+}
+#bookings_persons h4{
+    font-size: 14px;
+}
+
+.woocommerce_bookable_persons table{
+    margin: 1em 1em 1em 0em;
+}
+/* hide booking requires confirmation option */
+._wc_booking_requires_confirmation_field{
+    display: none;
+}
+.marketking_product_url{
+    display: none;
+}
+.btn-trigger:before {
+    background-color: initial !important;
+}
 /* Product Subscriptions */
 .woocommerce_options_panel ._subscription_price_fields .wrap input, .woocommerce_options_panel ._subscription_price_fields .wrap select {
     width: 30.75%;
@@ -219,6 +261,36 @@ mark, .mark { padding: 0.2em; background-color: #fcf8e3; }
 }
 .wcs_hidden_label {
     display: none !important;
+}
+#marketking_dashboard_products_table{
+    width: 100% !important;
+}
+.marketking_manage_order_page #marketking_manage_order_form .edit-order-item, .marketking_manage_order_page #marketking_manage_order_form .delete-order-item {
+    display: none;
+}
+/* Subscriptions Plugin Integration - this will need to be removed when we add subscriptions support */
+.show_if_variable-subscription {
+    display: none;
+}
+.marketking_docs_page .card-inner ol, .marketking_docs_page .card-inner li, .marketking_docs_page .card-inner ul {
+    list-style: initial !important;
+    margin:revert !important;
+    padding: revert !important;
+}
+
+table.widefat {
+    width: 100%;
+    border: 1px solid #c3c4c7;
+}
+.widefat tfoot th, .widefat tfoot td {
+    border-top: 1px solid #c3c4c7;
+    border-bottom: none;
+}
+.widefat thead th, .widefat thead td {
+    border-bottom: 1px solid #c3c4c7;
+}
+.widefat th, .widefat td {
+    padding: 8px;
 }
 .wp-core-ui select {
     font-size: 14px;
@@ -266,12 +338,44 @@ mark, .mark { padding: 0.2em; background-color: #fcf8e3; }
     height: 40px;
     width: 100%;
 }
+h4.b2bking_product_side_title {
+    margin-left: 12px;
+}
+h4.b2bking_product_side_title {
+    margin-left: 12px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    margin-top: 20px;
+}
+input.b2bking_quantity_product_input {
+    margin-right: 20px !important;
+}
+input.b2bking_quantity_product_input {
+    max-width: 150px;
+    margin-right: 10px;
+}
+.b2bking_quantity_rules_box {
+    margin-left: 162px;
+    align-items: center;
+    display: flex;
+    padding-bottom: 17px !important;
+}
+.b2bking_quantity_rules_box label{
+    font-size: 12px;
+}
 #marketking_edit_product_data_container select#discount_type {
     line-height: 2;
     min-height: 30px;
 }
+div#marketking_custom_boxes_area {
+    padding: 20px;
+}
 .marketking_dashboard_radio {
     margin: 3px 0px;
+}
+.marketking_profile_icon_image{
+    width: 100%;
+    height: 100%;
 }
 .woocommerce_options_panel ._subscription_trial_length_field .wrap input, .woocommerce_options_panel ._subscription_trial_length_field .wrap select, .woocommerce_options_panel ._subscription_payment_sync_date_day_field .wrap input, .woocommerce_options_panel ._subscription_payment_sync_date_day_field .wrap select {
     width: 48%;
@@ -300,6 +404,12 @@ mark, .mark { padding: 0.2em; background-color: #fcf8e3; }
 }
 .form-field .woocommerce-help-tip {
     margin-top: 4px !important;
+}
+.auction-table td.username {
+    pointer-events: none;
+}
+.auction-table td.username a{
+    color: #526484 !important;
 }
 .marketking_vendor_invoice_download_container p, .marketking_vendor_invoice_download_container{
     display: inline;    
@@ -332,7 +442,7 @@ div#marketking_vendor_store_page_banner {
     align-items: end;
 }
 .nk-sidebar-menu{
-    overflow: scroll;
+    overflow-y: auto;
 }
 .woocommerce-exporter-wrapper, .woocommerce-importer-wrapper, .woocommerce-progress-form-wrapper {
     text-align: center;
@@ -429,8 +539,8 @@ div#closingtimewrap .select2-selection, div.supportchoicewrap .select2-selection
     width: 100%;
     margin: 5px;
 }
-.marketking_profile_page .select2-container .select2-selection--single {
-    height: 43px;
+.select2-container .select2-selection--single, .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 43px !important;
 }
 .npc-general .select2-search--dropdown{
     display: none !important;
@@ -444,6 +554,9 @@ div#closingtimewrap .select2-selection, div.supportchoicewrap .select2-selection
 }
 .woocommerce-importer-advanced.hidden{
     display: none;
+}
+.hidden {
+    display:none;
 }
 label[for="woocommerce-importer-update-existing"]{
     display: inline;
@@ -493,6 +606,18 @@ a.marketking-order-back-button {
 .marketking_save_product_first {
     padding: 10px;
 }
+.marketking_storecat_tab {
+    margin-left: 0px !important;
+    padding-left: 0px !important;
+}
+.marketking_storecat_tab .select2-container .selection .select2-selection {
+    height: 44px;
+}
+
+.marketking_storecat_tab .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 44px;
+}
+
 
 /* AGENT SWITCHED BAR */
 /* AGENT SWITCHED BAR */
@@ -551,7 +676,13 @@ a.marketking-order-back-button {
 .marketking_column_limited_width{
   max-width: 180px;
 }
-
+.subsubsub li {
+    display: inline-block;
+}
+.wp-clearfix {
+    width: 100% !important;
+    display: inline-block;
+}
 .marketking_importexport_buttons_container {
     position: absolute;
     right: 0px;
@@ -8188,7 +8319,7 @@ ol.linenums li { padding-left: 12px; color: #bebec5; line-height: 18px; text-sha
     min-width: 170px;
 }
 
-.select2-container { box-sizing: border-box; margin: 0; position: relative; vertical-align: middle; z-index:3100; }
+.select2-container { box-sizing: border-box; margin: 0; position: relative; vertical-align: middle; z-index:100; }
 
 .select2-container .select2-selection--single { box-sizing: border-box; cursor: pointer; display: block; height: 28px; user-select: none; -webkit-user-select: none; }
 
@@ -13745,10 +13876,15 @@ p > span > .icon.ni { vertical-align: middle; }
 .marketking_earnings_page .info { display: flex; align-items: center; justify-content: center; }
 img#marketking_edit_product_main_image {
     border: 1px solid #f5f5f5;
-    width: 175px;
-    height: 175px;
+    width: 140px;
+    height: 140px;
     object-fit: cover;
     cursor: pointer;
+}
+.marketking_edit_product_image_explainer {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #a1a2a6;
 }
 .nk-ecwg .data-group .data { margin: 0; padding-right: 20px; }
 
@@ -13838,7 +13974,7 @@ img#marketking_edit_product_main_image {
 
 .pricing {
     position: relative;
-    height: 100%
+    height: auto
 }
 
 .pricing-badge {
@@ -16416,8 +16552,47 @@ button#b2bking_category_add_user {
 select.custom-select.custom-select-sm.form-control.form-control-sm {
     margin: 0px 8px;
 }
-#marketking_dashboard_refunds_table_filter, #marketking_dashboard_subagents_earnings_table_filter,#b2bkingmarketking_dashboard_offers_table_filter, #marketking_dashboard_products_table_filter,#marketking_dashboard_coupons_table_filter,#marketking_dashboard_reviews_table_filter, #marketking_dashboard_customers_table_length, #b2bkingmarketking_dashboard_offers_table_length, #marketking_dashboard_teams_table_length, #marketking_dashboard_teams_table_filter, #marketking_dashboard_earnings_table_filter, #marketking_dashboard_customers_table_filter, #marketking_dashboard_orders_table_length, #marketking_dashboard_orders_table_filter{
+#marketking_dashboard_bookingsorders_table_length, #marketking_dashboard_bookingsorders_table_filter, #marketking_dashboard_bookings_table_length, #marketking_dashboard_bookings_table_filter, #marketking_dashboard_refunds_table_filter, #marketking_dashboard_subagents_earnings_table_filter,#b2bkingmarketking_dashboard_offers_table_filter, #marketking_dashboard_products_table_filter,#marketking_dashboard_coupons_table_filter,#marketking_dashboard_reviews_table_filter, #marketking_dashboard_customers_table_length, #b2bkingmarketking_dashboard_offers_table_length, #marketking_dashboard_teams_table_length, #marketking_dashboard_teams_table_filter, #marketking_dashboard_earnings_table_filter, #marketking_dashboard_customers_table_filter, #marketking_dashboard_orders_table_length, #marketking_dashboard_orders_table_filter{
   display:none;
+}
+.components-popover__content {
+    background: #fff;
+    outline: 1px solid #ccc;
+    box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    border-radius: 2px;
+    box-sizing: border-box;
+    width: min-content;
+}
+.wc-booking-summary-actions{
+    display:none;
+}
+.components-button {
+    display: inline-flex;
+    text-decoration: none;
+    font-family: inherit;
+    font-weight: 400;
+    font-size: 13px;
+    margin: 0;
+    border: 0;
+    cursor: pointer;
+    -webkit-appearance: none;
+    background: none;
+    transition: box-shadow .1s linear;
+    height: 36px;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 6px 12px;
+    border-radius: 2px;
+    color: #1e1e1e;
+}
+.nk-app-root:nth-of-type(2) {
+    display: none;
+}
+.components-popover span{
+    color: #2c3338 !important;
+}
+#bookings_resources h3 {
+    font-size: 19px;
 }
 #woocommerce-product-data .hndle label{
   font-weight: 600;
@@ -16772,6 +16947,9 @@ h2.wc-pao-addon-name {
 .marketking-vendor .marketking-modal .marketking-modal-content {
   height: 640px !important;
 }
+.nk-content.marketking_rules_page {
+    padding-top: 90px;
+}
 .marketking-vendor .marketking-modal .marketking-modal-content .modal-body {
   max-height: 500px;
   min-height: 200px;
@@ -16871,6 +17049,15 @@ span.dashicons.marketking_vendor_icon {
 }
 }
 
+@media (max-width: 800px) { 
+    .marketking_b2bmessaging_page #b2bkingmarketking_dashboard_offers_table{
+        max-width: 500px !important;
+        width: 500px !important;
+    }
+    .marketking_b2bmessaging_page #b2bkingmarketking_dashboard_offers_table th:nth-child(4), .marketking_b2bmessaging_page #b2bkingmarketking_dashboard_offers_table td:nth-child(4),.marketking_b2bmessaging_page #b2bkingmarketking_dashboard_offers_table th:nth-child(3), .marketking_b2bmessaging_page #b2bkingmarketking_dashboard_offers_table td:nth-child(3), .marketking_b2bmessaging_page #b2bkingmarketking_dashboard_offers_table th:nth-child(1), .marketking_b2bmessaging_page #b2bkingmarketking_dashboard_offers_table td:nth-child(1), .marketking_b2bmessaging_page #b2bkingmarketking_dashboard_offers_table th:nth-child(5), .marketking_b2bmessaging_page #b2bkingmarketking_dashboard_offers_table td:nth-child(5){
+        display: none;
+    }
+}
 @media (max-width: 576px) { 
 
   .dark-mode .nk-block-tools-toggle .toggle-expand-content { background-color: #212d3d; } 
@@ -16913,6 +17100,26 @@ span.dashicons.marketking_vendor_icon {
     display:none;
   }
 
+  
+    .marketking_b2bmessaging_page #b2bkingmarketking_dashboard_offers_table{
+        max-width: 440px !important;
+        width: 440px !important;
+    }
+
+}
+
+@media (max-width: 450px) { 
+    .marketking_b2bmessaging_page #b2bkingmarketking_dashboard_offers_table{
+        max-width: 340px !important;
+        width: 340px !important;
+    }
+}
+
+@media (max-width: 380px) { 
+    .marketking_b2bmessaging_page #b2bkingmarketking_dashboard_offers_table{
+        max-width: 310px !important;
+        width: 310px !important;
+    }
 }
 
 @media (min-width: 768px){

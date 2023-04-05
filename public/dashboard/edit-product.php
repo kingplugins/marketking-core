@@ -3,11 +3,11 @@
 /*
 
 Edit Product Page
-* @version 1.0.1
+* @version 1.0.4
 
-This template file can be edited and overwritten with your own custom template. To do this, simply copy this file directly under your theme (or child theme) folder and then edit it there. 
+This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
 
-For example, if your theme is storefront, you can copy this file directly under wp-content/themes/storefront/ and then edit it with your own custom content and changes.
+For example, if your theme is storefront, you can copy this file under wp-content/themes/storefront/marketking/ and then edit it with your own custom content and changes.
 
 */
 
@@ -28,9 +28,23 @@ For example, if your theme is storefront, you can copy this file directly under 
         $product = wc_get_product($productid);
         $exists = 'existing';
 
+        // Bookings Ref RR
+        if (intval(get_option( 'marketking_enable_bookings_setting', 0 )) === 1){
+            if(marketking()->vendor_has_panel('bookings')){
+                if(class_exists('WC_Bookings')){
+                    Marketking_WC_Bookings_Metabox::output_metabox();
+                }
+            }
+        }
+
         // get original query var
         if (get_query_var('pagenr') === 'add'){
             $exists = 'new'; 
+        }
+
+        $allowed_product = apply_filters('marketking_allowed_vendor_edit_product', true, $product);
+        if (!$allowed_product){
+            exit();
         }
 
         // save post and retake it later - this helps compatibility with elementor, which changes the post ID for some reason
@@ -39,6 +53,10 @@ For example, if your theme is storefront, you can copy this file directly under 
             $originalpost = $post;
             $originalproduct = $product;
             $retake = 'yes';
+        }
+
+        if ( (int) marketking()->get_product_vendor( $productid ) !== (int) $user_id ) {
+           return;
         }
 
         // either not team member, or team member with permission to add
@@ -65,7 +83,7 @@ For example, if your theme is storefront, you can copy this file directly under 
                                 }
 
                                 ?>
-                                <input id="marketking_edit_product_action_edit" type="hidden" value="<?php echo esc_attr($actionedit);?>">
+                                <input id="marketking_edit_product_action_edit" name="marketking_edit_product_action_edit" type="hidden" value="<?php echo esc_attr($actionedit);?>">
                                 <div class="nk-block-head nk-block-head-sm">
                                     <div class="nk-block-between">
                                         <div class="nk-block-head-content marketking_status_text_title">
@@ -85,15 +103,15 @@ For example, if your theme is storefront, you can copy this file directly under 
                                                         // check if user is allowed to publish directly
                                                         if (marketking()->vendor_can_publish_products($user_id)){
                                                             ?>
-                                                                <option value="publish" <?php selected($status, 'publish', true);?>><?php esc_html_e('Published');?></option>
+                                                                <option value="publish" <?php selected($status, 'publish', true);?>><?php esc_html_e('Published','marketking-multivendor-marketplace-for-woocommerce');?></option>
                                                             <?php
                                                         } else {
                                                             ?>
-                                                                <option value="pending" <?php selected($status, 'pending', true);?>><?php esc_html_e('Ready for Review');?></option>
+                                                                <option value="pending" <?php selected($status, 'pending', true);?>><?php esc_html_e('Ready for Review','marketking-multivendor-marketplace-for-woocommerce');?></option>
                                                             <?php
                                                         }
                                                     ?>
-                                                    <option value="draft" <?php selected($status, 'draft', true);?>><?php esc_html_e('Draft');?></option>
+                                                    <option value="draft" <?php selected($status, 'draft', true);?>><?php esc_html_e('Draft','marketking-multivendor-marketplace-for-woocommerce');?></option>
                                                 </select>&nbsp;
                                                 <?php
                                                 if (!marketking()->vendor_can_publish_products($user_id)){
@@ -105,15 +123,14 @@ For example, if your theme is storefront, you can copy this file directly under 
                                         </div><!-- .nk-block-head-content -->
                                         <div class="nk-block-head-content">
                                             <div class="toggle-wrap nk-block-tools-toggle">
-                                                <a href="#" class="btn btn-icon btn-trigger toggle-expand mr-n1" data-target="pageMenu"><em class="icon ni ni-more-v"></em></a>
+                                                <a href="#" class="btn btn-icon btn-trigger toggle-expand mr-n1" data-target="pageMenu"><?php esc_html_e('Tools','marketking-multivendor-marketplace-for-woocommerce'); ?><em class="icon ni ni-more-v"></em></a>
                                                 <div class="toggle-expand-content" data-content="pageMenu">
                                                     <ul class="nk-block-tools g-3">
                                                         <input type="hidden" id="marketking_save_product_button_id" value="<?php echo esc_attr($productid);?>">
                                                         <input type="hidden" id="post_ID" value="<?php echo esc_attr($productid);?>">
                                                         <li class="nk-block-tools-opt">
                                                             <div id="marketking_save_product_button">
-                                                                <a href="#" class="toggle btn btn-icon btn-primary d-md-none"><em class="icon ni <?php echo esc_attr($icon);?>"></em></a>
-                                                                <a href="#" class="toggle btn btn-primary d-none d-md-inline-flex"><em class="icon ni <?php echo esc_attr($icon);?>"></em><span><?php echo esc_html($text); ?></span></a>
+                                                                <a href="#" class="toggle btn btn-primary d-md-inline-flex"><em class="icon ni <?php echo esc_attr($icon);?>"></em><span><?php echo esc_html($text); ?></span></a>
                                                             </div>
                                                             <?php
                                                             if ($exists === 'existing'){
@@ -123,7 +140,7 @@ For example, if your theme is storefront, you can copy this file directly under 
                                                                     <a href="#" class="dropdown-toggle btn btn-icon btn-gray btn-trigger ml-2 text-white pl-2 pr-3" data-toggle="dropdown"><em class="icon ni ni-more-h"></em><?php esc_html_e('More','marketking-multivendor-marketplace-for-woocommerce'); ?></a>
                                                                     <div class="dropdown-menu dropdown-menu-right">
                                                                         <ul class="link-list-opt no-bdr">
-                                                                            <li><a href="<?php 
+                                                                            <li><a target="_blank" href="<?php 
                                                                             $permalink = $product->get_permalink();
                                                                             echo esc_attr($permalink);
                                                                             ?>
@@ -231,6 +248,7 @@ For example, if your theme is storefront, you can copy this file directly under 
                                                     $src = wc_placeholder_img_src();
                                                 } else {
                                                     $imageval = $product->get_image_id();
+                                                    $src = marketking()->get_resized_image($src, 'medium');
                                                 }
                                             
                                             } else {
@@ -239,6 +257,8 @@ For example, if your theme is storefront, you can copy this file directly under 
                                             }
                                             echo esc_attr($src);
                                             ?>">
+
+                                            <div class="marketking_edit_product_image_explainer"><?php esc_html_e('Click the image to edit or update','marketking-multivendor-marketplace-for-woocommerce');?></div>
                                             <input type="hidden" name="marketking_edit_product_main_image_value" id="marketking_edit_product_main_image_value" value="<?php echo esc_attr($imageval);?>">
 
                                         </div>
@@ -311,18 +331,20 @@ For example, if your theme is storefront, you can copy this file directly under 
                                             <div class="code-block marketking_cattag_card"><h6 class="overline-title title"><?php esc_html_e('Tags','marketking-multivendor-marketplace-for-woocommerce');?></h6>
                                                 <div class="form-group">
                                                     <div class="form-control-wrap">
-                                                        <select class="form-select " multiple id="marketking_select_tags" name="marketking_select_tags[]">
+                                                        <select class="form-select" multiple id="marketking_select_tags" name="marketking_select_tags[]">
                                                             <?php
                                                             $terms = get_terms( array('taxonomy' => 'product_tag', 'hide_empty' => false) );
 
                                                             foreach ( $terms as $term ){
-                                                                if( has_term( $term->term_id, 'product_tag', $prod ) ) {
-                                                                    $selected = 'selected="selected"';
-                                                                } else {
-                                                                    $selected = '';
-                                                                }
+                                                                if (marketking()->vendor_can_product_tag($user_id,$term->term_id)){
+                                                                    if( has_term( $term->term_id, 'product_tag', $prod ) ) {
+                                                                        $selected = 'selected="selected"';
+                                                                    } else {
+                                                                        $selected = '';
+                                                                    }
 
-                                                                echo '<option value="'.esc_attr($term->term_id).'" '.esc_attr($selected).'>'.esc_html($term->name).'</option>';
+                                                                    echo '<option value="'.esc_attr($term->term_id).'" '.esc_attr($selected).'>'.esc_html($term->name).'</option>';
+                                                                }
                                                             }
                                                             ?>
                                                         </select>
@@ -351,30 +373,67 @@ For example, if your theme is storefront, you can copy this file directly under 
                                     </div>
                                     <?php
                                 }
+
+                                // Simple Auctions Integration
+                                if(class_exists('WooCommerce_simple_auction') && intval(get_option('marketking_enable_auctions_setting', 1)) === 1 && defined('MARKETKINGPRO_DIR')){
+                                    if (is_object($product)){
+                                        if ($product->get_type() === 'auction'){
+                                            ?>
+                                            <div class="row postbox" id="Auction">
+                                                <div class="col-xxl-12 col-md-12 marketking_card_gal_cat_tags">
+                                                    <div class="code-block marketking_cattag_card"><h6 class="overline-title title"><?php esc_html_e('Auction','marketking-multivendor-marketplace-for-woocommerce');?></h6>
+                                                        <?php 
+                                                        $auctions = new WooCommerce_simple_auction;
+
+                                                        $auctions->woocommerce_simple_auctions_meta_callback();
+
+                                                        ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row postbox" id="Automatic_relist_auction">
+                                                <div class="col-xxl-12 col-md-12 marketking_card_gal_cat_tags">
+                                                    <div class="code-block marketking_cattag_card"><h6 class="overline-title title"><?php esc_html_e('Automatic relist auction','marketking-multivendor-marketplace-for-woocommerce');?></h6>
+                                                        <?php 
+                                                        $auctions = new WooCommerce_simple_auction;
+
+                                                        $auctions->woocommerce_simple_auctions_automatic_relist_callback();
+                                                        ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <?php
+                                        }
+                                    }
+                                    
+                                }
+
                                 ?>
 
                                 <?php
                                 if (defined('B2BKING_DIR') && defined('MARKETKINGPRO_DIR') && intval(get_option('marketking_enable_b2bkingintegration_setting', 1)) === 1){
                                     if (intval(get_option('b2bking_show_visibility_vendors_setting_marketking', 1)) === 1){
-                                        ?>
-                                        <div class="row">
-                                            <br><br>
-                                            <div class="col-xxl-9 col-md-12 marketking_card_gal_cat_tags">
-                                                <div class="code-block"><h6 class="overline-title title"><?php esc_html_e('User & Group Visibility (B2B & Wholesale)','marketking-multivendor-marketplace-for-woocommerce');?></h6>
-                                                <?php
+                                        if(marketking()->vendor_has_panel('b2bkingvisibility')){
+                                            ?>
+                                            <div class="row">
+                                                <br><br>
+                                                <div class="col-xxl-9 col-md-12 marketking_card_gal_cat_tags">
+                                                    <div class="code-block"><h6 class="overline-title title"><?php esc_html_e('User & Group Visibility (B2B & Wholesale)','marketking-multivendor-marketplace-for-woocommerce');?></h6>
+                                                    <?php
 
-                                                require_once ( B2BKING_DIR . 'admin/class-b2bking-admin.php' );
-                                                if (!isset($b2bking_admin)){
-                                                    $b2bking_admin = new B2bking_Admin;
-                                                }
-                                                $b2bking_admin->b2bking_product_visibility_metabox_content();
+                                                    require_once ( B2BKING_DIR . 'admin/class-b2bking-admin.php' );
+                                                    if (!isset($b2bking_admin)){
+                                                        $b2bking_admin = new B2bking_Admin;
+                                                    }
+                                                    $b2bking_admin->b2bking_product_visibility_metabox_content();
 
-                                                ?>
+                                                    ?>
 
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <?php
+                                            <?php
+                                        }
                                     }
                                 }
                                 ?>

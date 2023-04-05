@@ -5,9 +5,9 @@
 Profile Settings Page
 * @version 1.0.0
 
-This template file can be edited and overwritten with your own custom template. To do this, simply copy this file directly under your theme (or child theme) folder and then edit it there. 
+This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
 
-For example, if your theme is storefront, you can copy this file directly under wp-content/themes/storefront/ and then edit it with your own custom content and changes.
+For example, if your theme is storefront, you can copy this file under wp-content/themes/storefront/marketking/ and then edit it with your own custom content and changes.
 
 */
 
@@ -30,7 +30,7 @@ if(marketking()->vendor_has_panel('profile-settings')){
 
                                             </div>
                                             <div class="nk-block-head-content align-self-start d-lg-none">
-                                                <a href="#" class="toggle btn btn-icon btn-trigger mt-n1" data-target="userAside"><em class="icon ni ni-menu-alt-r"></em></a>
+                                                <a href="#" class="toggle btn btn-icon btn-trigger mt-n1" data-target="userAside"><?php esc_html_e('Menu','marketking-multivendor-marketplace-for-woocommerce');?><em class="icon ni ni-menu-alt-r"></em></a>
                                             </div>
                                         </div>
                                     </div>
@@ -148,7 +148,11 @@ if(marketking()->vendor_has_panel('profile-settings')){
                                     <br><br>
                                     <button class="btn btn-primary" type="submit" id="marketking_save_settings" value="<?php echo esc_attr($user_id);?>"><?php esc_html_e('Save Settings','marketking-multivendor-marketplace-for-woocommerce');?></button>
                                 </div>
-                                <?php include('templates/profile-sidebar.php'); ?>
+                                <?php 
+
+                                include(apply_filters('marketking_dashboard_template','templates/profile-sidebar.php'));
+
+                                ?>
                             </div><!-- .card-inner -->
                         </div><!-- .card-aside-wrap -->
                     </div><!-- .nk-block -->

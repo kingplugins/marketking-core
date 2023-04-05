@@ -43,7 +43,7 @@ do_action( 'woocommerce_email_before_order_table', $order, $sent_to_admin, $plai
 		$after  = '';
 	}
 	/* translators: %s: Order ID. */
-	echo wp_kses_post( $before . sprintf( esc_html__( '[Order Totals #%s]', 'woocommerce' ) . $after . ' (<time datetime="%s">%s</time>)', $order->get_order_number(), $order->get_date_created()->format( 'c' ), wc_format_datetime( $order->get_date_created() ) ) );
+	echo wp_kses_post( $before . sprintf( esc_html__( '[Order Totals #%s]', 'marketking-multivendor-marketplace-for-woocommerce' ) . $after . ' (<time datetime="%s">%s</time>)', $order->get_order_number(), $order->get_date_created()->format( 'c' ), wc_format_datetime( $order->get_date_created() ) ) );
 	?>
 </h2>
 <h2><?php esc_html_e('Order Totals', 'marketking-multivendor-marketplace-for-woocommerce'); ?></h2>
@@ -68,7 +68,7 @@ do_action( 'woocommerce_email_before_order_table', $order, $sent_to_admin, $plai
 			if ( $order->get_customer_note() ) {
 				?>
 				<tr>
-					<th class="td" scope="row" colspan="2" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Note:', 'woocommerce' ); ?></th>
+					<th class="td" scope="row" colspan="2" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Note:', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></th>
 					<td class="td" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php echo wp_kses_post( nl2br( wptexturize( $order->get_customer_note() ) ) ); ?></td>
 				</tr>
 				<?php
@@ -92,9 +92,9 @@ function output_suborder_table($order, $sent_to_admin, $plain_text, $email, $tex
 		<table class="td" cellspacing="0" cellpadding="6" style="width: 100%; font-family: 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;" border="1">
 			<thead>
 				<tr>
-					<th class="td" scope="col" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Product', 'woocommerce' ); ?></th>
-					<th class="td" scope="col" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Quantity', 'woocommerce' ); ?></th>
-					<th class="td" scope="col" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Price', 'woocommerce' ); ?></th>
+					<th class="td" scope="col" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Product', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></th>
+					<th class="td" scope="col" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Quantity', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></th>
+					<th class="td" scope="col" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Price', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -130,7 +130,7 @@ function output_suborder_table($order, $sent_to_admin, $plain_text, $email, $tex
 				if ( $order->get_customer_note() ) {
 					?>
 					<tr>
-						<th class="td" scope="row" colspan="2" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Note:', 'woocommerce' ); ?></th>
+						<th class="td" scope="row" colspan="2" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Note:', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></th>
 						<td class="td" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php echo wp_kses_post( nl2br( wptexturize( $order->get_customer_note() ) ) ); ?></td>
 					</tr>
 					<?php

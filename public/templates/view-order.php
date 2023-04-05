@@ -22,7 +22,7 @@ if (!marketking()->is_multivendor_order($order_id) && !marketking()->is_suborder
 	<?php
 	printf(
 		/* translators: 1: order number 2: order date 3: order status */
-		esc_html__( 'Order #%1$s was placed on %2$s and is currently %3$s.', 'woocommerce' ),
+		esc_html__( 'Order #%1$s was placed on %2$s and is currently %3$s.', 'marketking-multivendor-marketplace-for-woocommerce' ),
 		'<mark class="order-number">' . $order->get_order_number() . '</mark>', 
 		'<mark class="order-date">' . wc_format_datetime( $order->get_date_created() ) . '</mark>', 
 		'<mark class="order-status">' . wc_get_order_status_name( $order->get_status() ) . '</mark>' 
@@ -42,7 +42,7 @@ if (!marketking()->is_multivendor_order($order_id) && !marketking()->is_suborder
 	<?php
 	printf(
 		/* translators: 1: order number 2: order date 3: order status */
-		esc_html__( 'Order #%1$s was placed on %2$s and is currently %3$s.', 'woocommerce' ),
+		esc_html__( 'Order #%1$s was placed on %2$s and is currently %3$s.', 'marketking-multivendor-marketplace-for-woocommerce' ),
 		'<mark class="order-number">' . $order->get_order_number() . '</mark>', 
 		'<mark class="order-date">' . wc_format_datetime( $order->get_date_created() ) . '</mark>', 
 		'<mark class="order-status">' . wc_get_order_status_name( $order->get_status() ) . '</mark>' 
@@ -58,13 +58,13 @@ if (!marketking()->is_multivendor_order($order_id) && !marketking()->is_suborder
 
 
 <?php if ( $notes ) : ?>
-	<h2><?php esc_html_e( 'Order updates', 'woocommerce' ); ?></h2>
+	<h2><?php esc_html_e( 'Order updates', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></h2>
 	<ol class="woocommerce-OrderUpdates commentlist notes">
 		<?php foreach ( $notes as $note ) : ?>
 		<li class="woocommerce-OrderUpdate comment note">
 			<div class="woocommerce-OrderUpdate-inner comment_container">
 				<div class="woocommerce-OrderUpdate-text comment-text">
-					<p class="woocommerce-OrderUpdate-meta meta"><?php echo date_i18n( esc_html__( 'l jS \o\f F Y, h:ia', 'woocommerce' ), strtotime( $note->comment_date ) );  ?></p>
+					<p class="woocommerce-OrderUpdate-meta meta"><?php echo date_i18n( esc_html__( 'l jS \o\f F Y, h:ia', 'marketking-multivendor-marketplace-for-woocommerce' ), strtotime( $note->comment_date ) );  ?></p>
 					<div class="woocommerce-OrderUpdate-description description">
 						<?php echo wp_kses_post( wpautop( wptexturize( $note->comment_content ) ) );  ?>
 					</div>

@@ -15,7 +15,7 @@ if (marketking()->is_vendor($userid)){
 }
 
 
-if ($messageid !== 'inquiry' && $messageid !== 'support'){
+if ($messageid !== 'inquiry' && $messageid !== 'support' && $messageid !== 'withdrawal'){
 	?>
 	<p>
 		<?php esc_html_e( 'You have a new message.', 'marketking-multivendor-marketplace-for-woocommerce');	?>
@@ -68,7 +68,28 @@ if ($messageid !== 'inquiry' && $messageid !== 'support'){
 		?>
 	</p>
 	<?php
+} else if ($messageid === 'withdrawal'){
+	?>
+	<p>
+		<?php 
+		esc_html_e( 'You have a new withdrawal request.', 'marketking-multivendor-marketplace-for-woocommerce' ); 
+
+		?>
+		<br /><br />
+		<?php
+		echo nl2br(wp_kses(
+			$message,
+			array(
+				'br' => true,
+				'b'  => true,
+			)
+		));
+		?>
+	</p>
+	<?php
 }
+
+
 /**
  * Show user-defined additional content - this is set in each email's settings.
  */

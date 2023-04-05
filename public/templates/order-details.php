@@ -40,7 +40,7 @@ if ( $show_downloads ) {
 <section class="woocommerce-order-details">
 	<?php do_action( 'woocommerce_order_details_before_order_table', $order ); ?>
 
-	<h2 class="woocommerce-order-details__title"><?php esc_html_e( 'Order details', 'woocommerce' ); ?></h2>
+	<h2 class="woocommerce-order-details__title"><?php esc_html_e( 'Order details', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></h2>
 	<?php
 	wc_print_notice( apply_filters('marketking_order_split_notice',esc_html__('Since your order contains products sold by different vendors, it has been split into multiple sub-orders. Each sub-order will be handled by their respective vendor independently.','marketking-multivendor-marketplace-for-woocommerce')), 'notice' );
 	?>
@@ -68,7 +68,7 @@ if ( $show_downloads ) {
 			?>
 			<?php if ( $order->get_customer_note() ) : ?>
 				<tr>
-					<th><?php esc_html_e( 'Note:', 'woocommerce' ); ?></th>
+					<th><?php esc_html_e( 'Note:', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></th>
 					<td><?php echo wp_kses_post( nl2br( wptexturize( $order->get_customer_note() ) ) ); ?></td>
 				</tr>
 			<?php endif; ?>
@@ -90,7 +90,7 @@ function order_details_vendor_table($suborder, $order, $order_items, $show_purch
 			<?php echo '<h4>'.esc_html__('Products sold by ','marketking-multivendor-marketplace-for-woocommerce').$store_name.'</h4>'; ?>
 		</div>
 		<div class="marketking_order_details_vendor_table_view_order">
-			<a href="<?php echo esc_attr($suborder->get_view_order_url());?>"><button class="woocommerce-button button view"><?php echo esc_html__( 'View Order', 'woocommerce' ).' #'.esc_html($suborder_id); ?></button></a>
+			<a href="<?php echo esc_attr($suborder->get_view_order_url());?>"><button class="woocommerce-button button view"><?php echo esc_html__( 'View Order', 'marketking-multivendor-marketplace-for-woocommerce' ).' #'.esc_html($suborder_id); ?></button></a>
 		</div>
 	</div>
 
@@ -98,8 +98,8 @@ function order_details_vendor_table($suborder, $order, $order_items, $show_purch
 	<table class="woocommerce-table woocommerce-table--order-details shop_table order_details">
 		<thead>
 			<tr>
-				<th class="woocommerce-table__product-name product-name"><?php esc_html_e( 'Product', 'woocommerce' ); ?></th>
-				<th class="woocommerce-table__product-table product-total"><?php esc_html_e( 'Total', 'woocommerce' ); ?></th>
+				<th class="woocommerce-table__product-name product-name"><?php esc_html_e( 'Product', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></th>
+				<th class="woocommerce-table__product-table product-total"><?php esc_html_e( 'Total', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></th>
 			</tr>
 		</thead>
 
@@ -160,7 +160,7 @@ function order_details_vendor_table($suborder, $order, $order_items, $show_purch
 			?>
 			<?php if ( $suborder->get_customer_note() ) : ?>
 				<tr>
-					<th><?php esc_html_e( 'Note:', 'woocommerce' ); ?></th>
+					<th><?php esc_html_e( 'Note:', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></th>
 					<td><?php echo wp_kses_post( nl2br( wptexturize( $suborder->get_customer_note() ) ) ); ?></td>
 				</tr>
 			<?php endif; ?>

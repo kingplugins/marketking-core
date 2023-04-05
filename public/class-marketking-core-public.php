@@ -46,11 +46,19 @@ class Marketkingcore_Public{
 					add_action('woocommerce_created_customer', array($this,'marketking_save_custom_registration_fields') );
 					add_action('user_register', array($this,'marketking_save_custom_registration_fields') );
 					add_action('woocommerce_registration_redirect', array($this,'marketking_check_user_approval_on_registration'), 2);
-					add_filter('woocommerce_process_login_errors', array($this,'marketking_check_user_approval_on_login'), 10, 3);
+
+					if (!apply_filters('marketking_allow_logged_in_register_vendor', false)){
+						add_filter('woocommerce_process_login_errors', array($this,'marketking_check_user_approval_on_login'), 10, 3);
+					}
 					// Allow file upload in registration form for WooCommerce
 					add_action( 'woocommerce_register_form_tag', array($this,'marketking_custom_registration_fields_allow_file_upload') );
+
+
 					// Modify new account email to include notice of manual account approval, if needed
-					add_action( 'woocommerce_email_footer', array($this,'marketking_modify_new_account_email'), 10, 1 );
+					if (!apply_filters('marketking_allow_logged_in_register_vendor', false)){
+						add_action( 'woocommerce_email_footer', array($this,'marketking_modify_new_account_email'), 10, 1 );
+					}
+
 					// Replace customer new account email in case of vendors
 					add_filter( 'woocommerce_locate_template', array($this, 'intercept_wc_template'), 10, 3 );
 
@@ -58,12 +66,19 @@ class Marketkingcore_Public{
 					// Add button in my account page to vendor dashboard for vendors
 					add_action('woocommerce_account_dashboard', array($this, 'marketking_dashboard_button'), 10);
 
+					// Vendor application pending
+					add_action('woocommerce_account_dashboard', array($this, 'marketking_vendor_application_pending'), 10);
+
+
 					// Show vendor in product page and other items such as checkout
 					add_action('woocommerce_product_meta_end', [$this, 'marketking_show_vendor_product_page']);
 					add_action( 'init', array($this, 'marketking_vendor_product_page_shortcode'));
 
 					// optional shortcode, allows displaying a custom list of vendors by group
 					add_action( 'init', array($this, 'marketking_vendors_list_shortcode'));
+
+					// dashboard header shortcode for custom usage
+					add_action( 'init', array($this, 'marketking_dashboard_header_shortcode'));
 
 
 					// show vendor in cart/checkout (not in cart if using newcart template)
@@ -93,15 +108,9 @@ class Marketkingcore_Public{
 					add_filter('shortcode_atts_products', array($this, 'shortcode_atts_products'), 10, 4);			
 					add_filter( 'woocommerce_shortcode_products_query', array($this, 'marketking_shortcode_vendor_products'), 100, 2 );
 
-
-					/* Vendor Dashboard */
-					// modify categories dropdown in edit product page
-					add_filter( 'wp_dropdown_cats', [$this, 'wp_dropdown_cats_multiple'], 10, 2 );
-
-
 					/* Order management functions */
 					// Replace WooCommerce Cart template with custom template for multivendor setup
-					if (get_option( 'marketking_cart_display_setting', 'newcart' ) === 'newcart'){
+					if (get_option( 'marketking_cart_display_setting', 'newcart' ) === 'newcart' or apply_filters('marketking_force_newcart_always', false)){
 						add_filter( 'woocommerce_locate_template', array( $this, 'marketking_locate_template_cart' ), 10, 3 );
 					}
 
@@ -109,7 +118,11 @@ class Marketkingcore_Public{
 					add_action('woocommerce_before_cart', [$this,'message_multiple_vendors_cart'], 10);
 
 					// Process order, assign vendor + calculate commissions
-					add_action('woocommerce_checkout_order_processed', [$this,'process_order_vendors'], 10, 3);
+					add_action('woocommerce_checkout_order_processed', [$this,'process_order_vendors'], 1000, 3);
+					add_action('woocommerce_thankyou', [$this,'process_order_vendors'], 10, 1);
+					add_action('woocommerce_payment_complete', [$this,'process_order_vendors'], 10, 1);
+
+					
 					// Process order POS integrations
 					add_action( 'woocommerce_rest_insert_shop_order_object', array( $this, 'process_order_vendors_pos' ), 100, 3 );
 
@@ -154,16 +167,22 @@ class Marketkingcore_Public{
 					
 					// Set that vendor can't purchase his own products
 					add_action('woocommerce_after_checkout_validation', array($this,'vendor_cannot_buy_own_products'), 10, 2);
-					add_action( 'woocommerce_before_cart', array($this,'vendor_cannot_buy_own_products_before'), 10);
-					add_action( 'woocommerce_before_checkout_form', array($this,'vendor_cannot_buy_own_products_before'), 10);
+					if (apply_filters('marketking_vendors_cannot_buy_own_products', true)){
+						add_action( 'woocommerce_before_cart', array($this,'vendor_cannot_buy_own_products_before'), 10);
+						add_action( 'woocommerce_before_checkout_form', array($this,'vendor_cannot_buy_own_products_before'), 10);
+					}
+					
 
 					// Invoice order status allow
 					add_filter('wpo_wcpdf_myaccount_allowed_order_statuses', array($this, 'allow_order_status_composite_invoice'), 10, 1);
 
 					// max upload size 1mb for vendors
 					add_filter( 'upload_size_limit', function($val){
-						return apply_filters('marketking_vendor_upload_file_size', 1000000);
+						return apply_filters('marketking_vendor_upload_file_size', 1048576);
 					});
+
+
+
 				}
 
 			});
@@ -179,7 +198,7 @@ class Marketkingcore_Public{
 
 	function vendor_cannot_buy_own_products_before() {
 		$vendors_in_cart = marketking()->get_vendors_in_cart();
-		if (in_array(get_current_user_id(),$vendors_in_cart)){
+		if (in_array(get_current_user_id(),$vendors_in_cart) && get_current_user_id() !== 1 && (marketking()->is_vendor(get_current_user_id()) or marketking()->is_vendor_team_member() ) ){
 			// error
 			wc_print_notice( esc_html__('Your cannot purchase your own products!', 'marketking-multivendor-marketplace-for-woocommerce'), 'error' );
 		}
@@ -187,7 +206,7 @@ class Marketkingcore_Public{
 
 	function vendor_cannot_buy_own_products($data, $errors){
 		$vendors_in_cart = marketking()->get_vendors_in_cart();
-		if (in_array(get_current_user_id(),$vendors_in_cart)){
+		if (in_array(get_current_user_id(),$vendors_in_cart) && get_current_user_id() !== 1 && (marketking()->is_vendor(get_current_user_id()) or marketking()->is_vendor_team_member() ) ){
 			// error
 			$errors->add( 'validation', esc_html__('Your cannot purchase your own products!', 'marketking-multivendor-marketplace-for-woocommerce') );
 
@@ -220,25 +239,29 @@ class Marketkingcore_Public{
 	function filter_new_order_email_recipient( $recipient, $order ){
 		// change the email recipient to be the vendor
 
-		if (marketking()->is_suborder($order->get_id())){
-			// get vendor email
-			$recipient = marketking()->get_vendor_email(marketking()->get_order_vendor($order->get_id()));
-		} else if (!marketking()->is_multivendor_order($order->get_id())){
-			// not suborder, but vendor order (just 1 vendor)
-			$recipient = marketking()->get_vendor_email(marketking()->get_order_vendor($order->get_id()));
+		if (is_object($order)){
+			if (marketking()->is_suborder($order->get_id())){
+				// get vendor email
+				$recipient = marketking()->get_vendor_email(marketking()->get_order_vendor($order->get_id()));
+			} else if (!marketking()->is_multivendor_order($order->get_id())){
+				// not suborder, but vendor order (just 1 vendor)
+				$recipient = marketking()->get_vendor_email(marketking()->get_order_vendor($order->get_id()));
 
-		}
-
-		// for the "new order" email sent to admin (for the composite order), do not send it
-		if (marketking()->is_multivendor_order($order->get_id())){
-			// unless specifically set via filter, disable it.
-			if (!apply_filters('marketking_enable_new_order_email_composite', false)){
-				$recipient = '';
 			}
-		}
 
-	    return $recipient;
+			// for the "new order" email sent to admin (for the composite order), do not send it
+			if (marketking()->is_multivendor_order($order->get_id())){
+				// unless specifically set via filter, disable it.
+				if (!apply_filters('marketking_enable_new_order_email_composite', false)){
+					$recipient = '';
+				}
+			}
+		}		
+
+	    return apply_filters('marketking_new_order_email_recipient', $recipient);
+
 	}
+
 
 	function filter_customer_received_order_email_recipient( $recipient, $order ){
 		// do not send this email for suborders
@@ -256,7 +279,7 @@ class Marketkingcore_Public{
 	        $new_columns[ $key ] = $name;
 	        // add ship-to after order status column
 	        if ( 'order-number' === $key ) {
-	            $new_columns['order-vendor'] = esc_html__( 'Vendor', 'b2bking' );
+	            $new_columns['order-vendor'] = esc_html__( 'Vendor', 'marketking-multivendor-marketplace-for-woocommerce' );
 	        }
 	    }
 	    return $new_columns;
@@ -360,7 +383,7 @@ class Marketkingcore_Public{
 				$order = $args['order'];
 				$order_id = $order->get_id();
 
-				if (marketking()->is_multivendor_order($order_id)){
+				if (marketking()->is_multivendor_order($order)){
 					$template = trailingslashit( plugin_dir_path( __FILE__ ) ) . 'templates/email-order-details.php';
 				}
 				
@@ -370,158 +393,174 @@ class Marketkingcore_Public{
 		return $template;
 	}
 
-	function process_order_vendors($order_id, $posted_data, $order){
+	function process_order_vendors($order_id, $posted_data = array(), $order = array()){
 
-		// Stripe integration start
-		if (defined('MARKETKINGPRO_DIR')){
-	        if (intval(get_option( 'marketking_enable_stripe_setting', 1 )) === 1){
-				$split_payers = array(); 
-				$error = 0;
-				$totalvendorcommission = 0;
-				$applicationfees = 0;
-				$settings = get_option('woocommerce_marketking_stripe_gateway_settings');
-				if (isset($settings['non_connected'])){
-					$non_connected = $settings['non_connected']; // yes or no
-					$defertoadmin = 0; // amount deferred to admin from non-connected vendors
-				} else {
-					$non_connected = 'no';
+		$already_processed = get_post_meta($order_id,'marketking_already_processed_order', true);
+
+		if ($already_processed !== 'yes'){
+
+			if (is_array($order)){
+				$order = wc_get_order($order_id);
+			}
+
+			// Stripe integration start
+			if (defined('MARKETKINGPRO_DIR')){
+		        if (intval(get_option( 'marketking_enable_stripe_setting', 1 )) === 1){
+					$split_payers = array(); 
+					$error = 0;
+					$totalvendorcommission = 0;
+					$applicationfees = 0;
+					$settings = get_option('woocommerce_marketking_stripe_gateway_settings');
+					if (isset($settings['non_connected'])){
+						$non_connected = $settings['non_connected']; // yes or no
+						$defertoadmin = 0; // amount deferred to admin from non-connected vendors
+					} else {
+						$non_connected = 'no';
+					}
 				}
 			}
-		}
-		// Stripe end
-			
-		// check if the items in the order belong to a single or multiple vendor
+			// Stripe end
+				
+			// check if the items in the order belong to a single or multiple vendor
 
-		$vendors = marketking()->get_vendors_of_order($order_id);
-		// if single, set the order author here as the vendor
-		if (count($vendors) === 1){
-			if (intval($vendors[0]) !== 1){
-				// if not admin, then assign it
-				$update_args = array(
-				    'ID' => $order_id,
-				    'post_author' => $vendors[0],
-				);
-				$result = wp_update_post($update_args);
+			$vendors = marketking()->get_vendors_of_order($order_id);
+			// if single, set the order author here as the vendor
+			if (count($vendors) === 1){
+				if (intval($vendors[0]) !== 1){
+					// if not admin, then assign it
+					$update_args = array(
+					    'ID' => $order_id,
+					    'post_author' => $vendors[0],
+					);
+					$result = wp_update_post($update_args);
 
+				}
+			} else {
+				// split into multiple orders
+				$splitter = new Marketking_Order_Splitter;
+				$splitter->split_orders($order, $vendors);
 			}
-		} else {
-			// split into multiple orders
-			$splitter = new Marketking_Order_Splitter;
-			$splitter->split_orders($order, $vendors);
-		}
 
-		// apply group rules
-		foreach ($vendors as $vendor_id){
-			marketking()->apply_group_rules($vendor_id);
-		}
+			// apply group rules
+			foreach ($vendors as $vendor_id){
+				marketking()->apply_group_rules($vendor_id);
+			}
 
-		// calculate commissions
-		if (marketking()->is_multivendor_order($order_id)){
-			$suborders = marketking()->get_suborders_of_order($order_id);
-			foreach ($suborders as $suborder){
-				$suborder_id = $suborder->get_id();
-				$vendor_id = marketking()->get_order_vendor($suborder_id);
+			// calculate commissions
+			if (marketking()->is_multivendor_order($order_id)){
+				$suborders = marketking()->get_suborders_of_order($order_id);
+				foreach ($suborders as $suborder){
+					$suborder_id = $suborder->get_id();
+					$vendor_id = marketking()->get_order_vendor($suborder_id);
 
-				$vendor_commission = marketking()->calculate_vendor_commission($vendor_id, $suborder_id);
-				$earning_id = marketking()->create_earning($vendor_id, $suborder_id, $vendor_commission);
+					$vendor_commission = marketking()->calculate_vendor_commission($vendor_id, $suborder_id);
+					$vendor_commission = apply_filters('marketking_vendor_commission_change', $vendor_commission, $vendor_id, $suborder_id);
+					$earning_id = marketking()->create_earning($vendor_id, $suborder_id, $vendor_commission);
 
-				// Stripe integration
-				if (defined('MARKETKINGPRO_DIR')){
-			        if (intval(get_option( 'marketking_enable_stripe_setting', 1 )) === 1){
-						$vendor_connected = intval(get_user_meta( $vendor_id, 'vendor_connected', true ));
-						$vendor_connect_user_id = get_user_meta( $vendor_id, 'stripe_user_id', true );
+					// Stripe integration
+					if (defined('MARKETKINGPRO_DIR')){
+				        if (intval(get_option( 'marketking_enable_stripe_setting', 1 )) === 1){
+							$vendor_connected = intval(get_user_meta( $vendor_id, 'vendor_connected', true ));
+							$vendor_connect_user_id = get_user_meta( $vendor_id, 'stripe_user_id', true );
 
-						if ($vendor_connected === 1){
-							$split_payers[$vendor_id] = array(
-								'destination' => $vendor_connect_user_id,
-								'commission'  => $vendor_commission,
-								'gross_sales'  => $suborder->get_total(),
-								'application_fee'  => ($suborder->get_total()-$vendor_commission),
-							);
+							if ($vendor_connected === 1){
+								$split_payers[$vendor_id] = array(
+									'destination' => $vendor_connect_user_id,
+									'commission'  => $vendor_commission,
+									'gross_sales'  => $suborder->get_total(),
+									'application_fee'  => ($suborder->get_total()-$vendor_commission),
+								);
 
-							$totalvendorcommission += $vendor_commission;
-							$applicationfees += $split_payers[$vendor_id]['application_fee'];
-							update_post_meta($suborder_id,'marketking_paid_via_stripe','yes');
+								$totalvendorcommission += $vendor_commission;
+								$applicationfees += $split_payers[$vendor_id]['application_fee'];
+								update_post_meta($suborder_id,'marketking_paid_via_stripe','yes');
 
-						} else {
-							if ($non_connected === 'yes'){
-								$defertoadmin+=$suborder->get_total();
 							} else {
-								// throw error because vendor is not connected and not connected setting is disabled
-								$error = 1;
+								if ($non_connected === 'yes'){
+									$defertoadmin+=$suborder->get_total();
+								} else {
+									// throw error because vendor is not connected and not connected setting is disabled
+									$error = 1;
+								}
+							}
+						}
+					}
+							
+				}
+			} else {
+
+				// if not admin, set commission
+				$vendor_id = marketking()->get_order_vendor($order_id);
+				if (intval($vendor_id) !== 1){
+
+					// calculate commission
+					$vendor_commission = marketking()->calculate_vendor_commission($vendor_id, $order_id);
+					$vendor_commission = apply_filters('marketking_vendor_commission_change', $vendor_commission, $vendor_id, $order_id);
+
+					$earning_id = marketking()->create_earning($vendor_id, $order_id, $vendor_commission);
+
+					// Stripe integration
+					if (defined('MARKETKINGPRO_DIR')){
+				        if (intval(get_option( 'marketking_enable_stripe_setting', 1 )) === 1){
+
+							$vendor_connected = intval(get_user_meta( $vendor_id, 'vendor_connected', true ));
+							$vendor_connect_user_id = get_user_meta( $vendor_id, 'stripe_user_id', true );
+
+							if ($vendor_connected === 1){
+
+								$split_payers[$vendor_id] = array(
+									'destination' => $vendor_connect_user_id,
+									'commission'  => $vendor_commission,
+									'gross_sales'  => $order->get_total(),
+									'application_fee'  => ($order->get_total()-$vendor_commission),
+								);
+
+								$totalvendorcommission += $vendor_commission;
+								$applicationfees += $split_payers[$vendor_id]['application_fee'];
+								update_post_meta($order_id,'marketking_paid_via_stripe','yes');
+							} else {
+
+								if ($non_connected === 'yes'){
+									$defertoadmin+=$order->get_total();
+								} else {
+									// throw error because vendor is not connected and not connected setting is disabled
+									$error = 1;
+								}
 							}
 						}
 					}
 				}
-						
 			}
-		} else {
 
-			// if not admin, set commission
-			$vendor_id = marketking()->get_order_vendor($order_id);
-			if (intval($vendor_id) !== 1){
+			// Stripe integration
+			if (defined('MARKETKINGPRO_DIR')){
+		        if (intval(get_option( 'marketking_enable_stripe_setting', 1 )) === 1){
 
-				// calculate commission
-				$vendor_commission = marketking()->calculate_vendor_commission($vendor_id, $order_id);
-				$earning_id = marketking()->create_earning($vendor_id, $order_id, $vendor_commission);
+					$paylist = array(
+						'total_amount'   => number_format($order->get_total(), 2, '.', ''),
+						'currency'       => $order->get_currency(),
+						'transfer_group' => __('Split Pay for Order #', 'wc-multivendor-marketplace') . $order->get_order_number(),
+						'description'    => __('Payment for Order #', 'wc-multivendor-marketplace') . $order->get_order_number(),
+						'totalvendorcommission' => $totalvendorcommission,
+						'defertoadmin' => $defertoadmin,
+						'total_admin_amount' => $order->get_total()->$totalvendorcommission,
+						'total_admin_amount_after_application_fees' => $order->get_total()-$totalvendorcommission-$applicationfees,
+						'total_application_fees' => $applicationfees,
+						'error' => $error,
+						'distribution_list' => $split_payers
+					);
+				
+					$paylist = apply_filters( 'marketking_paylist_split_pay_payment_args', $paylist, $order );
 
-				// Stripe integration
-				if (defined('MARKETKINGPRO_DIR')){
-			        if (intval(get_option( 'marketking_enable_stripe_setting', 1 )) === 1){
+					update_post_meta($order_id, 'marketking_stripe_order_paylist', $paylist);
 
-						$vendor_connected = intval(get_user_meta( $vendor_id, 'vendor_connected', true ));
-						$vendor_connect_user_id = get_user_meta( $vendor_id, 'stripe_user_id', true );
-
-						if ($vendor_connected === 1){
-
-							$split_payers[$vendor_id] = array(
-								'destination' => $vendor_connect_user_id,
-								'commission'  => $vendor_commission,
-								'gross_sales'  => $order->get_total(),
-								'application_fee'  => ($order->get_total()-$vendor_commission),
-							);
-
-							$totalvendorcommission += $vendor_commission;
-							$applicationfees += $split_payers[$vendor_id]['application_fee'];
-							update_post_meta($order_id,'marketking_paid_via_stripe','yes');
-						} else {
-
-							if ($non_connected === 'yes'){
-								$defertoadmin+=$order->get_total();
-							} else {
-								// throw error because vendor is not connected and not connected setting is disabled
-								$error = 1;
-							}
-						}
-					}
 				}
 			}
+
+			update_post_meta($order_id,'marketking_already_processed_order', 'yes');
 		}
 
-		// Stripe integration
-		if (defined('MARKETKINGPRO_DIR')){
-	        if (intval(get_option( 'marketking_enable_stripe_setting', 1 )) === 1){
-
-				$paylist = array(
-					'total_amount'   => number_format($order->get_total(), 2, '.', ''),
-					'currency'       => $order->get_currency(),
-					'transfer_group' => __('Split Pay for Order #', 'wc-multivendor-marketplace') . $order->get_order_number(),
-					'description'    => __('Payment for Order #', 'wc-multivendor-marketplace') . $order->get_order_number(),
-					'totalvendorcommission' => $totalvendorcommission,
-					'defertoadmin' => $defertoadmin,
-					'total_admin_amount' => $order->get_total()->$totalvendorcommission,
-					'total_admin_amount_after_application_fees' => $order->get_total()-$totalvendorcommission-$applicationfees,
-					'total_application_fees' => $applicationfees,
-					'error' => $error,
-					'distribution_list' => $split_payers
-				);
-			
-				$paylist = apply_filters( 'marketking_paylist_split_pay_payment_args', $paylist, $order );
-
-				update_post_meta($order_id, 'marketking_stripe_order_paylist', $paylist);
-
-			}
-		}
+		
 
 
 	}
@@ -606,7 +645,7 @@ class Marketkingcore_Public{
 	}
 
 	public function marketking_locate_template_cart( $template, $template_name, $template_path ) {
-    	if (count(marketking()->get_vendors_in_cart()) > 1){
+    	if (count(marketking()->get_vendors_in_cart()) > 1 or apply_filters('marketking_force_newcart_always', false)){
 	        if ( 'cart.php' === basename( $template ) ) {
 	        	$template = trailingslashit( plugin_dir_path( __FILE__ ) ) . 'templates/cart.php';
 	        }
@@ -628,23 +667,7 @@ class Marketkingcore_Public{
 		return $template;
 	}
 
-	function wp_dropdown_cats_multiple( $output, $r ) {
 
-	    if( isset( $r['multiple'] ) && $r['multiple'] ) {
-
-	        $output = preg_replace( '/^<select/i', '<select multiple data-live-search="true" data-style="btn-info"', $output );
-
-	        $output = str_replace( "name='{$r['name']}'", "name='{$r['name']}[]'", $output );
-
-	        $selected = is_array($r['selected']) ? $r['selected'] : explode( ",", $r['selected'] );
-	        foreach ( array_map( 'trim', $selected ) as $value ){
-	            $output = str_replace( "value=\"{$value}\"", "value=\"{$value}\" selected", $output );
-	        }
-
-	    }
-
-	    return $output;
-	}
 
 	function store_list_modify_title( $title, $post_id = null ) {
 		global $post;
@@ -745,15 +768,31 @@ class Marketkingcore_Public{
 	        if ( intval($post->ID) === intval(apply_filters( 'wpml_object_id', get_option( 'marketking_stores_page_setting', 'none' ), 'post' , true) ) ){
 
 	        	if (in_the_loop()){
+
+	        		$exception = false;
+	        		// astra exception
+	        		if (!empty(get_query_var('vendorid')) && defined('ASTRA_THEME_VERSION')){
+	        			$exception = true;
+	        		}
+
 		        	static $has_run = false;
-		        	if ($has_run === false){
+		        	if ($has_run === false or $exception){
 
 			        	// check if is general page, or if vendor id is set
 			        	if (empty(get_query_var('vendorid'))){ 
 				            // stores page here
 				            // get all vendors
 				            $users = marketking()->get_all_vendors();
-				            echo marketking()->display_stores_list($users);
+
+
+				            // affects whether the stores list displayed correctly below the header or above
+				            $theme_style = wp_get_theme()->get_stylesheet();	
+				            $themeexceptions = apply_filters('marketking_theme_exceptions_header', array('twentytwentythree', 'twentytwentytwo', 'twentytwentyone'));
+				            if (!in_array($theme_style, $themeexceptions)){
+				            	echo marketking()->display_stores_list($users);
+				            } else {
+				            	$content = marketking()->display_stores_list($users);
+				            }
 
 				        } else {
 				        	$store_url = get_query_var('vendorid');
@@ -766,7 +805,6 @@ class Marketkingcore_Public{
 				}
 	        }
     	}
-
         return $content;
 	}
 
@@ -802,7 +840,6 @@ class Marketkingcore_Public{
 			}
 			echo '<strong>'.esc_html__('Rating:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($rating['rating']).' '.esc_html__('rating from','marketking-multivendor-marketplace-for-woocommerce').' '.esc_html($rating['count']).' '.esc_html($review);
 		}
-		
 
 		// company name
 		$company = get_user_meta($vendor_id,'billing_company', true);
@@ -819,13 +856,19 @@ class Marketkingcore_Public{
 		$phone = get_user_meta($vendor_id,'billing_phone', true);
 		$email = get_userdata($vendor_id)->user_email;
 
-			if ($showphone === 'yes'){
-				echo '<strong>'.esc_html__('Phone:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($phone).'<br>';
-			}
-			if ($showemail === 'yes'){
-				echo '<strong>'.esc_html__('Email:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($email).'<br><br>';
-			}
-			
+		if ($showphone === 'yes'){
+			echo '<strong>'.esc_html__('Phone:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($phone).'<br>';
+		}
+		if ($showemail === 'yes'){
+			echo '<strong>'.esc_html__('Email:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($email).'<br>';
+		}
+
+		do_action('marketking_vendor_details_product_page', $vendor_id);
+
+		echo '<br>';
+
+		
+
 	}
 
 	// add vendor info tab as well
@@ -908,15 +951,25 @@ class Marketkingcore_Public{
 		add_shortcode('marketking_vendors_list', array($this, 'marketking_vendors_list_shortcode_content'));
 	}
 	function marketking_vendor_product_page_shortcode_content(){
+		ob_start();
 		echo $this->marketking_show_vendor_product_page();
+		$content = ob_get_clean();
+		return $content;
 	}
 	function marketking_vendors_list_shortcode_content($atts){
+
+		ob_start();
 
 		$atts = shortcode_atts(
 	        array(
 	            'group' => 'all',
+	            'category' => 'all',
+	            'vendors' => 'all',
 	        ), 
 	    $atts);
+
+	    $category = $atts['category'];
+	    $vendors = $atts['vendors'];
 
 		if ($atts['group'] === 'all'){
 			$users = get_users(array(
@@ -931,8 +984,79 @@ class Marketkingcore_Public{
 			    'meta_compare' => '=',
 			));
 		}
-	   
-		echo marketking()->display_stores_list($users);
+
+		if ($category !== 'all'){
+			// only users who match categories
+			$categories = explode(',', $category);
+			$categories_slugs = array();
+
+
+			foreach ($categories as $cat){
+				if (!empty($cat)){
+					$term = get_term_by('slug', $cat, 'storecat');
+					if ($term){
+						$id = $term->term_id;
+						array_push($categories_slugs, $id);
+					}
+					
+				}
+				
+			}
+
+
+			$usersfinal = array();
+			foreach ($users as $user){
+				// if user does not match, remove
+				$user_categories = get_user_meta($user->ID,'marketking_store_categories', true);
+				$match = 'no';
+
+				if (!empty($user_categories)){
+					foreach ($user_categories as $user_category){
+
+						// category IDs
+						if (in_array($user_category, $categories)){
+							$match = 'yes';
+							break;
+						}
+
+						// category slugs
+						if (in_array($user_category, $categories_slugs)){
+							$match = 'yes';
+							break;
+						}
+					}
+				}
+				
+
+				if ($match === 'yes'){
+					array_push($usersfinal, $user);
+				}
+			}
+
+			$users = $usersfinal;
+		}
+
+		$showcat = 'yes';
+		if ($category !== 'all'){
+			$showcat = 'no';
+		}
+
+		if ($vendors !== 'all'){
+			$users = array();
+			$vendors = array_filter(array_unique(explode(',', $vendors)));
+			foreach ($vendors as $vendor_id){
+				$user = new WP_User(trim($vendor_id));
+				array_push($users, $user);
+			}
+		}	
+
+	   	// showcat is the category selector dropdown. 
+	   	// if the shortcode specifices certain categories, we don't want to show it
+
+		echo marketking()->display_stores_list($users, $showcat);
+		$content = ob_get_clean();
+
+		return $content;
 	}
 
 
@@ -947,6 +1071,8 @@ class Marketkingcore_Public{
 
 			echo '<a href='.marketking()->get_store_link($vendor_id).'>'.esc_html($store_name).'</a>';
 			?></span><?php
+
+			do_action('marketking_after_vendor_product_page_text', $vendor_id);
 		}
 	}
 
@@ -969,8 +1095,22 @@ class Marketkingcore_Public{
 	    return $item_data;		    				   
 	}
 
+	function marketking_vendor_application_pending(){
+		if (apply_filters('marketking_allow_logged_in_register_vendor', false)){
+			if (!marketking()->is_vendor(get_current_user_id())){
+				// if application pending
+				if (marketking()->has_vendor_application_pending(get_current_user_id())){
+					// show message
+					?>
+					<span class="marketking-application-pending"><?php esc_html_e('We are currently reviewing your vendor application and it is pending.','marketking-multivendor-marketplace-for-woocommerce'); ?></span>
+					<?php
+				}
+			}
+		}
+	}
+
 	function marketking_dashboard_button(){
-		if (marketking()->is_vendor(get_current_user_id())){
+		if (marketking()->is_vendor(get_current_user_id()) or marketking()->is_vendor_team_member()){
 			?>
 			<a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)));?>" class="marketking_go_vendor_dashboard_link"><button class="marketking_go_vendor_dashboard_button"><?php esc_html_e('Go to the Vendor Dashboard', 'marketking-multivendor-marketplace-for-woocommerce'); ?></button></a>
 			<?php
@@ -1032,11 +1172,20 @@ class Marketkingcore_Public{
 		    	$redir_change = 'yes';
 		    }
 
-			wp_logout();
+		    if (apply_filters('marketking_allow_logged_in_register_vendor', false)){
 
-			do_action( 'woocommerce_set_cart_cookies',  true );
+		    	update_user_meta($user_id,'marketking_vendor_application_pending','yes');
 
-			wc_add_notice( esc_html__('Thank you for registering. Your vendor account requires manual approval. Please wait to be approved.', 'marketking-multivendor-marketplace-for-woocommerce'), 'success' );	
+		    	wc_add_notice( esc_html__('Your account has been succesfully created. We are now reviewing your application to become a vendor. Please wait to be approved.', 'marketking-multivendor-marketplace-for-woocommerce'), 'success' );	
+
+		    } else {
+		    	wp_logout();
+
+		    	do_action( 'woocommerce_set_cart_cookies',  true );
+
+		    	wc_add_notice( esc_html__('Thank you for registering. Your vendor account requires manual approval. Please wait to be approved.', 'marketking-multivendor-marketplace-for-woocommerce'), 'success' );	
+		    }
+			
 
 		
 		}
@@ -1064,7 +1213,10 @@ class Marketkingcore_Public{
 
 		if (get_user_meta($user_id, 'marketking_registration_data_saved', true) === 'yes'){
 			// function has already run
-			return;
+			if (!apply_filters('marketking_allow_logged_in_register_vendor', false)){
+				return;
+			}
+			
 		} else {
 			update_user_meta($user_id,'marketking_registration_data_saved', 'yes');
 		}
@@ -1186,8 +1338,8 @@ class Marketkingcore_Public{
 								update_user_meta( $user_id, 'last_name', $field_value );
 							} else if ($billing_connection === 'billing_store_name'){
 								// max 25 characters for the store name
-								if(strlen($$field_value) > 25){
-									$$field_value = substr($$field_value, 0, 25);
+								if(strlen($field_value) > 25){
+									$field_value = substr($field_value, 0, 25);
 								}
 								update_user_meta( $user_id, 'marketking_store_name', $field_value );
 							} else if ($billing_connection === 'billing_store_url'){
@@ -1196,7 +1348,10 @@ class Marketkingcore_Public{
 									// user has cheated, so change this value
 								    $field_value = marketking()->generate_unique_url();
 								}
-								update_user_meta( $user_id, 'marketking_store_url', $field_value );
+								// if user does not already have a store url 
+								if (empty(get_user_meta($user_id,'marketking_store_url', true))){
+									update_user_meta( $user_id, 'marketking_store_url', $field_value );
+								}
 							} else if ($billing_connection === 'billing_phone'){
 								update_user_meta( $user_id, 'marketking_store_phone', $field_value );
 							}
@@ -1246,6 +1401,8 @@ class Marketkingcore_Public{
 			$user_role_approval = get_post_meta($user_role_id, 'marketking_option_approval', true);
 			$user_role_automatic_customer_group = get_post_meta($user_role_id, 'marketking_option_automatic_approval_group', true);
 
+
+
 			update_user_meta( $user_id, 'marketking_user_choice', 'vendor');	
 			if ($user_role_approval === 'manual'){
 				update_user_meta( $user_id, 'marketking_account_approved', 'no');
@@ -1258,6 +1415,9 @@ class Marketkingcore_Public{
 				if (substr($user_role_automatic_customer_group, 0, 6) === 'salesk'){
 					update_user_meta($user_id,'registration_option_agent', 'yes');
 				}
+
+				do_action('marketking_vendor_approval_manual_save', $user_id);
+
 
 			} else if ($user_role_approval === 'automatic'){
 				// check if there is a setting to automatically send the user to a particular customer group
@@ -1279,6 +1439,9 @@ class Marketkingcore_Public{
 					update_user_meta( $user_id, 'salesking_user_choice', 'agent');
 					update_user_meta( $user_id, 'salesking_assigned_agent', 'none');
 				}
+
+				do_action('marketking_vendor_approval_automatic_save', $user_id);
+
 			}
 		}
 
@@ -1315,6 +1478,8 @@ class Marketkingcore_Public{
 				update_user_meta($user_id, 'marketking_customergroup', 'no');
 			}
 		}
+
+		do_action('marketking_after_vendor_registration_saved', $user_id);
 
 	}
 
@@ -1360,9 +1525,452 @@ class Marketkingcore_Public{
     public function marketking_locate_template( $template ) {
 
         if ( 'marketking-dashboard-login.php' === basename( $template ) ) {
-        	$template = trailingslashit( plugin_dir_path( __FILE__ ) ) . 'dashboard/marketking-dashboard-login.php';
+        	$template = apply_filters('marketking_dashboard_template',trailingslashit( plugin_dir_path( __FILE__ ) ) . 'dashboard/marketking-dashboard-login.php');
+
         }
         return $template;
+    }
+
+    function marketking_dashboard_header_shortcode(){
+    	add_shortcode('marketking_dashboard_header', array($this, 'marketking_dashboard_header_shortcode_content'));
+    }
+    function marketking_dashboard_header_shortcode_content($atts = array(), $content = null){
+
+    	wp_enqueue_style('marketking_dashboard', plugins_url('dashboard/assets/css/dashlite-header.css', __FILE__), $deps = array(), filemtime( plugin_dir_path( __FILE__ ) . 'dashboard/assets/css/dashlite-header.css' ));
+
+    	$run_script = 'yes';
+    	if (defined('ELEMENTOR_VERSION')){
+    		$current_url = $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+    		$is_preview = \Elementor\Plugin::$instance->preview->is_preview() ?? false;
+
+    		if(strpos($current_url, 'preview=1') !== false || $is_preview !== false) {
+    			$run_script = 'no';
+    		} 
+    	}
+    	
+    	if ($run_script === 'yes'){
+    		add_action('wp_footer', function(){
+    			?>
+    			<script type="text/javascript">
+    				jQuery(document).ready(function(){
+    					<?php 
+    					$bundle_script = file_get_contents(plugins_url('dashboard/assets/js/bundle.js', __FILE__));
+    					echo $bundle_script; 
+    					?>
+    				});
+    			</script>
+    			<?php
+    		}, 1000);
+    	}
+
+		$atts = shortcode_atts(
+	        array(
+	            'messages' => 'yes',
+	            'announcements' => 'yes',
+	            'profile' => 'yes',
+	        ), 
+	    $atts);
+
+
+
+    	ob_start();
+    	$user_id = get_current_user_id();
+    	$currentuser = new WP_User($user_id);
+    	$user = $currentuser->user_login;
+    	$currentuserlogin = $currentuser -> user_login;
+    	$agent_group = get_user_meta($user_id, 'marketking_group', true);
+
+    	if (marketking()->is_vendor($user_id)){
+    		$messages = get_posts(
+                array( 
+                    'post_type' => 'marketking_message', // only conversations
+                    'post_status' => 'publish',
+                    'numberposts' => -1,
+                    'fields' => 'ids',
+                    'meta_query'=> array(   // only the specific user's conversations
+                        'relation' => 'OR',
+                        array(
+                            'key' => 'marketking_message_user',
+                            'value' => $currentuserlogin, 
+                        ),
+                        array(
+                            'key' => 'marketking_message_message_1_author',
+                            'value' => $currentuserlogin, 
+                        )
+                    )
+                )
+            );
+
+            if (current_user_can('activate_plugins')){
+            	// include shop messages
+            	$messages2 = get_posts(
+	                array( 
+	                    'post_type' => 'marketking_message', // only conversations
+	                    'post_status' => 'publish',
+	                    'numberposts' => -1,
+	                    'fields' => 'ids',
+	                    'meta_query'=> array(   // only the specific user's conversations
+	                        'relation' => 'OR',
+	                        array(
+	                            'key' => 'marketking_message_user',
+	                            'value' => 'shop'
+	                        ),
+	                        array(
+	                            'key' => 'marketking_message_message_1_author',
+	                            'value' => 'shop'
+	                        )
+	                    )
+	                )
+	            );
+	            $messages = array_merge($messages, $messages2);
+            }
+            $announcements = get_posts(array( 'post_type' => 'marketking_announce',
+              'post_status'=>'publish',
+              'numberposts' => -1,
+              'meta_query'=> array(
+                    'relation' => 'OR',
+                    array(
+                        'key' => 'marketking_group_'.$agent_group,
+                        'value' => '1',
+                    ),
+                    array(
+                        'key' => 'marketking_user_'.$user, 
+                        'value' => '1',
+                    ),
+                )));
+            // check how many are unread
+            $unread_ann = 0;
+            foreach ($announcements as $announcement){
+                $read_status = get_user_meta($user_id,'marketking_announce_read_'.$announcement->ID, true);
+                if (!$read_status || empty($read_status)){
+                    $unread_ann++;
+                }
+            }
+            // check how many are unread
+            $unread_msg = 0;
+            foreach ($messages as $message){
+                // check that last msg is not current user
+                $nr_messages = get_post_meta ($message, 'marketking_message_messages_number', true);
+                $last_message_author = get_post_meta ($message, 'marketking_message_message_'.$nr_messages.'_author', true);
+                if ($last_message_author !== $currentuserlogin){
+                    // chek if last read time is lower than last msg time
+                    $last_read_time = get_user_meta($user_id,'marketking_message_last_read_'.$message, true);
+                    if (!empty($last_read_time)){
+                        $last_message_time = get_post_meta ($message, 'marketking_message_message_'.$nr_messages.'_time', true);
+                        if (floatval($last_read_time) < floatval($last_message_time)){
+                            $unread_msg++;
+                        }
+                    } else {
+                        $unread_msg++;
+                    }
+                }
+            }
+
+            // load profile pic in user avatar if it is set
+            $profile_pic = get_user_meta($user_id,'marketking_profile_logo_image', true);
+
+            if (!empty($profile_pic)){
+              $profile_pic = marketking()->get_resized_image($profile_pic,'thumbnail');
+                ?>
+                <style type="text/css">
+                    .dropdown-body .user-avatar, .simplebar-content .user-avatar{
+                        background-size: contain !important;
+                    }
+
+                </style>
+                <?php
+            }
+
+
+    		?>
+    		<ul class="nk-quick-nav">
+    		    <!-- HIDDEN COMMENTS FOR SCRIPTS PURPOSES -->
+    		    <em class="icon ni ni-comments ni-comments-hidden"></em>
+    		    <?php
+    		    if ($atts['messages'] === 'yes'){
+
+	    		    if (defined('MARKETKINGPRO_DIR')){
+	    		        if (intval(get_option( 'marketking_enable_messages_setting', 1 )) === 1){
+	    		            if(marketking()->vendor_has_panel('messages')){
+	    		                ?>
+	    		                <li class="dropdown chats-dropdown hide-mb-xs">
+	    		                    <a href="#" class="dropdown-toggle nk-quick-nav-icon" data-toggle="dropdown">
+	    		                        <div class="icon-status <?php if ($unread_msg !== 0) {echo 'icon-status-info';}?>"><em class="icon ni ni-comments"></em></div>
+	    		                    </a>
+	    		                    <div class="dropdown-menu dropdown-menu-xl dropdown-menu-right">
+	    		                        <div class="dropdown-head">
+	    		                            <span class="sub-title nk-dropdown-title"><?php echo apply_filters('marketking_recent_messages_text',esc_html__('Recent Messages', 'marketking-multivendor-marketplace-for-woocommerce')); ?></span>
+	    		                        </div>
+	    		                        <div class="dropdown-body">
+	    		                            <ul class="chat-list">
+	    		                                <?php
+	    		                                // remove closed messages
+	    		                                $closedmsg = array();
+	    		                                foreach ($messages as $message){
+	    		                                    $nr_messages = get_post_meta ($message, 'marketking_message_messages_number', true);
+	    		                                    $last_closed_time = get_user_meta($user_id,'marketking_message_last_closed_'.$message, true);
+	    		                                    if (!empty($last_closed_time)){
+	    		                                        $last_message_time = get_post_meta ($message, 'marketking_message_message_'.$nr_messages.'_time', true);
+	    		                                        if (floatval($last_closed_time) > floatval($last_message_time)){
+	    		                                            array_push($closedmsg, $message);
+	    		                                        }
+	    		                                    }
+	    		                                }
+
+	    		                                $messagesarr = array_diff($messages,$closedmsg);
+	    		                                // show last 6 messages that are active (not closed)
+	    		                                $messagesarr = array_slice($messagesarr, 0, 6);
+	    		                                foreach ($messagesarr as $message){ // message is a message thread e.g. conversation
+
+	    		                                    $title = substr(get_the_title($message), 0, 65);
+	    		                                    if (strlen($title) === 65){
+	    		                                        $title .= '...';
+	    		                                    }
+	    		                                    $nr_messages = get_post_meta ($message, 'marketking_message_messages_number', true);
+
+	    		                                    $last_message_time = get_post_meta ($message, 'marketking_message_message_'.$nr_messages.'_time', true);
+	    		                                    // build time string
+	    		                                    // if today
+	    		                                    if((time()-$last_message_time) < 86400){
+	    		                                        // show time
+	    		                                        $timestring = date_i18n( 'h:i A', $last_message_time+(get_option('gmt_offset')*3600) );
+	    		                                    } else if ((time()-$last_message_time) < 172800){
+	    		                                    // if yesterday
+	    		                                        $timestring = 'Yesterday at '.date_i18n( 'h:i A', $last_message_time+(get_option('gmt_offset')*3600) );
+	    		                                    } else {
+	    		                                    // date
+	    		                                        $timestring = date_i18n( get_option('date_format'), $last_message_time+(get_option('gmt_offset')*3600) ); 
+	    		                                    }
+
+	    		                                    $last_message = get_post_meta ($message, 'marketking_message_message_'.$nr_messages, true);
+	    		                                    // first 100 chars
+	    		                                    $last_message = substr($last_message, 0, 100);
+
+	    		                                    // check if message is unread
+	    		                                    $is_unread = '';
+	    		                                    $last_message_author = get_post_meta ($message, 'marketking_message_message_'.$nr_messages.'_author', true);
+	    		                                    if ($last_message_author !== $currentuserlogin){
+	    		                                        $last_read_time = get_user_meta($user_id,'marketking_message_last_read_'.$message, true);
+	    		                                        if (!empty($last_read_time)){
+	    		                                            $last_message_time = get_post_meta ($message, 'marketking_message_message_'.$nr_messages.'_time', true);
+	    		                                            if (floatval($last_read_time) < floatval($last_message_time)){
+	    		                                                $is_unread = 'is-unread';
+	    		                                            }
+	    		                                        } else {
+	    		                                            $is_unread = 'is-unread';
+	    		                                        }
+	    		                                    } 
+	    		                              
+	    		                                   
+	    		                                    ?>
+	    		                                   <li class="chat-item <?php echo esc_attr($is_unread);?>">
+                                                        <a class="chat-link" href="<?php echo get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)).'messages?id='.esc_attr($message);?>">
+
+                                                            <?php
+
+                                                            $otherparty = marketking()->get_other_chat_party($message);
+                                                            $icon = marketking()->get_display_icon_image($otherparty);
+                                                          
+                                                            ?>
+                                                            <div class="chat-media user-avatar" style="<?php
+                                                            if (strlen($icon) != 2){
+                                                                echo 'background-image: url('.$icon.') !important;background-size: contain!important;';
+                                                            }
+                                                            ?>">
+                                                                <span><?php 
+                                                                if (strlen($icon) == 2){
+                                                                    echo esc_html($icon);
+                                                                }
+                                                                ?></span>
+                                                            </div>
+                                                            <div class="chat-info">
+                                                                <div class="chat-from">
+                                                                    <div class="name"><?php echo esc_html($title);?></div>
+                                                                    <span class="time"><?php echo esc_html($timestring);?></span>
+                                                                </div>
+                                                                <div class="chat-context">
+                                                                    <div class="text"><?php echo esc_html(strip_tags($last_message));?></div>
+
+                                                                </div>
+                                                            </div>
+	    		                                        </a>
+	    		                                    </li><!-- .chat-item -->
+	    		                                    <?php
+
+	    		                                }
+	    		                                ?>
+	    		                            </ul><!-- .chat-list -->
+	    		                        </div><!-- .nk-dropdown-body -->
+	    		                        <div class="dropdown-foot center">
+	    		                            <a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)).'messages'); ?>"><?php esc_html_e('View All', 'marketking-multivendor-marketplace-for-woocommerce'); ?></a>
+	    		                        </div>
+	    		                    </div>
+	    		                </li>
+	    		                <?php
+	    		            }
+	    		        }
+	    		    }
+	    		}
+    		    ?>
+    		    <?php
+
+    		    if ($atts['announcements'] === 'yes'){
+
+	    		    if (defined('MARKETKINGPRO_DIR')){
+	    		        if (intval(get_option( 'marketking_enable_announcements_setting', 1 )) === 1){
+	    		            if(marketking()->vendor_has_panel('announcements')){
+	    		                ?>
+	    		                <li class="dropdown notification-dropdown">
+	    		                    <a href="#" class="dropdown-toggle nk-quick-nav-icon" data-toggle="dropdown">
+	    		                        <div class="icon-status <?php if ($unread_ann !== 0) {echo 'icon-status-info';}?>"><em class="icon ni ni-bell"></em></div>
+	    		                    </a>
+	    		                    <div class="dropdown-menu dropdown-menu-xl dropdown-menu-right">
+	    		                        <div class="dropdown-head">
+	    		                            <span class="sub-title nk-dropdown-title"><?php echo apply_filters('marketking_unread_announcements_text',esc_html__('Unread Announcements', 'marketking-multivendor-marketplace-for-woocommerce')); ?></span>
+	    		                        </div>
+	    		                        <div class="dropdown-body">
+	    		                            <?php
+	    		                            // show all announcements
+	    		                            $i=1;
+	    		                            foreach ($announcements as $announcement){
+	    		                                $read_status = get_user_meta($user_id,'marketking_announce_read_'.$announcement->ID, true);
+	    		                                if (!$read_status || empty($read_status)){
+	    		                                    // is unread, so let's display it
+	    		                                    $i++;
+	    		                                } else {
+	    		                                    continue;
+	    		                                }
+
+	    		                                if ($i>6){
+	    		                                    continue;
+	    		                                }
+
+	    		                                ?>
+	    		                                <div class="nk-notification">
+	    		                                    <div class="nk-notification-item dropdown-inner">
+	    		                                        <div class="nk-notification-icon">
+	    		                                            <em class="icon icon-circle bg-warning-dim ni ni-curve-down-right"></em>
+	    		                                        </div>
+	    		                                        <div class="nk-notification-content">
+	    		                                            <a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)).'announcement/?id='.esc_attr($announcement->ID)); ?>"><div class="nk-notification-text"><?php echo esc_html($announcement->post_title);?></div></a>
+	    		                                            <div class="nk-notification-time"><?php echo esc_html(get_the_date(get_option( 'date_format' ), $announcement));?></div>
+	    		                                        </div>
+	    		                                    </div>
+	    		                                </div><!-- .nk-notification -->
+	    		                                <?php
+	    		                            }
+	    		                            ?>
+	    		                        </div><!-- .nk-dropdown-body -->
+	    		                        <div class="dropdown-foot center">
+	    		                            <a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)).'announcements'); ?>"><?php esc_html_e('View All', 'marketking-multivendor-marketplace-for-woocommerce'); ?></a>
+	    		                        </div>
+	    		                    </div>
+	    		                </li>
+	    		                <?php
+	    		            }
+	    		        }
+	    		    }
+	    		}
+
+	    		if ($atts['profile'] === 'yes'){
+
+	    		    ?>
+	    		    <li class="dropdown user-dropdown">
+	    		        <a href="#" class="dropdown-toggle mr-n1" data-toggle="dropdown">
+	    		            <div class="user-toggle">
+	    		            	<?php
+	    		            	$icon = marketking()->get_display_icon_image($user_id);
+	    		            	?>
+	    		                <div class="user-avatar sm" <?php
+                                        if (strlen($icon)!=2){ echo 'style="background-image: url(\''.$icon.'\');background-size:contain !important;"';}
+                                    ?>>
+	    		                    <?php 
+	    		                        if (strlen($icon)==2){
+	    		                            echo $icon;
+	    		                        }
+	    		                        ?>
+	    		                    
+	    		                </div>
+	    		                <div class="user-info d-none d-xl-block">
+	    		                    <div class="user-status user-status-active"><?php esc_html_e('Vendor','marketking-multivendor-marketplace-for-woocommerce');?></div>
+	    		                    <div class="user-name dropdown-indicator"><?php 
+	    		                        $storename = marketking()->get_store_name_display($user_id);
+	    		                        $firstlastname = $currentuser->first_name.' '.$currentuser->last_name;
+	    		                        if(empty($storename)){
+	    		                            echo esc_html($firstlastname);
+	    		                        } else {
+	    		                            echo esc_html($storename);
+	    		                        }
+	    		                        ?></div>
+	    		                        
+	    		                </div>
+	    		            </div>
+	    		        </a>
+	    		        <div class="dropdown-menu dropdown-menu-md dropdown-menu-right">
+	    		            <div class="dropdown-inner user-card-wrap bg-lighter d-none d-md-block">
+	    		                <div class="user-card">
+	    		                    <div class="user-avatar" <?php
+                                        	if (strlen($icon)!=2){ echo 'style="background-image: url(\''.$icon.'\');background-size:contain !important;"';}
+                                    	?>>
+	    		                        <span><?php 
+		    		                        if (strlen($icon)==2){
+		    		                            echo $icon;
+		    		                        }
+
+	    		                        ?></span>
+	    		                    </div>
+	    		                    <div class="user-info">
+	    		                        <span class="lead-text"><?php 
+	    		                        if(empty($storename)){
+	    		                            echo esc_html($firstlastname);
+	    		                        } else {
+	    		                            echo esc_html($storename);
+	    		                        }
+	    		                        ?></span>
+	    		                        <span class="sub-text"><?php 
+	    		                        if(!empty($storename)){
+	    		                            echo esc_html($firstlastname);
+	    		                        }
+
+	    		                         ?></span>
+	    		                    </div>
+	    		                </div>
+	    		            </div>
+	    		            <div class="dropdown-inner">
+	    		                <ul class="link-list">
+	    		                    <li><a href="<?php echo esc_attr(marketking()->get_store_link($user_id));?>"><em class="icon ni ni-home"></em><span><?php esc_html_e('Go to My Store','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+	    		                </ul>
+
+	    		            </div>
+	    		            <?php
+	    		            if (!marketking()->is_vendor_team_member()){
+	    		                ?>
+	    		                <div class="dropdown-inner">
+	    		                    <ul class="link-list">
+	    		                        <li><a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'profile';?>"><em class="icon ni ni-account-setting-fill"></em><span><?php esc_html_e('Store Settings','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+	    		                    </ul>
+
+	    		                </div>
+	    		                <?php
+	    		            }
+	    		            ?>
+	    		            <div class="dropdown-inner">
+	    		                <ul class="link-list">
+	    		                    <li><a href="<?php echo esc_url(wp_logout_url()); ?>"><em class="icon ni ni-signout"></em><span><?php esc_html_e('Sign out','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+	    		                </ul>
+	    		            </div>
+	    		        </div>
+	    		    </li>
+	    		    <?php
+	    		}
+	    		?>
+    		</ul>
+    		<?php
+    	}
+    	
+
+    	$content = ob_get_clean();
+    	return $content;
     }
 
     function enqueue_dashboard_woocommerce_resources(){
@@ -1511,10 +2119,12 @@ class Marketkingcore_Public{
 				'i18n_load_more'            => _x( 'Loading more results&hellip;', 'enhanced select', 'woocommerce' ),
 				'i18n_searching'            => _x( 'Searching&hellip;', 'enhanced select', 'woocommerce' ),
 				'ajax_url'                  => admin_url( 'admin-ajax.php' ),
-				'search_products_nonce'     => wp_create_nonce( 'search-products' ),
-				'search_customers_nonce'    => wp_create_nonce( 'search-customers' ),
-				'search_categories_nonce'   => wp_create_nonce( 'search-categories' ),
-				'search_pages_nonce'        => wp_create_nonce( 'search-pages' ),
+				'search_products_nonce'           => wp_create_nonce( 'search-products' ),
+				'search_customers_nonce'          => wp_create_nonce( 'search-customers' ),
+				'search_categories_nonce'         => wp_create_nonce( 'search-categories' ),
+				'search_taxonomy_terms_nonce'     => wp_create_nonce( 'search-taxonomy-terms' ),
+				'search_product_attributes_nonce' => wp_create_nonce( 'search-product-attributes' ),
+				'search_pages_nonce'              => wp_create_nonce( 'search-pages' ),
 			)
 		);
 
@@ -1725,12 +2335,21 @@ class Marketkingcore_Public{
 			'rounding_precision'            => wc_get_rounding_precision(),
 			'tax_rounding_mode'             => wc_get_tax_rounding_mode(),
 			'product_types'                 => array_unique( array_merge( array( 'simple', 'grouped', 'variable', 'external' ), array_keys( wc_get_product_types() ) ) ),
-			'i18n_download_permission_fail' => esc_html__( 'Could not grant access - the user may already have permission for this file or billing email is not set. Ensure the billing email is set, and the order has been saved.', 'woocommerce' ),
-			'i18n_permission_revoke'        => esc_html__( 'Are you sure you want to revoke access to this download?', 'woocommerce' ),
-			'i18n_tax_rate_already_exists'  => esc_html__( 'You cannot add the same tax rate twice!', 'woocommerce' ),
-			'i18n_delete_note'              => esc_html__( 'Are you sure you wish to delete this note? This action cannot be undone.', 'woocommerce' ),
-			'i18n_apply_coupon'             => esc_html__( 'Enter a coupon code to apply. Discounts are applied to line totals, before taxes.', 'woocommerce' ),
-			'i18n_add_fee'                  => esc_html__( 'Enter a fixed amount or percentage to apply as a fee.', 'woocommerce' ),
+			'i18n_download_permission_fail'      => __( 'Could not grant access - the user may already have permission for this file or billing email is not set. Ensure the billing email is set, and the order has been saved.', 'woocommerce' ),
+			'i18n_permission_revoke'             => __( 'Are you sure you want to revoke access to this download?', 'woocommerce' ),
+			'i18n_tax_rate_already_exists'       => __( 'You cannot add the same tax rate twice!', 'woocommerce' ),
+			'i18n_delete_note'                   => __( 'Are you sure you wish to delete this note? This action cannot be undone.', 'woocommerce' ),
+			'i18n_apply_coupon'                  => __( 'Enter a coupon code to apply. Discounts are applied to line totals, before taxes.', 'woocommerce' ),
+			'i18n_add_fee'                       => __( 'Enter a fixed amount or percentage to apply as a fee.', 'woocommerce' ),
+			'i18n_product_simple_tip'            => __( '<b>Simple –</b> covers the vast majority of any products you may sell. Simple products are shipped and have no options. For example, a book.', 'woocommerce' ),
+			'i18n_product_grouped_tip'           => __( '<b>Grouped –</b> a collection of related products that can be purchased individually and only consist of simple products. For example, a set of six drinking glasses.', 'woocommerce' ),
+			'i18n_product_external_tip'          => __( '<b>External or Affiliate –</b> one that you list and describe on your website but is sold elsewhere.', 'woocommerce' ),
+			'i18n_product_variable_tip'          => __( '<b>Variable –</b> a product with variations, each of which may have a different SKU, price, stock option, etc. For example, a t-shirt available in different colors and/or sizes.', 'woocommerce' ),
+			'i18n_product_other_tip'             => __( 'Product types define available product details and attributes, such as downloadable files and variations. They’re also used for analytics and inventory management.', 'woocommerce' ),
+			'i18n_product_description_tip'       => __( 'Describe this product. What makes it unique? What are its most important features?', 'woocommerce' ),
+			'i18n_product_short_description_tip' => __( 'Summarize this product in 1-2 short sentences. We’ll show it at the top of the page.', 'woocommerce' ),
+			/* translators: %1$s: maximum file size */
+			'i18n_product_image_tip'             => sprintf( __( 'For best results, upload JPEG or PNG files that are 1000 by 1000 pixels or larger. Maximum upload file size: %1$s.', 'woocommerce' ) , size_format( wp_max_upload_size() ) ),
 		);
 
 		wp_localize_script( 'wc-admin-meta-boxes', 'woocommerce_admin_meta_boxes', $params );
@@ -1768,10 +2387,18 @@ class Marketkingcore_Public{
 
     	}
     	
+    	// Simplebar
+    	wp_enqueue_style('simplebar', plugins_url('../includes/assets/lib/simplebar/simplebar.css', __FILE__), $deps = array(), $ver = false, $in_footer =true);
+    	wp_enqueue_script('simplebar', plugins_url('../includes/assets/lib/simplebar/simplebar.min.js', __FILE__), $deps = array(), $ver = false, $in_footer =true);
 
-    	
+    	if (apply_filters('marketking_dashboard_rtl', false)){ // filter to switch dashboard to RTL
+    		add_filter('marketking_css_dashboard_file', function($val){
+    		    return 'dashlite-rtl.css';
+    		}, 10, 1);
+    	}
+
     	// Dashboard
-    	wp_enqueue_style('marketking_dashboard', plugins_url('dashboard/assets/css/dashlite.css', __FILE__), $deps = array(), filemtime( plugin_dir_path( __FILE__ ) . 'dashboard/assets/css/dashlite.css' ));
+    	wp_enqueue_style('marketking_dashboard', plugins_url('dashboard/assets/css/'.apply_filters('marketking_css_dashboard_file','dashlite.css'), __FILE__), $deps = array(), filemtime( plugin_dir_path( __FILE__ ) . 'dashboard/assets/css/'.apply_filters('marketking_css_dashboard_file','dashlite.css') ));
     	wp_enqueue_script('marketking_dashboard_bundle', plugins_url('dashboard/assets/js/bundle.js', __FILE__), $deps = array(), $ver = false, $in_footer =true);
     	wp_enqueue_script('marketking_dashboard_scripts', plugins_url('dashboard/assets/js/scripts.js', __FILE__), $deps = array(), $ver = false, $in_footer =true);
     	wp_enqueue_script('marketking_dashboard_chart', plugins_url('dashboard/assets/js/charts/chart-ecommerce.js', __FILE__), $deps = array(), filemtime( plugin_dir_path( __FILE__ ) . 'dashboard/assets/js/charts/chart-ecommerce.js' ), $in_footer =true);
@@ -1818,44 +2445,44 @@ class Marketkingcore_Public{
 		    		'marketking-multivendor-marketplace-for-woocommerce' => 'yes',
 		    		'security'  => wp_create_nonce( 'b2bking_security_nonce' ),
 		    		'ajaxurl' => admin_url( 'admin-ajax.php' ),
-		    		'min_quantity_text' => esc_html__('Min. Quantity','marketking'),
-		    		'final_price_text' => esc_html__('Final Price', 'marketking'),
-		    		'label_text' => esc_html__('Label', 'marketking'),
-		    		'text_text' => esc_html__('Text', 'marketking'),
-		    		'text_delete' => esc_html__('X', 'marketking'),
+		    		'min_quantity_text' => esc_html__('Min. Quantity','marketking-multivendor-marketplace-for-woocommerce'),
+		    		'final_price_text' => esc_html__('Final Price', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'label_text' => esc_html__('Label', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'text_text' => esc_html__('Text', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'text_delete' => esc_html__('X', 'marketking-multivendor-marketplace-for-woocommerce'),
 		    		'currency_symbol' => get_woocommerce_currency_symbol(),
-		    		'are_you_sure_save_offer' => esc_html__('Are you sure you want to publish this offer?', 'marketking'),
-		    		'are_you_sure_delete_offer' => esc_html__('Are you sure you want to delete this offer?', 'marketking'),
-		    		'are_you_sure_save_rule' => esc_html__('Are you sure you want to publish this rule?', 'marketking'),
-		    		'are_you_sure_delete_orule' => esc_html__('Are you sure you want to delete this rule?', 'marketking'),
-		    		'rule_must_have_title' => esc_html__('You must enter a title for the rule!', 'marketking'),
-		    		'offer_must_have_title' => esc_html__('You must enter a title for the offer!', 'marketking'),
-		    		'offer_must_have_product' => esc_html__('You must have at least 1 product with quantity and price!', 'marketking'),
-		    		'cart_total_quantity' => esc_html__('Cart Total Quantity', 'marketking'),
-		    		'cart_total_value' => esc_html__('Cart Total Value', 'marketking'),
-		    		'category_product_quantity' => esc_html__('Category Product Quantity', 'marketking'),
-		    		'category_product_value' => esc_html__('Category Product Value', 'marketking'),
-		    		'product_quantity' => esc_html__('Product Quantity', 'marketking'),
-		    		'product_value' => esc_html__('Product Value', 'marketking'),
-		    		'greater' => esc_html__('greater (>)', 'marketking'),
-		    		'equal' => esc_html__('equal (=)', 'marketking'),
-		    		'smaller' => esc_html__('smaller (<)', 'marketking'),
-		    		'delete' => esc_html__('Delete', 'marketking'),
-		    		'enter_quantity_value' => esc_html__('Enter the quantity/value', 'marketking'),
-		    		'add_condition' => esc_html__('Add Condition' ,'marketking'),
-		    		'conditions_apply_cumulatively' => esc_html__('Conditions must apply cumulatively.' ,'marketking'),
-		    		'conditions_multiselect' => esc_html__('Each product must meet all product conditions.' ,'marketking'),
+		    		'are_you_sure_save_offer' => esc_html__('Are you sure you want to publish this offer?', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'are_you_sure_delete_offer' => esc_html__('Are you sure you want to delete this offer?', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'are_you_sure_save_rule' => esc_html__('Are you sure you want to publish this rule?', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'are_you_sure_delete_orule' => esc_html__('Are you sure you want to delete this rule?', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'rule_must_have_title' => esc_html__('You must enter a title for the rule!', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'offer_must_have_title' => esc_html__('You must enter a title for the offer!', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'offer_must_have_product' => esc_html__('You must have at least 1 product with quantity and price!', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'cart_total_quantity' => esc_html__('Cart Total Quantity', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'cart_total_value' => esc_html__('Cart Total Value', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'category_product_quantity' => esc_html__('Category Product Quantity', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'category_product_value' => esc_html__('Category Product Value', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'product_quantity' => esc_html__('Product Quantity', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'product_value' => esc_html__('Product Value', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'greater' => esc_html__('greater (>)', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'equal' => esc_html__('equal (=)', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'smaller' => esc_html__('smaller (<)', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'delete' => esc_html__('Delete', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'enter_quantity_value' => esc_html__('Enter the quantity/value', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'add_condition' => esc_html__('Add Condition' ,'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'conditions_apply_cumulatively' => esc_html__('Conditions must apply cumulatively.' ,'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'conditions_multiselect' => esc_html__('Each product must meet all product conditions.' ,'marketking-multivendor-marketplace-for-woocommerce'),
 		    		'purchase_lists_language_option' => get_option('b2bking_purchase_lists_language_setting','english'),
 		    		'replace_product_selector' => intval(get_option( 'b2bking_replace_product_selector_setting', 0 )),
 		    		'vendorinurl' => get_query_var('vendor'),
 		    		'request_many_vendors' => esc_html__('Your cart contains items from multiple vendors. Quote requests can only be sent to 1 vendor at a time. Please adjust cart items.'),
 		    		'offers_link'	=> esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'offers',
-		    		'email_offer'	=> esc_html__('Email Offer', 'marketking'),
-		    		'email_offer_confirm' => esc_html__('This offer will be emailed to ALL users that have visibility. That includes all groups you selected, all users, and all email addresses entered. Make sure to save the offer first if you made changes to it! Are you sure you want to proceed?', 'marketking'),
-		    		'email_has_been_sent' => esc_html__('The offer has been emailed successfully.', 'marketking'),
+		    		'email_offer'	=> esc_html__('Email Offer', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'email_offer_confirm' => esc_html__('This offer will be emailed to ALL users that have visibility. That includes all groups you selected, all users, and all email addresses entered. Make sure to save the offer first if you made changes to it! Are you sure you want to proceed?', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'email_has_been_sent' => esc_html__('The offer has been emailed successfully.', 'marketking-multivendor-marketplace-for-woocommerce'),
 		    		'offers_endpoint_link' => apply_filters('b2bking_offers_link', get_permalink( get_option('woocommerce_myaccount_page_id') ).get_option('b2bking_offers_endpoint_setting','offers')),
-		    		'also_email_offer'	=> esc_html__('The offer has been saved. Do you want to also email it to the user?', 'marketking'),
-		    		'are_you_sure_delete_rule' => esc_html__('Are you sure you want to delete this rule?', 'marketking'),
+		    		'also_email_offer'	=> esc_html__('The offer has been saved. Do you want to also email it to the user?', 'marketking-multivendor-marketplace-for-woocommerce'),
+		    		'are_you_sure_delete_rule' => esc_html__('Are you sure you want to delete this rule?', 'marketking-multivendor-marketplace-for-woocommerce'),
 		    		'b2bking_exists' => defined('B2BKING_DIR'),
 		    	);
 
@@ -1906,6 +2533,8 @@ class Marketkingcore_Public{
 
 		$pagenr = sanitize_text_field(marketking()->get_pagenr_query_var());
 
+		
+		
 		// Send display settings to JS
     	$data_to_be_passed = array(
     		'security'  => wp_create_nonce( 'marketking_security_nonce' ),
@@ -1971,6 +2600,7 @@ class Marketkingcore_Public{
     		'final_price_text' => esc_html__('Final Price', 'marketking-multivendor-marketplace-for-woocommerce'),
     		'label_text' => esc_html__('Label', 'marketking-multivendor-marketplace-for-woocommerce'),
     		'mkpror'	=> defined('MARKETKINGPRO_DIR'),
+    		'auctions' =>  intval(get_option('marketking_enable_auctions_setting', 1)),
     		'chooseattr' => esc_html__('Choose an attribute:','marketking-multivendor-marketplace-for-woocommerce'),
     		'can_linked_products' => marketking()->vendor_can_linked_products($current_id),
     		'can_purchase_notes' => intval(get_option( 'marketking_vendors_can_purchase_notes_setting', 1 )),
@@ -1979,6 +2609,7 @@ class Marketkingcore_Public{
     		'all_virtual' => marketking()->vendor_all_products_virtual($current_id),
     		'all_downloadable' => marketking()->vendor_all_products_downloadable($current_id),   		
     		'can_multiple_categories' => marketking()->vendor_can_multiple_categories($current_id),
+    		'can_backorders' => marketking()->vendor_can_backorders($current_id),
     		'can_reviews' => intval(get_option( 'marketking_vendors_can_reviews_setting', 0 )),
     		'load_tables_with_ajax' => intval(marketking()->load_tables_with_ajax(get_current_user_id())),    		
     		'text_text' => esc_html__('Text', 'marketking-multivendor-marketplace-for-woocommerce'),
@@ -2001,7 +2632,15 @@ class Marketkingcore_Public{
     		'can_virtual' => $can_virtual,
     		'remove_product_types' => json_encode($remove_types),
     		'membership_go_to_product' => apply_filters('marketking_membership_go_to_product', 0),
+    		'remove_tab_b2bking' => apply_filters('marketking_remove_tab_b2bking', 0),
+    		'remove_tab_product_layout_flatsome' => apply_filters('remove_tab_product_layout_flatsome', 0),
+    		'remove_tab_extra_flatsome' => apply_filters('remove_tab_extra_flatsome', 0),
+    		'remove_tab_extra_bubble_flatsome' => apply_filters('remove_tab_extra_bubble_flatsome', 0),
+    		'producttype' => isset($_GET['type']) ? sanitize_text_field($_GET['type']) : '',
+    		'typetext' => esc_html__('type','marketking-multivendor-marketplace-for-woocommerce')
+
 		);
+
 
 		// statistics about orders for dashboard page
 		if (empty(get_query_var('dashpage'))){ 
@@ -2363,6 +3002,13 @@ class Marketkingcore_Public{
 								$uniquerequired = '';
 							}
 							foreach ($select_options as $option){
+
+								// :checked 
+								$checked = '';
+								if (substr($option,-8) === ':checked'){
+									$option = substr($option, 0, -8);
+									$checked = 'checked="checked"';
+								}
 								
 								$previous_value = '';
 								if (isset($_POST['marketking_field_'.esc_attr($custom_field->ID).'_option_'.$i])){
@@ -2370,10 +3016,15 @@ class Marketkingcore_Public{
 								}
 								echo '<p class="form-row">';
 								echo '<label class="woocommerce-form__label woocommerce-form__label-for-checkbox">';
-								echo '<input id="marketking_field_'.esc_attr($custom_field->ID).'" type="checkbox" class="woocommerce-form__input woocommerce-form__input-checkbox marketking_custom_registration_field marketking_checkbox_registration_field marketking_field_req_'.esc_attr($uniquerequired).'" value="1" name="marketking_field_'.esc_attr($custom_field->ID).'_option_'.$i.'" '.checked(1, $previous_value, false).' '.esc_attr($uniquerequired).'>';
-								echo '<span>'.trim(wp_kses( $option, array( 'a'     => array(
-							        'href' => array()
-							    ) ) )).'</span></label></p>';
+								echo '<input id="marketking_field_'.esc_attr($custom_field->ID).'" type="checkbox" class="woocommerce-form__input woocommerce-form__input-checkbox marketking_custom_registration_field marketking_checkbox_registration_field marketking_field_req_'.esc_attr($uniquerequired).'" value="1" name="marketking_field_'.esc_attr($custom_field->ID).'_option_'.$i.'" '.checked(1, $previous_value, false).' '.esc_attr($uniquerequired).' '.$checked.'>';
+								echo '<span>'.trim(wp_kses( $option, 
+									array( 
+										'a'     => array(
+							        		'href' => array(),
+							        		'target' => array(),
+							    		) 
+									) 
+								)).'</span></label></p>';
 
 								$i++;
 							}
@@ -2431,7 +3082,8 @@ class Marketkingcore_Public{
     		'carturl' => wc_get_cart_url(),
     		'currency_symbol' => get_woocommerce_currency_symbol(),
     		'url_available' => esc_html__('This URL is available!', 'marketking-multivendor-marketplace-for-woocommerce'),
-    		'url_not_available' => esc_html__('This URL is unavailable!', 'marketking-multivendor-marketplace-for-woocommerce'),
+    		'url_not_available' => esc_html__('This URL is not available!', 'marketking-multivendor-marketplace-for-woocommerce'),
+    		'url_searching' => esc_html__('Searching availability...', 'marketking-multivendor-marketplace-for-woocommerce'),
     		'no_vendors_yet' => esc_html__('There are no sellers yet...','marketking-multivendor-marketplace-for-woocommerce'),
     		'profile_pic' => plugins_url('../includes/assets/images/store-profile.png', __FILE__),
     		'cartstyle' => get_option( 'marketking_cart_display_setting', 'newcart' ),
@@ -2446,7 +3098,7 @@ class Marketkingcore_Public{
     		'loggedin' => is_user_logged_in(),
     		'request_many_vendors' => esc_html__('Your cart contains items from multiple vendors. Quote requests can only be sent to 1 vendor at a time. Please adjust cart items. You may need to reload the cart page.'),
     		'follow_text' => esc_html__('Follow','marketking-multivendor-marketplace-for-woocommerce'),
-    		'following_text' => esc_html__('Following','marketking-multivendor-marketplace-for-woocommerce'),   
+    		'following_text' => apply_filters('marketking_following_text', esc_html__('Following','marketking-multivendor-marketplace-for-woocommerce')),   
     		'are_you_sure_abuse_report' => esc_html__('Are you sure you want to submit this abuse report?','marketking-multivendor-marketplace-for-woocommerce'), 		
     		'sure_shipment_received' => esc_html__('Are you sure you want to mark this order as Received? This means you are confirming you have correctly received all packages and items within this order.', 'marketking-multivendor-marketplace-for-woocommerce'),
     		'abuse_report_sent' => esc_html__('Thank you for your submission. Your report has been received.','marketking-multivendor-marketplace-for-woocommerce'), 		
@@ -2456,6 +3108,8 @@ class Marketkingcore_Public{
     		'pagetab2' => get_query_var('pagenr2'),
     		'defaulttab' => apply_filters('marketking_vendor_default_tab', 'products'),
     		'sure_reply_review' => esc_html__('Are you sure you want to submit this reply? Please note that you can only reply once.','marketking-multivendor-marketplace-for-woocommerce'),
+    		'datatables_folder' => plugins_url('../includes/assets/lib/dataTables/i18n/', __FILE__),
+    		'tables_language_option' => apply_filters('marketking_tables_language_option_setting','English'),
     		'review_reply_submitted' => esc_html__('Your reply has been submitted.','marketking-multivendor-marketplace-for-woocommerce'),
     		'review_report_submitted' => esc_html__('Your report has been submitted.','marketking-multivendor-marketplace-for-woocommerce'),
     		'refund_request_sent' => esc_html__('Your request has been sent.','marketking-multivendor-marketplace-for-woocommerce'),
@@ -2466,6 +3120,8 @@ class Marketkingcore_Public{
     		'currentvendor' => marketking()->get_vendor_id_in_store_url(),
     		'currentvendorlink' => marketking()->get_store_link(marketking()->get_vendor_id_in_store_url()),
     		'is_vendor_product_pagination' => isset($_GET['product-page']) ? 1 : 0,
+    		'allow_dash_store_url' => apply_filters('marketking_allow_dash_store_url', 0),
+    		'allcattext' => esc_html__('All Categories','marketking-multivendor-marketplace-for-woocommerce'),
 		);
 
 		wp_localize_script( 'marketking_public_script', 'marketking_display_settings', $data_to_be_passed );

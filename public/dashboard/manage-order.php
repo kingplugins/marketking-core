@@ -3,11 +3,11 @@
 /*
 
 Dashboard Order Page
-* @version 1.0.1
+* @version 1.0.2
 
-This template file can be edited and overwritten with your own custom template. To do this, simply copy this file directly under your theme (or child theme) folder and then edit it there. 
+This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
 
-For example, if your theme is storefront, you can copy this file directly under wp-content/themes/storefront/ and then edit it with your own custom content and changes.
+For example, if your theme is storefront, you can copy this file under wp-content/themes/storefront/marketking/ and then edit it with your own custom content and changes.
 
 */
 
@@ -47,7 +47,9 @@ if(marketking()->vendor_has_panel('orders')){
                                     <h3 class="nk-block-title page-title"><?php esc_html_e('Order Details','marketking-multivendor-marketplace-for-woocommerce');?> / <strong class="text-primary small">#<?php echo esc_html($order_id);?></strong></h3>
                                     <div class="nk-block-des text-soft">
                                         <ul class="list-inline">
-                                            <li><?php esc_html_e('Customer:','marketking-multivendor-marketplace-for-woocommerce');?> <span class="text-base"><?php echo esc_html($order->get_formatted_billing_full_name());?></span></li>
+                                            <li><?php esc_html_e('Customer:','marketking-multivendor-marketplace-for-woocommerce');?> <span class="text-base"><?php echo apply_filters('marketking_order_page_customer_name', esc_html($order->get_formatted_billing_full_name()), $order);
+
+                                            ?></span></li>
                                             <li><?php esc_html_e('Date:','marketking-multivendor-marketplace-for-woocommerce');?> <span class="text-base"><?php 
                                             $date_created = $order->get_date_created();
                                             echo $date_created->date_i18n( get_option('date_format'). ' ' . get_option('time_format'), $date_created->getTimestamp()+(get_option('gmt_offset')*3600) );
@@ -115,7 +117,7 @@ if(marketking()->vendor_has_panel('orders')){
                                                                                     }
                                                                                     $status = $order->get_status();
                                                                                     $modifiable_statuses = array('processing','completed','on-hold');
-                                                                                    if (!in_array($status, $modifiable_statuses)){
+                                                                                    if (!in_array($status, $modifiable_statuses) && !apply_filters('marketking_all_order_statuses_modifiable', false)){
                                                                                         echo 'disabled="disabled"';
                                                                                     }
 
@@ -171,7 +173,7 @@ if(marketking()->vendor_has_panel('orders')){
                                                                                     ?>
                                                                                     <p class="form-field form-field-wide">
                                                                                         <?php
-                                                                                        echo '<div class="marketking_order_mark_received">'.esc_html__('The customer has marked this order as received.','marketking').'</div>';
+                                                                                        echo '<div class="marketking_order_mark_received">'.esc_html__('The customer has marked this order as received.','marketking-multivendor-marketplace-for-woocommerce').'</div>';
                                                                                         ?>
                                                                                     </p>
                                                                                     <?php
@@ -186,13 +188,14 @@ if(marketking()->vendor_has_panel('orders')){
                                                                 <h6 class="overline-title title marketking_order_item_title"><?php esc_html_e('Billing','marketking-multivendor-marketplace-for-woocommerce');?></h6>
                                                                 <div class="card">
                                                                     <div class="card-body">
-                                                                        <p class="card-text"><?php echo $order->get_formatted_billing_address();?></p>
+                                                                        <p class="card-text"><?php echo apply_filters('marketking_order_page_billing_address', $order->get_formatted_billing_address(), $order);?></p>
                                                                         <?php 
 
                                                                         if (apply_filters('marketking_vendors_see_customer_contact_info', true)){
                                                                             echo esc_html__('Email:','marketking-multivendor-marketplace-for-woocommerce').' '.$order->get_billing_email();?><Br>
                                                                             <?php echo esc_html__('Phone:','marketking-multivendor-marketplace-for-woocommerce').' '.$order->get_billing_phone();
                                                                         }
+
                                                                         ?>
                                                                     </div>
                                                                 </div>
@@ -201,7 +204,16 @@ if(marketking()->vendor_has_panel('orders')){
                                                                 <h6 class="overline-title title marketking_order_item_title"><?php esc_html_e('Shipping','marketking-multivendor-marketplace-for-woocommerce');?></h6>
                                                                 <div class="card">
                                                                     <div class="card-body">
-                                                                        <p class="card-text"><?php echo $order->get_formatted_shipping_address();?></p>
+                                                                        <p class="card-text"><?php echo apply_filters('marketking_order_page_shipping_address', $order->get_formatted_shipping_address(), $order);?></p>
+                                                                        <?php
+                                                                        $note = $order->get_customer_note();
+                                                                        if (!empty($note)){
+                                                                            ?>
+                                                                            <p class="card-text"><strong><?php esc_html_e('Customer provided note:','marketking-multivendor-marketplace-for-woocommerce');?></strong><br><?php echo ' '.esc_html($note); ?></p>
+
+                                                                            <?php
+                                                                        }
+                                                                        ?>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -234,14 +246,34 @@ if(marketking()->vendor_has_panel('orders')){
                                                         <?php WC_Meta_Box_Order_Downloads::output($post);  ?>
                                                     </div>
                                                     <?php
+
+                                                    do_action('marketking_after_downloadable_product_permissions', $order_id);
+                                                    if (class_exists('WC_Admin_Custom_Order_Fields') && apply_filters('marketking_admin_custom_order_fields', true)){
+
+                                                        ?>
+                                                        <div class="nk-divider divider md"></div><div class="nk-block">
+                                                            <div class="nk-block-head">
+                                                                <h5 class="title"><?php esc_html_e('Custom Order FIelds','marketking-multivendor-marketplace-for-woocommerce');?></h5>
+                                                            </div><!-- .nk-block-head -->
+                                                        </div><!-- .nk-block -->
+                                                        <br>
+                                                        <?php
+
+                                                        $admin_order_fields = new WC_Admin_Custom_Order_Fields;
+                                                        $admin_order_fields->load_class( '/includes/admin/class-wc-admin-custom-order-fields-admin.php', 'WC_Admin_Custom_Order_Fields_Admin' );
+                                                        $admin_order_CPT = new WC_Admin_Custom_Order_Fields_Shop_Order_CPT;
+                                                        $admin_order_CPT ->load_meta_box();
+                                                        $admin_order_CPT->meta_box->render();
+                                                        
+                                                    }
                                                 }
                                             }
                                            ?>
                                             
                                         </div><!-- .card-inner -->
                                     </div><!-- .card-content -->
-                                    <div id="marketking_order_notes_container" class="card-aside card-aside-right user-aside toggle-slide toggle-slide-right toggle-break-xxl" data-content="userAside" data-toggle-screen="xxl" data-toggle-overlay="true" data-toggle-body="true">
-                                        <div class="card-inner-group" data-simplebar>
+                                    <div id="marketking_order_notes_container" class="card-aside card-aside-right" data-content="userAside" data-toggle-screen="xxl" data-toggle-overlay="true" data-toggle-body="true">
+                                        <div class="card-inner-group">
                                             
                                             <div class="card-inner">
                                                 <div class="overline-title-alt mb-2 marketking_order_totals_title"><?php esc_html_e('Order Totals','marketking-multivendor-marketplace-for-woocommerce');?></div>
@@ -249,7 +281,7 @@ if(marketking()->vendor_has_panel('orders')){
                                                     <div class="profile-balance-group gx-4">
                                                         <div class="profile-balance-sub">
                                                             <div class="profile-balance-amount">
-                                                                <div class="number"><?php echo wc_price($order->get_total());?></div>
+                                                                <div class="number"><?php echo wc_price($order->get_total(), array('currency' => $order->get_currency()));?></div>
                                                             </div>
                                                             <div class="profile-balance-subtitle"><?php esc_html_e('Order Value','marketking-multivendor-marketplace-for-woocommerce');?></div>
                                                         </div>
@@ -294,7 +326,7 @@ if(marketking()->vendor_has_panel('orders')){
                                                                 <?php
                                                             // show packages
                                                             foreach ($shipping_history as $shipment){
-                                                                esc_html_e('Shipment via ','marketking');
+                                                                esc_html_e('Shipment via ','marketking-multivendor-marketplace-for-woocommerce');
 
                                                                 $providername = $providers[$shipment['provider']]['label'];
                                                                 if ($shipment['provider'] === 'sp-other'){
@@ -306,7 +338,7 @@ if(marketking()->vendor_has_panel('orders')){
 
                                                             // show button with ' add new shipment '
                                                             ?>
-                                                            <br><button class="btn btn-sm btn-gray" id="marketking_add_another_shipment_button" value="<?php echo esc_attr($order_id);?>"><?php esc_html_e('Add another','marketking');?></button>
+                                                            <br><button class="btn btn-sm btn-gray" id="marketking_add_another_shipment_button" value="<?php echo esc_attr($order_id);?>"><?php esc_html_e('Add another','marketking-multivendor-marketplace-for-woocommerce');?></button>
                                                             <?php
                                                         }
 
@@ -314,7 +346,7 @@ if(marketking()->vendor_has_panel('orders')){
                                                         <div class="row gy-3 <?php if (!empty($shipping_history)){ echo 'marketking_new_shipment_hidden'; }?>">
                                                             <div class="col-sm-12">
                                                                 <div class="form-group">
-                                                                    <label class="form-label" for="default-06"><?php esc_html_e('Create Shipment','marketking');?></label>
+                                                                    <label class="form-label" for="default-06"><?php esc_html_e('Create Shipment','marketking-multivendor-marketplace-for-woocommerce');?></label>
                                                                     <div class="form-control-wrap ">
                                                                         <div class="form-control-select">
                                                                             <select class="form-control" id="marketking_create_shipment_provider">
@@ -334,30 +366,30 @@ if(marketking()->vendor_has_panel('orders')){
                                                             </div>
                                                             <div class="col-sm-12 marketking_create_shipment_other">
                                                                 <div class="form-group">
-                                                                    <label class="form-label" for="default-01"><?php esc_html_e('Provider Name','marketking');?></label>
+                                                                    <label class="form-label" for="default-01"><?php esc_html_e('Provider Name','marketking-multivendor-marketplace-for-woocommerce');?></label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="text" class="form-control" id="marketking_create_shipment_provider_name" placeholder="<?php esc_html_e('Enter the shipping provider name','marketking');?>">
+                                                                        <input type="text" class="form-control" id="marketking_create_shipment_provider_name" placeholder="<?php esc_html_e('Enter the shipping provider name','marketking-multivendor-marketplace-for-woocommerce');?>">
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-sm-12">
                                                                 <div class="form-group">
-                                                                    <label class="form-label" for="default-01"><?php esc_html_e('Tracking Number','marketking');?></label>
+                                                                    <label class="form-label" for="default-01"><?php esc_html_e('Tracking Number','marketking-multivendor-marketplace-for-woocommerce');?></label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="text" class="form-control" id="marketking_create_shipment_tracking_number" placeholder="<?php esc_html_e('Enter the tracking number','marketking');?>">
+                                                                        <input type="text" class="form-control" id="marketking_create_shipment_tracking_number" placeholder="<?php esc_html_e('Enter the tracking number','marketking-multivendor-marketplace-for-woocommerce');?>">
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-sm-12 marketking_create_shipment_other">
                                                                 <div class="form-group">
-                                                                    <label class="form-label" for="default-01"><?php esc_html_e('Tracking URL','marketking');?></label>
+                                                                    <label class="form-label" for="default-01"><?php esc_html_e('Tracking URL','marketking-multivendor-marketplace-for-woocommerce');?></label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="text" class="form-control" id="marketking_create_shipment_tracking_url" placeholder="<?php esc_html_e('Enter the tracking URL','marketking');?>">
+                                                                        <input type="text" class="form-control" id="marketking_create_shipment_tracking_url" placeholder="<?php esc_html_e('Enter the tracking URL','marketking-multivendor-marketplace-for-woocommerce');?>">
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-sm-12">
-                                                                <button class="btn btn-sm btn-secondary" id="marketking_create_shipment_button" value="<?php echo esc_attr($order_id);?>"><?php esc_html_e('Create shipment','marketking');?></button>
+                                                                <button class="btn btn-sm btn-secondary" id="marketking_create_shipment_button" value="<?php echo esc_attr($order_id);?>"><?php esc_html_e('Create shipment','marketking-multivendor-marketplace-for-woocommerce');?></button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -388,6 +420,16 @@ if(marketking()->vendor_has_panel('orders')){
                                                                     $pdfdownload = do_shortcode('[wcpdf_download_invoice order_id='.$order_id.']');
                                                                     $pdfdownload = str_replace('my-account=1', '', $pdfdownload);
                                                                     echo $pdfdownload;
+
+
+                                                                    // commission invoice
+                                                                    if(intval(get_option( 'marketking_enable_commission_invoices_setting', 0 )) === 1){
+                                                                       ?>
+                                                                       <br><br>
+                                                                       <button type="button" class="btn btn-sm btn-gray" name="marketking_vendor_download_cominvoice" id="marketking_vendor_download_cominvoice" value="<?php echo esc_attr($order_id);?>"><?php esc_html_e('Commission invoice','marketking-multivendor-marketplace-for-woocommerce'); ?></button>
+                                                                       <?php
+                                                                    }
+
                                                                     ?>
                                                                 </div>
                                                                 <div class="marketking_vendor_invoice_download_container_second">
@@ -404,8 +446,10 @@ if(marketking()->vendor_has_panel('orders')){
                                                                         ?>
                                                                     </div>
                                                                     <?php
-
                                                                 }
+
+
+
                                                             } else if (defined('WF_PKLIST_VERSION')){
                                                                 $html='';
                                                                 ?>
@@ -432,6 +476,12 @@ if(marketking()->vendor_has_panel('orders')){
                                                 <?php WC_Meta_Box_Order_Notes::output($post);  ?>
 
                                             </div><!-- .card-inner -->
+
+                                            <div id="marketking_custom_boxes_area">
+                                            <?php
+                                                do_action('marketking_custom_boxes_area');
+                                            ?>
+                                            </div>
                                         </div><!-- .card-inner -->
                                     </div><!-- .card-aside -->
                                 </div><!-- .card-aside-wrap -->

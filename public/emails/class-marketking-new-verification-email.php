@@ -40,6 +40,8 @@ class Marketking_New_Verification_Email extends WC_Email {
         if ( ! $this->is_enabled() || ! $this->get_recipient() ){
            return;
         }
+
+        marketking()->switch_to_user_locale($email_address);
         
         do_action('wpml_switch_language_for_email', $email_address);
         $this->heading = esc_html__('New Verification Status', 'marketking-multivendor-marketplace-for-woocommerce');
@@ -47,6 +49,8 @@ class Marketking_New_Verification_Email extends WC_Email {
 
         $this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
         do_action('wpml_restore_language_from_email');
+
+        marketking()->restore_locale();
      
     }
 

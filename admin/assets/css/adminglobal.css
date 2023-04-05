@@ -174,7 +174,12 @@ div#marketking_admin_header_version2 {
     font-family: 'Lato','Helvetica Neue','Arial','Helvetica','sans-serif';
     letter-spacing: 0.8px;
 }
-
+.marketking_license_field{
+    max-width: 500px;
+}
+.marketking_license_active{
+    max-width: 750px;
+}
 .marketking_page_marketking_dashboard #wpbody-content, .marketking_page_marketking_reports #wpbody-content{
     padding-bottom:0px;
 }
@@ -243,6 +248,26 @@ a.marketking_admin_header_right_element_button:hover button{
     background: #b07d15;
     cursor: pointer;
     color:#ffffff;
+}
+.taxonomy-storecat .column-posts {
+    display: none;
+}
+.marketking-form-select-container {
+    padding: 10px 15px;
+    margin: 10px 0px 5px 10px;
+    background: #f7f7f7;
+    border-radius: 5px;
+}
+.marketking-select-content-header {
+    margin-bottom: 10px;
+}
+.marketking-form-select-container span.select2-selection.select2-selection--multiple, .marketking-form-select-container span.select2-selection.select2-selection--single {
+    border: 1px solid #e8e8e8;
+    background: #fdfdfd;
+}
+select#marketking_select_storecategories {
+    width: 100% !important;
+    max-width: 2000px !important;
 }
 .marketking_page_title {
     color: #ffffff;
@@ -3793,6 +3818,7 @@ span.dashicons.marketking_vendor_icon {
     .marketking-vendor .marketking-modal .marketking-modal-content .modal-body {
         max-height: 300px;
     }
+
 }
 @media only screen and (max-width: 500px) {
     .marketking-vendor .tab-list .tab-title .tab-link {
@@ -3945,7 +3971,4 @@ span.dashicons.marketking_vendor_icon {
         justify-content: space-between;
     }
 } 
-
-
-
 

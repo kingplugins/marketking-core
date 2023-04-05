@@ -17,6 +17,7 @@
                 "language": {
                     "url": marketking_display_settings.datatables_folder+marketking_display_settings.tables_language_option+'.json'
                 },
+                responsive: true
             });
         }
 

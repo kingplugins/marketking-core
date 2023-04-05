@@ -4,21 +4,26 @@
  * Plugin Name:       MarketKing Core
  * Plugin URI:        https://wordpress.org/plugins/marketking-multivendor-marketplace-for-woocommerce
  * Description:       MarketKing is the complete solution for turning WooCommerce into a powerful multivendor marketplace. Core plugin.
- * Version:           1.3.0
+ * Version:           1.5.71
  * Author:            WebWizards
  * Author URI:        webwizards.dev
  * Text Domain:       marketking-multivendor-marketplace-for-woocommerce
  * Domain Path:       /languages
  * WC requires at least: 3.0.0
- * WC tested up to: 6.8.1
+ * WC tested up to: 7.2.0
  */
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
-define ( 'MARKETKINGCORE_VERSION', 'v1.3.0' );
+define ( 'MARKETKINGCORE_VERSION', 'v1.5.71' );
 define( 'MARKETKINGCORE_DIR', plugin_dir_path( __FILE__ ) );
+define( 'MARKETKINGCORE_URL', plugin_dir_url( __FILE__ ) );
+
+if ( ! defined( 'MARKETKINGCORE_LANG' ) ){
+    define( 'MARKETKINGCORE_LANG', basename( dirname( __FILE__ ) ) . '/languages' );
+}
 
 function marketking_activate() {
 	require_once MARKETKINGCORE_DIR . 'includes/class-marketking-core-activator.php';
@@ -46,7 +51,11 @@ function marketking_run() {
 }
 
 marketking_run();
-
+/** * @return Marketkingcore_Helper */
 function marketking() {
     return Marketkingcore_Helper::init();
 }
+
+
+
+

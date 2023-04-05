@@ -1,3 +1,16 @@
+<?php
+/*
+
+Header Bar
+* @version 1.0.2
+
+This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
+
+For example, if your theme is storefront, you can copy this file under wp-content/themes/storefront/marketking/ and then edit it with your own custom content and changes.
+
+*/
+?>
+
 <!-- main header @s -->
 <div class="nk-header nk-header-fixed is-light">
     <div class="container-fluid">
@@ -18,14 +31,121 @@
                     if (defined('MARKETKINGPRO_DIR')){
                         if (intval(get_option( 'marketking_enable_messages_setting', 1 )) === 1){
                             if(marketking()->vendor_has_panel('messages')){
+
+                                if (!isset($messages)){
+                                    $user_id = get_current_user_id();
+                                    $currentuser = new WP_User($user_id);
+                                    $user = $currentuser->user_login;
+                                    $currentuserlogin = $currentuser -> user_login;
+                                    $messages = get_posts(
+                                        array( 
+                                            'post_type' => 'marketking_message', // only conversations
+                                            'post_status' => 'publish',
+                                            'numberposts' => -1,
+                                            'fields' => 'ids',
+                                            'meta_query'=> array(   // only the specific user's conversations
+                                                'relation' => 'OR',
+                                                array(
+                                                    'key' => 'marketking_message_user',
+                                                    'value' => $currentuserlogin, 
+                                                ),
+                                                array(
+                                                    'key' => 'marketking_message_message_1_author',
+                                                    'value' => $currentuserlogin, 
+                                                )
+
+
+                                            )
+                                        )
+                                    );
+                                    if (current_user_can('activate_plugins')){
+                                        // include shop messages
+                                        $messages2 = get_posts(
+                                            array( 
+                                                'post_type' => 'marketking_message', // only conversations
+                                                'post_status' => 'publish',
+                                                'numberposts' => -1,
+                                                'fields' => 'ids',
+                                                'meta_query'=> array(   // only the specific user's conversations
+                                                    'relation' => 'OR',
+                                                    array(
+                                                        'key' => 'marketking_message_user',
+                                                        'value' => 'shop'
+                                                    ),
+                                                    array(
+                                                        'key' => 'marketking_message_message_1_author',
+                                                        'value' => 'shop'
+                                                    )
+                                                )
+                                            )
+                                        );
+                                        $messages = array_merge($messages, $messages2);
+                                    }
+                                }
+                                if (!isset($unread_msg)){
+                                    $unread_msg = 0;
+                                    $user_id = get_current_user_id();
+                                    $currentuser = new WP_User($user_id);
+                                    $user = $currentuser->user_login;
+                                    $currentuserlogin = $currentuser -> user_login;
+
+                                    foreach ($messages as $message){
+                                        // check that last msg is not current user
+                                        $nr_messages = get_post_meta ($message, 'marketking_message_messages_number', true);
+                                        $last_message_author = get_post_meta ($message, 'marketking_message_message_'.$nr_messages.'_author', true);
+                                        if ($last_message_author !== $currentuserlogin){
+                                            // chek if last read time is lower than last msg time
+                                            $last_read_time = get_user_meta($user_id,'marketking_message_last_read_'.$message, true);
+                                            if (!empty($last_read_time)){
+                                                $last_message_time = get_post_meta ($message, 'marketking_message_message_'.$nr_messages.'_time', true);
+                                                if (floatval($last_read_time) < floatval($last_message_time)){
+                                                    $unread_msg++;
+                                                }
+                                            } else {
+                                                $unread_msg++;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (!isset($announcements)){
+                                    $user_id = get_current_user_id();
+                                    $currentuser = new WP_User($user_id);
+                                    $user = $currentuser->user_login;
+                                    $currentuserlogin = $currentuser -> user_login;
+                                    $agent_group = get_user_meta($user_id, 'marketking_group', true);
+
+
+                                    $announcements = get_posts(array( 'post_type' => 'marketking_announce',
+                                      'post_status'=>'publish',
+                                      'numberposts' => -1,
+                                      'meta_query'=> array(
+                                            'relation' => 'OR',
+                                            array(
+                                                'key' => 'marketking_group_'.$agent_group,
+                                                'value' => '1',
+                                            ),
+                                            array(
+                                                'key' => 'marketking_user_'.$user, 
+                                                'value' => '1',
+                                            ),
+                                        )));
+
+                                    $unread_ann = 0;
+                                    foreach ($announcements as $announcement){
+                                        $read_status = get_user_meta($user_id,'marketking_announce_read_'.$announcement->ID, true);
+                                        if (!$read_status || empty($read_status)){
+                                            $unread_ann++;
+                                        }
+                                    }
+                                }
                                 ?>
                                 <li class="dropdown chats-dropdown hide-mb-xs">
                                     <a href="#" class="dropdown-toggle nk-quick-nav-icon" data-toggle="dropdown">
-                                        <div class="icon-status icon-status-na"><em class="icon ni ni-comments"></em></div>
+                                        <div class="icon-status <?php if ($unread_msg !== 0) {echo 'icon-status-info';}?>"><em class="icon ni ni-comments"></em></div>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-xl dropdown-menu-right">
                                         <div class="dropdown-head">
-                                            <span class="sub-title nk-dropdown-title"><?php esc_html_e('Recent Messages','marketking-multivendor-marketplace-for-woocommerce'); ?></span>
+                                            <span class="sub-title nk-dropdown-title"><?php echo apply_filters('marketking_unread_announcements_text',esc_html__('Recent Messages', 'marketking-multivendor-marketplace-for-woocommerce')); ?></span>
                                         </div>
                                         <div class="dropdown-body">
                                             <ul class="chat-list">
@@ -87,28 +207,24 @@
                                                         }
                                                     } 
                                               
-
-                                                    // get the other party in the chat
-                                                    $author = get_post_meta ($message, 'marketking_message_message_1_author', true);
-                                                    $convuser = get_post_meta ($message, 'marketking_message_user', true);
-                                                    if ($convuser === 'shop'){
-                                                        $convuser = esc_html__('Shop','marketking-multivendor-marketplace-for-woocommerce'); 
-                                                        if (get_post_meta ($message, 'marketking_message_message_2_author', true) !== $author && !empty(get_post_meta ($message, 'marketking_message_message_2_author', true))){
-                                                            $convuser = get_post_meta ($message, 'marketking_message_message_2_author', true);
-                                                        }
-                                                    }
-                                                    if ($author === $currentuserlogin){
-                                                        $author = $convuser;
-                                                    }
-
                                                     ?>
                                                     <li class="chat-item <?php echo esc_attr($is_unread);?>">
                                                         <a class="chat-link" href="<?php echo get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)).'messages?id='.esc_attr($message);?>">
-                                                            <div class="chat-media user-avatar">
+
+                                                            <?php
+
+                                                            $otherparty = marketking()->get_other_chat_party($message);
+                                                            $icon = marketking()->get_display_icon_image($otherparty);
+                                                          
+                                                            ?>
+                                                            <div class="chat-media user-avatar" style="<?php
+                                                            if (strlen($icon) != 2){
+                                                                echo 'background-image: url('.$icon.') !important;';
+                                                            }
+                                                            ?>">
                                                                 <span><?php 
-                                                                $profile_pic = get_user_meta($user_id,'marketking_profile_logo_image', true);
-                                                                if (empty($profile_pic)){
-                                                                    echo esc_html(strtoupper(substr($author, 0, 2)));
+                                                                if (strlen($icon) == 2){
+                                                                    echo esc_html($icon);
                                                                 }
                                                                 ?></span>
                                                             </div>
@@ -118,7 +234,7 @@
                                                                     <span class="time"><?php echo esc_html($timestring);?></span>
                                                                 </div>
                                                                 <div class="chat-context">
-                                                                    <div class="text"><?php echo esc_html($last_message);?></div>
+                                                                    <div class="text"><?php echo esc_html(strip_tags($last_message));?></div>
 
                                                                 </div>
                                                             </div>
@@ -151,7 +267,7 @@
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-xl dropdown-menu-right">
                                         <div class="dropdown-head">
-                                            <span class="sub-title nk-dropdown-title"><?php esc_html_e('Unread Announcements', 'marketking-multivendor-marketplace-for-woocommerce'); ?></span>
+                                            <span class="sub-title nk-dropdown-title"><?php echo apply_filters('marketking_unread_announcements_text',esc_html__('Unread Announcements', 'marketking-multivendor-marketplace-for-woocommerce')); ?></span>
                                         </div>
                                         <div class="dropdown-body">
                                             <?php
@@ -199,15 +315,15 @@
                     <li class="dropdown user-dropdown">
                         <a href="#" class="dropdown-toggle mr-n1" data-toggle="dropdown">
                             <div class="user-toggle">
-                                <div class="user-avatar sm">
+                                <?php
+                                $icon = marketking()->get_display_icon_image($user_id);
+                                ?>
+                                <div class="user-avatar sm" <?php if (strlen($icon)!=2){ echo 'style="background-image: url(\''.$icon.'\');background-size: contain!important;"';} ?>>
                                     <?php 
-                                        $profile_pic = get_user_meta($user_id,'marketking_profile_logo_image', true);
-                                        if (empty($profile_pic)){
-                                            ?>
-                                            <em class="icon ni ni-user-alt"></em>
-                                            <?php
+                                        if (strlen($icon)==2){
+                                            echo $icon;
                                         }
-                                        ?>
+                                    ?>
                                     
                                 </div>
                                 <div class="user-info d-none d-xl-block">
@@ -228,13 +344,14 @@
                         <div class="dropdown-menu dropdown-menu-md dropdown-menu-right">
                             <div class="dropdown-inner user-card-wrap bg-lighter d-none d-md-block">
                                 <div class="user-card">
-                                    <div class="user-avatar">
-                                        <span><?php 
-                                        $profile_pic = get_user_meta($user_id,'marketking_profile_logo_image', true);
-                                        if (empty($profile_pic)){
-                                            echo esc_html(strtoupper(substr($currentuser->user_login, 0, 2)));
-                                        }
-                                        ?></span>
+                                    <div class="user-avatar" <?php if (strlen($icon)!=2){ echo 'style="background-image: url(\''.$icon.'\');background-size: contain!important;"';} ?>>
+                                        <span>
+                                            <?php 
+                                                if (strlen($icon)==2){
+                                                    echo $icon;
+                                                }
+                                            ?>
+                                        </span>
                                     </div>
                                     <div class="user-info">
                                         <span class="lead-text"><?php 
@@ -273,7 +390,7 @@
                             ?>
                             <div class="dropdown-inner">
                                 <ul class="link-list">
-                                    <li><a href="<?php echo esc_url(wc_logout_url()); ?>"><em class="icon ni ni-signout"></em><span><?php esc_html_e('Sign out','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+                                    <li><a href="<?php echo esc_url(wp_logout_url()); ?>"><em class="icon ni ni-signout"></em><span><?php esc_html_e('Sign out','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
                                 </ul>
                             </div>
                         </div>

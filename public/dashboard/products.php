@@ -3,11 +3,11 @@
 /*
 
 Products Dashboard Page
-* @version 1.0.0
+* @version 1.0.2
 
-This template file can be edited and overwritten with your own custom template. To do this, simply copy this file directly under your theme (or child theme) folder and then edit it there. 
+This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
 
-For example, if your theme is storefront, you can copy this file directly under wp-content/themes/storefront/ and then edit it with your own custom content and changes.
+For example, if your theme is storefront, you can copy this file under wp-content/themes/storefront/marketking/ and then edit it with your own custom content and changes.
 
 */
 
@@ -164,7 +164,30 @@ if(marketking()->vendor_has_panel('products')){
                                     'order' => 'DESC',
                                 ));
 
+                                if (intval(get_option( 'marketking_enable_bookings_setting', 0 )) === 1){
+                                    if(marketking()->vendor_has_panel('bookings')){
+
+                                        if ( class_exists( 'WC_Bookings' ) ) {
+                                            $vendor_booking_products = wc_get_products( array( 
+                                                'numberposts' => -1,
+                                                'post_status'    => array( 'draft', 'pending', 'private', 'publish' ),
+                                                'author'   => $user_id,
+                                                'orderby' => 'date',
+                                                'order' => 'DESC',
+                                                'type' =>'booking'
+                                            ));
+
+                                            $vendor_products = array_merge($vendor_products, $vendor_booking_products);
+                                        }
+                                    }
+                                }
+
                                 foreach ($vendor_products as $product){
+                                    // add custom filter to remove products
+                                    $allowed_product = apply_filters('marketking_allowed_vendor_edit_product', true, $product);
+                                    if (!$allowed_product){
+                                        continue;
+                                    }
                                     ?>
                                     <tr class="nk-tb-item">
                                         <td class="nk-tb-col marketking-column-small">
@@ -183,6 +206,8 @@ if(marketking()->vendor_has_panel('products')){
                                                 $src = wp_get_attachment_url( $product->get_image_id() );
                                                 if (empty($src)){
                                                     $src = wc_placeholder_img_src();
+                                                } else {
+                                                    $src = marketking()->get_resized_image($src, 'thumbnail');
                                                 }
                                                 $title = $product->get_title();
                                                 if (empty($title)){
@@ -293,6 +318,15 @@ if(marketking()->vendor_has_panel('products')){
                                             } else if ($status === 'pending'){
                                                  $badge = 'badge-info';
                                                  $statustext = esc_html__('Pending','marketking-multivendor-marketplace-for-woocommerce');
+                                            } else if ($status === 'hidden'){
+                                                 $badge = 'badge-gray';
+                                                 $statustext = esc_html__('Hidden','marketking-multivendor-marketplace-for-woocommerce');
+                                            } else if ($status === 'on backorder'){
+                                                 $badge = 'badge-gray';
+                                                 $statustext = esc_html__('On Backorder','marketking-multivendor-marketplace-for-woocommerce');
+                                            } else if ($status === 'on-backorder'){
+                                                 $badge = 'badge-gray';
+                                                 $statustext = esc_html__('On Backorder','marketking-multivendor-marketplace-for-woocommerce');
                                             } else {
                                                 $badge = 'badge-gray';
                                                 $statustext = ucfirst($status);
@@ -324,11 +358,14 @@ if(marketking()->vendor_has_panel('products')){
                                                                 }
 
                                                                 ?>
-                                                                <li><a href="<?php 
+                                                                <li><a target="_blank" href="<?php 
                                                                 $permalink = $product->get_permalink();
                                                                 echo esc_attr($permalink);
                                                                 ?>
                                                                 "><em class="icon ni ni-eye"></em><span><?php esc_html_e('View Product','marketking-multivendor-marketplace-for-woocommerce'); ?></span></a></li>
+
+
+                                                                <li><input type="hidden" class="marketking_product_url" value="<?php echo esc_attr($product->get_permalink());?>"><a href="#" class="marketking_copy_url"><em class="icon ni ni-copy"></em><span><?php esc_html_e('Copy URL','marketking-multivendor-marketplace-for-woocommerce'); ?></span></a></li>
 
                                                                 <?php
 

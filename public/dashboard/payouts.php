@@ -5,9 +5,9 @@
 Payouts Dashboard Page
 * @version 1.0.0
 
-This template file can be edited and overwritten with your own custom template. To do this, simply copy this file directly under your theme (or child theme) folder and then edit it there. 
+This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
 
-For example, if your theme is storefront, you can copy this file directly under wp-content/themes/storefront/ and then edit it with your own custom content and changes.
+For example, if your theme is storefront, you can copy this file under wp-content/themes/storefront/marketking/ and then edit it with your own custom content and changes.
 
 */
 
@@ -298,6 +298,15 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                <?php
                                $info = base64_decode(get_user_meta($user_id,'marketking_payout_info', true));
                                $info = explode('**&&', $info);
+
+                               $i = 0;
+                               while ($i < 17){
+                                if (!isset($info[$i])){
+                                    $info[$i] = '';
+                                }
+                                $i++;
+                               }
+
                                 if ($paypal === 1){
                                     ?>
 
@@ -431,7 +440,15 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
 
                                                 $settings = get_option('woocommerce_marketking_stripe_gateway_settings');
 
-                                                $testmode = isset( $settings['test_mode'] ) ? true : false;
+
+                                                $testmode = false;
+
+                                                if (isset( $settings['test_mode'] )){
+                                                    if ($settings['test_mode'] === 'yes'){
+                                                        $testmode = true;
+                                                    }
+                                                }
+
                                                 $client_id = $testmode ? $settings['test_client_id'] : $settings['client_id'];
                                                 $secret_key = $testmode ? $settings['test_secret_key'] : $settings['secret_key'];
                                                 if (isset($client_id) && isset($secret_key)) {
@@ -493,16 +510,16 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                                                 <tbody>
                                                                     <tr>
                                                                         <th style="width: 35%;">
-                                                                            <label><?php _e('Stripe', 'marketking'); ?></label>
+                                                                            <label><?php _e('Stripe', 'marketking-multivendor-marketplace-for-woocommerce'); ?></label>
                                                                         </th>
                                                                         <td>
-                                                                            <label><?php _e('You are connected with Stripe', 'marketking'); ?></label>
+                                                                            <label><?php _e('You are connected with Stripe', 'marketking-multivendor-marketplace-for-woocommerce'); ?></label>
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <th></th>
                                                                         <td>
-                                                                            <input type="button" id="disconnect_stripe" class="button btn-secondary btn-sm btn" name="disconnect_stripe" value="<?php _e('Disconnect Stripe Account', 'marketking'); ?>" />
+                                                                            <input type="button" id="disconnect_stripe" class="button btn-secondary btn-sm btn" name="disconnect_stripe" value="<?php _e('Disconnect Stripe Account', 'marketking-multivendor-marketplace-for-woocommerce'); ?>" />
                                                                         </td>
                                                                     </tr>
                                                                 </tbody>
@@ -538,8 +555,8 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                                         } else {
                                                             $url = 'https://connect.stripe.com/oauth/authorize?' . http_build_query($authorize_request_body);
                                                         }
-                                                        $stripe_connect_url = plugins_url('../../includes/assets/images/stripeconnect.png', __FILE__);
-                                                        
+                                                        $stripe_connect_url = MARKETKINGCORE_URL. 'includes/assets/images/stripeconnect.png';
+
                                                         ?>
                                                         <div class="clear"></div>
                                                         <div class="marketking_stripe_connect">
@@ -547,9 +564,9 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                                                 <tbody>
                                                                     <tr>
                                                                         <th style="width: 35%;">
-                                                                            <label><?php _e('Stripe', 'marketking'); ?></label>
+                                                                            <label><?php _e('Stripe', 'marketking-multivendor-marketplace-for-woocommerce'); ?></label>
                                                                         </th>
-                                                                        <td><?php _e('You are not connected with Stripe.', 'marketking'); ?></td>
+                                                                        <td><?php _e('You are not connected with Stripe.', 'marketking-multivendor-marketplace-for-woocommerce'); ?></td>
                                                                     </tr>
                                                                     <tr>
                                                                         <th></th>

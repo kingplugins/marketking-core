@@ -1,10 +1,14 @@
 <body class="nk-body bg-lighter npc-general has-sidebar <?php
     $page = get_query_var('dashpage');
-    if ($page === 'edit-product'){
-        echo 'post-type-product';
+    if ($page === 'edit-product' || 'edit-booking-product'){
+        echo 'post-type-product wc-wp-version-gte-55';
     }
 
-?>">
+    if (apply_filters('marketking_dashboard_rtl', false)){ 
+        echo ' has-rtl';
+    }
+
+?>" <?php if (apply_filters('marketking_dashboard_rtl', false)){ echo 'dir="rtl"'; }?>>
     <div class="nk-app-root">
         <!-- main @s -->
         <div class="nk-main ">
@@ -85,6 +89,29 @@
                             )
                         )
                     );
+            if (current_user_can('activate_plugins')){
+                // include shop messages
+                $messages2 = get_posts(
+                    array( 
+                        'post_type' => 'marketking_message', // only conversations
+                        'post_status' => 'publish',
+                        'numberposts' => -1,
+                        'fields' => 'ids',
+                        'meta_query'=> array(   // only the specific user's conversations
+                            'relation' => 'OR',
+                            array(
+                                'key' => 'marketking_message_user',
+                                'value' => 'shop'
+                            ),
+                            array(
+                                'key' => 'marketking_message_message_1_author',
+                                'value' => 'shop'
+                            )
+                        )
+                    )
+                );
+                $messages = array_merge($messages, $messages2);
+            }
             // check how many are unread
             $unread_msg = 0;
             foreach ($messages as $message){
@@ -112,12 +139,16 @@
 
 
             ?>
-            <?php include('templates/sidebar.php'); ?>
+            <?php 
+
+            include(apply_filters('marketking_dashboard_template','templates/sidebar.php'));
+
+            ?>
 
             <div class="nk-wrap ">
                 <?php
 
-                include('templates/header-bar.php');
+                include(apply_filters('marketking_dashboard_template','templates/header-bar.php'));
 
                 // get page
                 $page = get_query_var('dashpage');
@@ -161,6 +192,10 @@
                     if (defined('MARKETKINGPRO_DIR')){
                         echo marketkingpro()->get_page('storepolicy');
                     }
+                } else if ($page === 'storecategories'){
+                    if (defined('MARKETKINGPRO_DIR')){
+                        echo marketkingpro()->get_page('storecategories');
+                    }
                 } else if ($page === 'vendorinvoices'){
                     if (defined('MARKETKINGPRO_DIR')){
                         echo marketkingpro()->get_page('vendorinvoices');
@@ -192,7 +227,7 @@
                         echo marketkingpro()->get_page('shippingzone');
                     }
                 } else if ($page === 'payouts'){
-                    include('payouts.php');
+                    include(apply_filters('marketking_dashboard_template','payouts.php'));
                 } else if ($page === 'team'){
                    if (defined('MARKETKINGPRO_DIR')){
                         echo marketkingpro()->get_page('team');
@@ -200,6 +235,10 @@
                 } else if ($page === 'membership'){
                    if (defined('MARKETKINGPRO_DIR')){
                         echo marketkingpro()->get_page('memberships');
+                    }
+                } else if ($page === 'rma'){
+                   if (defined('MARKETKINGPRO_DIR')){
+                        echo marketkingpro()->get_page('rma');
                     }
                 } else if ($page === 'affiliate-links'){
                     include(apply_filters('marketking_dashboard_template','affiliate-links.php'));
@@ -260,7 +299,7 @@
                 do_action('marketking_extend_page', $page);
 
                 // on edit product page, display hidden footer, in order to have all scripts necessary for editors e.g. tinymce
-                if ($page === 'edit-product' || $page === 'manage-order' || $page === 'edit-coupon'){
+                if ($page === 'edit-booking-order' || $page === 'edit-booking-product' || $page === 'edit-product' || $page === 'manage-order' || $page === 'edit-coupon' || $page === 1){ // page 1 fix for flatsome and or other themes
                     ?>
                     <div id="marketking_footer_hidden">
                         <?php

@@ -44,9 +44,15 @@
 		
 
 		$('#marketking_group_allowed_categories').select2();
+		$('#marketking_group_allowed_tags').select2();
+		$('#marketking_group_allowed_tabs').select2();
+
+		$('#marketking_select_storecategories').select2();
+
+		
 
 		var availablepages = ['payouts', 'premium', 'registration', 'modules', 'dashboard', 'vendors','reports','groups'];
-		var availablepagesmarketking = ['marketking_payouts', 'marketking_premium', 'marketking_registration', 'marketking_modules', 'marketking_dashboard', 'marketking_vendors','marketking_reports','marketking_groups'];
+		var availablepagesmarketking = ['marketking_payouts', 'marketking_premium', 'marketking_registration', 'marketking_modules', 'marketking_dashboard', 'marketking_vendors', 'marketking_reports', 'marketking_groups'];
 		var availableposts = ['marketking_vitem','marketking_option','marketking_field','marketking_group','marketking_grule','marketking_mpack', 'marketking_vreq', 'marketking_badge', 'marketking_refund','marketking_rule', 'marketking_docs','marketking_abuse','marketking_message','marketking_announce'];
 
 
@@ -232,8 +238,25 @@
 		});
 		
 
+		// activate plugin
+		$('#marketking-activate-license').on('click', function(){
+			var datavar = {
+	            action: 'marketkingactivatelicense',
+	            email: $('input[name="marketking_license_email_setting"]').val(),
+	            key: $('input[name="marketking_license_key_setting"]').val(),
+	            security: marketking.security,
+	        };
+	        
+	        $('#marketking-activate-license').notify(marketking.sending_request,{  position: "right",  className: 'info'});
 
-		
+			$.post(ajaxurl, datavar, function(response){
+				if (response === 'success'){
+					$('#marketking-admin-submit').click();
+				} else {
+					$('#marketking-activate-license').notify(response,{  position: "right",  className: 'error'});
+				}
+			});
+		});
 
 		function ajax_page_reload(){
 			// 1. Replace current page content with loader
@@ -280,6 +303,9 @@
 
 		function upgrade_open_modal(){
 			// add overlay and loader
+			if (modalcontent === undefined){
+				modalcontent = $('#marketking_pro_upgrade_modal_container').detach().html();
+			}
 			jQuery('#wpbody-content').prepend('<div id="marketking_admin_overlay" class="marketking_admin_overlay_removable">'+modalcontent+'</div<');
 		}
 
@@ -446,17 +472,33 @@
 		function initialize_elements(){
 			/* Payouts */
 			if (typeof $('#marketking_admin_payouts_table').DataTable === "function") { 
-				$('#marketking_admin_payouts_table').DataTable();
+				$('#marketking_admin_payouts_table').DataTable({
+					"language": {
+					    "url": marketking.datatables_folder+marketking.tables_language_option+'.json'
+					},
+					retrieve: true,
+				});
 			}
 			if (typeof $('#marketking_payout_history_table').DataTable === "function") { 
 				$('#marketking_payout_history_table').DataTable({
 			        order: [[ 0, "desc" ]],
+			        "language": {
+			            "url": marketking.datatables_folder+marketking.tables_language_option+'.json'
+			        },
+			        retrieve: true,
+
 			    });
 			}
 
 			/* Vendors */
 			if (typeof $('#marketking_admin_vendors_table').DataTable === "function") { 
-				$('#marketking_admin_vendors_table').DataTable();
+				$('#marketking_admin_vendors_table').DataTable({
+					"language": {
+					    "url": marketking.datatables_folder+marketking.tables_language_option+'.json'
+					},
+					retrieve: true,
+
+				});
 			}
 
 			// Move header to top of page
@@ -944,8 +986,16 @@
         // force store url characters and check url availability
 		$(document).on('keypress', '#marketking_store_url', function(e) {
 
-		    if ((e.keyCode < 48)) {
-		        e.preventDefault();
+		    if (parseInt(marketking.allow_dash_store_url) === 1 ){
+		    	// dash allowed
+		    	if ((e.keyCode < 48) && e.keyCode !== 45) {
+		    	    e.preventDefault();
+		    	}
+		    } else {
+		    	// dash not allowed
+		    	if (e.keyCode < 48) {
+		    	    e.preventDefault();
+		    	}
 		    }
 
 		    if ((e.keyCode > 57)&&(e.keyCode < 65)) {
