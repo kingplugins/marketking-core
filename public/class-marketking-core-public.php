@@ -751,7 +751,8 @@ class Marketkingcore_Public{
 
 	function marketking_rewrite_url(){
 		$pageid = apply_filters( 'wpml_object_id', get_option( 'marketking_stores_page_setting', 'none' ), 'post' , true);
-		$slug = get_post_field( 'post_name', $pageid );
+       		$slug = get_page_uri( $pageid );
+
 
 	    add_rewrite_rule(
 	        '^'.$slug.'/([^/]*)/?([^/]*)/?([^/]*)/?',
