@@ -14,6 +14,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
 <!-- main header @s -->
 <div class="nk-header nk-header-fixed is-light">
     <div class="container-fluid">
+        
         <div class="nk-header-wrap">
             <div class="nk-menu-trigger d-xl-none ml-n1">
                 <a href="#" class="nk-nav-toggle nk-quick-nav-icon" data-target="sidebarMenu"><em class="icon ni ni-menu"></em></a>
@@ -209,7 +210,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                               
                                                     ?>
                                                     <li class="chat-item <?php echo esc_attr($is_unread);?>">
-                                                        <a class="chat-link" href="<?php echo get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)).'messages?id='.esc_attr($message);?>">
+                                                        <a class="chat-link" href="<?php echo trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'messages?id='.esc_attr($message);?>">
 
                                                             <?php
 
@@ -247,7 +248,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                             </ul><!-- .chat-list -->
                                         </div><!-- .nk-dropdown-body -->
                                         <div class="dropdown-foot center">
-                                            <a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)).'messages'); ?>"><?php esc_html_e('View All', 'marketking-multivendor-marketplace-for-woocommerce'); ?></a>
+                                            <a href="<?php echo esc_attr(trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'messages'); ?>"><?php esc_html_e('View All', 'marketking-multivendor-marketplace-for-woocommerce'); ?></a>
                                         </div>
                                     </div>
                                 </li>
@@ -293,7 +294,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                                             <em class="icon icon-circle bg-warning-dim ni ni-curve-down-right"></em>
                                                         </div>
                                                         <div class="nk-notification-content">
-                                                            <a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)).'announcement/?id='.esc_attr($announcement->ID)); ?>"><div class="nk-notification-text"><?php echo esc_html($announcement->post_title);?></div></a>
+                                                            <a href="<?php echo esc_attr(trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'announcement/?id='.esc_attr($announcement->ID)); ?>"><div class="nk-notification-text"><?php echo esc_html($announcement->post_title);?></div></a>
                                                             <div class="nk-notification-time"><?php echo esc_html(get_the_date(get_option( 'date_format' ), $announcement));?></div>
                                                         </div>
                                                     </div>
@@ -303,7 +304,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                             ?>
                                         </div><!-- .nk-dropdown-body -->
                                         <div class="dropdown-foot center">
-                                            <a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)).'announcements'); ?>"><?php esc_html_e('View All', 'marketking-multivendor-marketplace-for-woocommerce'); ?></a>
+                                            <a href="<?php echo esc_attr(trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'announcements'); ?>"><?php esc_html_e('View All', 'marketking-multivendor-marketplace-for-woocommerce'); ?></a>
                                         </div>
                                     </div>
                                 </li>
@@ -381,7 +382,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                 ?>
                                 <div class="dropdown-inner">
                                     <ul class="link-list">
-                                        <li><a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'profile';?>"><em class="icon ni ni-account-setting-fill"></em><span><?php esc_html_e('Store Settings','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+                                        <li><a href="<?php echo esc_attr(trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)))).'profile';?>"><em class="icon ni ni-account-setting-fill"></em><span><?php esc_html_e('Store Settings','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
                                     </ul>
 
                                 </div>

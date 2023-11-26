@@ -44,7 +44,19 @@ if(marketking()->vendor_has_panel('orders')){
                         <div class="nk-block-head nk-block-head-sm">
                             <div class="nk-block-between g-3">
                                 <div class="nk-block-head-content">
-                                    <h3 class="nk-block-title page-title"><?php esc_html_e('Order Details','marketking-multivendor-marketplace-for-woocommerce');?> / <strong class="text-primary small">#<?php echo esc_html($order_id);?></strong></h3>
+                                    <h3 class="nk-block-title page-title"><?php esc_html_e('Order Details','marketking-multivendor-marketplace-for-woocommerce');?> / <strong class="text-primary small">#<?php 
+
+                                    // sequential
+                                    $order_nr_sequential = get_post_meta($order_id,'_order_number', true);
+                                    if (!empty($order_nr_sequential)){
+                                        echo $order_nr_sequential;
+                                    } else {
+                                        echo esc_html($order_id);
+                                    }
+
+                                    ?></strong></h3> 
+                                    <?php do_action('marketking_after_order_details_text'); ?>
+
                                     <div class="nk-block-des text-soft">
                                         <ul class="list-inline">
                                             <li><?php esc_html_e('Customer:','marketking-multivendor-marketplace-for-woocommerce');?> <span class="text-base"><?php echo apply_filters('marketking_order_page_customer_name', esc_html($order->get_formatted_billing_full_name()), $order);
@@ -55,6 +67,7 @@ if(marketking()->vendor_has_panel('orders')){
                                             echo $date_created->date_i18n( get_option('date_format'). ' ' . get_option('time_format'), $date_created->getTimestamp()+(get_option('gmt_offset')*3600) );
                                              ?></span></li>
                                         </ul>
+                                        <?php do_action('marketking_order_before_order_information'); ?>
                                     </div>
                                 </div>
                                 <div class="nk-block-head-content">
@@ -72,7 +85,7 @@ if(marketking()->vendor_has_panel('orders')){
                                         <?php
                                     }
                                     ?>
-                                    <a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'orders';?>" class="marketking-order-back-button btn btn-icon btn-gray ml-2 text-white pl-2 pr-3"><em class="icon ni ni-arrow-left"></em><?php esc_html_e('Back','marketking-multivendor-marketplace-for-woocommerce'); ?></a>
+                                    <a href="<?php echo esc_attr(trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)))).'orders';?>" class="marketking-order-back-button btn btn-icon btn-gray ml-2 text-white pl-2 pr-3"><em class="icon ni ni-arrow-left"></em><?php esc_html_e('Back','marketking-multivendor-marketplace-for-woocommerce'); ?></a>
 
                                     </ul>
                                 </div>
@@ -97,6 +110,8 @@ if(marketking()->vendor_has_panel('orders')){
                                             <div class="nk-block">
                                                 <div class="nk-block-head">
                                                     <h5 class="title"><?php esc_html_e('Order Information','marketking-multivendor-marketplace-for-woocommerce');?></h5>
+                                                    <?php do_action('marketking_after_order_information_text'); ?>
+
                                                 </div><!-- .nk-block-head -->
                                                 <div class="card card-preview">
                                                         <div class="row g-gs">
@@ -108,6 +123,7 @@ if(marketking()->vendor_has_panel('orders')){
                                                                         <?php echo esc_html__('Date:','marketking-multivendor-marketplace-for-woocommerce').' '.$date_created->date_i18n( get_option('date_format'), $date_created->getTimestamp()+(get_option('gmt_offset')*3600) );?><br><br>
                                                                         <div class="form-group">
                                                                             <label class="form-label" for="marketking_order_status"><?php esc_html_e('Status','marketking-multivendor-marketplace-for-woocommerce');?></label>
+                                                                            <?php do_action('marketking_manage_order_after_status'); ?>
                                                                             <div class="form-control-wrap">
                                                                                 <div class="form-control-select">
                                                                                     <select class="form-control" name="marketking_order_status" id="marketking_order_status" <?php
@@ -116,10 +132,12 @@ if(marketking()->vendor_has_panel('orders')){
                                                                                         echo 'disabled="disabled"';
                                                                                     }
                                                                                     $status = $order->get_status();
-                                                                                    $modifiable_statuses = array('processing','completed','on-hold');
+                                                                                    $modifiable_statuses = apply_filters('marketking_modifiable_statuses', array('processing','completed','on-hold'));
                                                                                     if (!in_array($status, $modifiable_statuses) && !apply_filters('marketking_all_order_statuses_modifiable', false)){
                                                                                         echo 'disabled="disabled"';
                                                                                     }
+
+                                                                                    $removed_statuses = apply_filters('marketking_removed_statuses', array());
 
                                                                                     // either not team member, or team member with permission to add
                                                                                     if (!marketking()->is_vendor_team_member() || $checkedval === 1){
@@ -129,8 +147,23 @@ if(marketking()->vendor_has_panel('orders')){
                                                                                     }
 
                                                                                     ?>>
-                                                                                        <option value="processing" <?php selected($status, 'processing', true);?>><?php esc_html_e('Processing','marketking-multivendor-marketplace-for-woocommerce');?></option>
-                                                                                        <option value="on-hold" <?php selected($status, 'on-hold', true);?>><?php esc_html_e('On hold','marketking-multivendor-marketplace-for-woocommerce');?></option>
+
+                                                                                        <?php
+                                                                                            if (!in_array('processing', $removed_statuses)){
+                                                                                                ?>
+                                                                                                <option value="processing" <?php selected($status, 'processing', true);?>><?php esc_html_e('Processing','marketking-multivendor-marketplace-for-woocommerce');?></option>
+
+                                                                                                <?php
+                                                                                            }
+                                                                                        ?>
+
+                                                                                        <?php
+                                                                                            if (!in_array('on-hold', $removed_statuses)){
+                                                                                                ?>
+                                                                                                <option value="on-hold" <?php selected($status, 'on-hold', true);?>><?php esc_html_e('On hold','marketking-multivendor-marketplace-for-woocommerce');?></option>
+                                                                                                <?php
+                                                                                            }
+                                                                                        ?>
                                                                                         <?php
                                                                                         // allow completed or not based on shipping tracking setting
                                                                                         $showcompleted = 'yes';
@@ -148,25 +181,61 @@ if(marketking()->vendor_has_panel('orders')){
                                                                                                 }
                                                                                             }
                                                                                         }
+                                                                                        if (!apply_filters('marketking_vendors_can_completed_status', true)){
+                                                                                            $showcompleted = 'no';
+                                                                                        }
                                                                                         if ($showcompleted === 'yes'){
                                                                                             ?>
-                                                                                            <option value="completed" <?php selected($status, 'completed', true);?>><?php esc_html_e('Completed','marketking-multivendor-marketplace-for-woocommerce');?></option>
+                                                                                            <?php
+                                                                                                if (!in_array('completed', $removed_statuses)){
+                                                                                                    ?>
+                                                                                                    <option value="completed" <?php selected($status, 'completed', true);?>><?php esc_html_e('Completed','marketking-multivendor-marketplace-for-woocommerce');?></option>
+                                                                                                    <?php
+                                                                                                }
+                                                                                            ?>
                                                                                             <?php
                                                                                         }
                                                                                         // if non modifiable, show rest of statuses as well
                                                                                          if (!in_array($status, $modifiable_statuses) || apply_filters('marketking_vendor_can_all_order_statuses', false)){
                                                                                             ?>
-                                                                                            <option value="pending" <?php selected($status, 'pending', true);?>><?php esc_html_e('Pending payment','marketking-multivendor-marketplace-for-woocommerce');?></option>
-                                                                                            <option value="cancelled" <?php selected($status, 'cancelled', true);?>><?php esc_html_e('Cancelled','marketking-multivendor-marketplace-for-woocommerce');?></option>
-                                                                                            <option value="refunded" <?php selected($status, 'refunded', true);?>><?php esc_html_e('Refunded','marketking-multivendor-marketplace-for-woocommerce');?></option>
-                                                                                            <option value="failed" <?php selected($status, 'failed', true);?>><?php esc_html_e('Failed','marketking-multivendor-marketplace-for-woocommerce');?></option>
-
+                                                                                            <?php
+                                                                                                if (!in_array('pending', $removed_statuses)){
+                                                                                                    ?>
+                                                                                                    <option value="pending" <?php selected($status, 'pending', true);?>><?php esc_html_e('Pending payment','marketking-multivendor-marketplace-for-woocommerce');?></option>
+                                                                                                    <?php
+                                                                                                }
+                                                                                            ?>
+                                                                                            <?php
+                                                                                                if (!in_array('cancelled', $removed_statuses)){
+                                                                                                    ?>
+                                                                                                    <option value="cancelled" <?php selected($status, 'cancelled', true);?>><?php esc_html_e('Cancelled','marketking-multivendor-marketplace-for-woocommerce');?></option>
+                                                                                                    <?php
+                                                                                                }
+                                                                                            ?>
+                                                                                            <?php
+                                                                                                if (!in_array('refunded', $removed_statuses)){
+                                                                                                    ?>
+                                                                                                    <option value="refunded" <?php selected($status, 'refunded', true);?>><?php esc_html_e('Refunded','marketking-multivendor-marketplace-for-woocommerce');?></option>
+                                                                                                    <?php
+                                                                                                }
+                                                                                            ?>
+                                                                                            <?php
+                                                                                                if (!in_array('failed', $removed_statuses)){
+                                                                                                    ?>
+                                                                                                    <option value="failed" <?php selected($status, 'failed', true);?>><?php esc_html_e('Failed','marketking-multivendor-marketplace-for-woocommerce');?></option>
+                                                                                                    <?php
+                                                                                                }
+                                                                                            ?>
                                                                                             <?php
                                                                                          }  
+
+                                                                                         do_action('marketking_order_statuses_custom', $user_id, $status);
+
 
                                                                                         ?>
                                                                                     </select>
                                                                                 </div>
+                                                                                <?php do_action('marketking_order_after_order_status'); ?>
                                                                                 <?php
                                                                                 $received = get_post_meta($order_id,'marked_received', true);
                                                                                 if ($received === 'yes'){
@@ -191,10 +260,18 @@ if(marketking()->vendor_has_panel('orders')){
                                                                         <p class="card-text"><?php echo apply_filters('marketking_order_page_billing_address', $order->get_formatted_billing_address(), $order);?></p>
                                                                         <?php 
 
-                                                                        if (apply_filters('marketking_vendors_see_customer_contact_info', true)){
-                                                                            echo esc_html__('Email:','marketking-multivendor-marketplace-for-woocommerce').' '.$order->get_billing_email();?><Br>
-                                                                            <?php echo esc_html__('Phone:','marketking-multivendor-marketplace-for-woocommerce').' '.$order->get_billing_phone();
+                                                                        if (apply_filters('marketking_vendors_see_customer_contact_info', true, $order)){
+                                                                            if (!empty($order->get_billing_email())){
+                                                                                echo esc_html__('Email:','marketking-multivendor-marketplace-for-woocommerce').' '.$order->get_billing_email().'<br>';
+
+                                                                            }
+
+                                                                            if (!empty($order->get_billing_phone())){
+                                                                                echo esc_html__('Phone:','marketking-multivendor-marketplace-for-woocommerce').' '.$order->get_billing_phone();
+                                                                            }
                                                                         }
+
+                                                                        do_action('marketking_order_after_phone', $order);
 
                                                                         ?>
                                                                     </div>
@@ -213,6 +290,8 @@ if(marketking()->vendor_has_panel('orders')){
 
                                                                             <?php
                                                                         }
+
+                                                                        do_action('marketking_order_after_shipping', $order);
                                                                         ?>
                                                                     </div>
                                                                 </div>
@@ -221,8 +300,10 @@ if(marketking()->vendor_has_panel('orders')){
                                                 </div>
                                                 
                                             </div><!-- .nk-block -->
-                                            
+                                            <?php do_action('marketking_order_after_order_information'); ?>
                                             <div class="nk-divider divider md"></div><div class="nk-block">
+                                                <?php do_action('marketking_order_before_order_items'); ?>
+
                                                 <div class="nk-block-head">
                                                     <h5 class="title"><?php esc_html_e('Order Items','marketking-multivendor-marketplace-for-woocommerce');?></h5>
                                                 </div><!-- .nk-block-head -->
@@ -248,23 +329,68 @@ if(marketking()->vendor_has_panel('orders')){
                                                     <?php
 
                                                     do_action('marketking_after_downloadable_product_permissions', $order_id);
+
+                                                    
+
+                                                    
                                                     if (class_exists('WC_Admin_Custom_Order_Fields') && apply_filters('marketking_admin_custom_order_fields', true)){
 
                                                         ?>
                                                         <div class="nk-divider divider md"></div><div class="nk-block">
                                                             <div class="nk-block-head">
-                                                                <h5 class="title"><?php esc_html_e('Custom Order FIelds','marketking-multivendor-marketplace-for-woocommerce');?></h5>
+                                                                <h5 class="title"><?php esc_html_e('Custom Order Fields','marketking-multivendor-marketplace-for-woocommerce');?></h5>
                                                             </div><!-- .nk-block-head -->
                                                         </div><!-- .nk-block -->
                                                         <br>
                                                         <?php
 
                                                         $admin_order_fields = new WC_Admin_Custom_Order_Fields;
-                                                        $admin_order_fields->load_class( '/includes/admin/class-wc-admin-custom-order-fields-admin.php', 'WC_Admin_Custom_Order_Fields_Admin' );
+                                                        $version = $admin_order_fields::VERSION;
+
+                                                        if (version_compare($version, '1.16.0', '>=')) {
+                                                            $admin_order_fields->load_class( '/src/admin/class-wc-admin-custom-order-fields-admin.php', 'WC_Admin_Custom_Order_Fields_Admin' );
+                                                        } else {
+                                                            $admin_order_fields->load_class( '/includes/admin/class-wc-admin-custom-order-fields-admin.php', 'WC_Admin_Custom_Order_Fields_Admin' );
+                                                        }
                                                         $admin_order_CPT = new WC_Admin_Custom_Order_Fields_Shop_Order_CPT;
                                                         $admin_order_CPT ->load_meta_box();
                                                         $admin_order_CPT->meta_box->render();
                                                         
+                                                    }
+
+                                                    if (class_exists('WC_Subscriptions')){
+                                                        if (intval(get_option( 'marketking_enable_subscriptions_setting', 0 )) === 1){
+                                                            if(marketking()->vendor_has_panel('subscriptions')){
+
+                                                                ?>
+                                                                <div class="nk-divider divider md"></div><div class="nk-block">
+                                                                    <div class="nk-block-head">
+                                                                        <h5 class="title"><?php esc_html_e('Related Orders','marketking-multivendor-marketplace-for-woocommerce');?></h5>
+                                                                    </div><!-- .nk-block-head -->
+                                                                </div><!-- .nk-block -->
+                                                                <br>
+                                                                <?php
+
+                                                                function removeLink($str){
+                                                                $regex = '/<a (.*)<\/a>/isU';
+                                                                preg_match_all($regex,$str,$result);
+                                                                foreach($result[0] as $rs)
+                                                                {
+                                                                    $regex = '/<a (.*)>(.*)<\/a>/isU';
+                                                                    $text = preg_replace($regex,'$2',$rs);
+                                                                    $str = str_replace($rs,$text,$str);
+                                                                }
+                                                                return $str;}
+
+                                                                ob_start();
+                                                                WCS_Meta_Box_Related_Orders::output($post);
+                                                                $related_orders_content = ob_get_clean();
+                                                                $related_orders_content = removeLink($related_orders_content);
+
+                                                                echo $related_orders_content;
+
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
@@ -276,6 +402,7 @@ if(marketking()->vendor_has_panel('orders')){
                                         <div class="card-inner-group">
                                             
                                             <div class="card-inner">
+                                                <?php do_action('marketking_order_before_order_total'); ?>
                                                 <div class="overline-title-alt mb-2 marketking_order_totals_title"><?php esc_html_e('Order Totals','marketking-multivendor-marketplace-for-woocommerce');?></div>
                                                 <div class="profile-balance">
                                                     <div class="profile-balance-group gx-4">
@@ -302,6 +429,8 @@ if(marketking()->vendor_has_panel('orders')){
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                <?php do_action('marketking_order_after_order_total'); ?>
                                             </div><!-- .card-inner -->
 
                                             <?php
@@ -320,6 +449,13 @@ if(marketking()->vendor_has_panel('orders')){
                                                         $shipping_history = get_post_meta($order_id,'marketking_shipment_history', true);
                                                         $providers = marketkingpro()->get_tracking_providers();
                                                         $selectedproviders = get_option('marketking_shipping_providers_setting',array('sp-other'));
+
+                                                        if (empty($providers)){
+                                                            $providers = array();
+                                                        }
+                                                        if (empty($selectedproviders)){
+                                                            $selectedproviders = array();
+                                                        }
 
                                                         if (!empty($shipping_history)){
                                                             ?>
@@ -389,7 +525,7 @@ if(marketking()->vendor_has_panel('orders')){
                                                                 </div>
                                                             </div>
                                                             <div class="col-sm-12">
-                                                                <button class="btn btn-sm btn-secondary" id="marketking_create_shipment_button" value="<?php echo esc_attr($order_id);?>"><?php esc_html_e('Create shipment','marketking-multivendor-marketplace-for-woocommerce');?></button>
+                                                                <button class="btn btn-sm btn-secondary" type="button" id="marketking_create_shipment_button" value="<?php echo esc_attr($order_id);?>"><?php esc_html_e('Create shipment','marketking-multivendor-marketplace-for-woocommerce');?></button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -402,6 +538,9 @@ if(marketking()->vendor_has_panel('orders')){
                                                 if (intval(get_option( 'marketking_enable_vendorinvoices_setting', 1 )) === 1 && (defined('WPO_WCPDF_VERSION') || defined('WF_PKLIST_VERSION'))){
                                                     ?>
                                                     <div class="card-inner">
+
+                                                        <?php do_action('marketking_order_before_invoice_packing'); ?>
+
                                                         <h6 class="overline-title-alt mb-3"><?php 
 
                                                         if (apply_filters('marketking_enable_packing_slip_invoices_vendors', true)){
@@ -440,9 +579,28 @@ if(marketking()->vendor_has_panel('orders')){
                                                                     ?>
                                                                     <div class="marketking_packing_slip_container">
                                                                         <?php
-                                                                        esc_html_e('Packing slip: ','marketking-multivendor-marketplace-for-woocommerce');
-                                                                        echo '&nbsp;';
-                                                                        do_action( 'woocommerce_admin_order_actions_end', $order );
+
+                                                                        //do_action( 'woocommerce_admin_order_actions_end', $order );
+
+                                                                        if (defined('WPO_WCPDF_VERSION')){
+                                                                            global $wp;
+
+                                                                            $invoice = wcpdf_get_packing_slip( $order );
+                                                                            if ( ! $invoice || ! $invoice->is_allowed() ) {
+                                                                                
+                                                                            } else {
+                                                                                $link_text = esc_html__( 'Packing slip (PDF)', 'marketking-multivendor-marketplace-for-woocommerce' );
+
+
+                                                                                $pdf_url = WPO_WCPDF()->endpoint->get_document_link( $order, 'packing-slip', array( 'shortcode' => 'true' ) );
+
+                                                                                $text = sprintf( '<p><a href="%s" target="_blank">%s</a></p>', esc_url( $pdf_url ), esc_html( $link_text ) );
+
+                                                                                echo $text; 
+
+                                                                            }
+                                                                        }
+
                                                                         ?>
                                                                     </div>
                                                                     <?php
@@ -451,11 +609,70 @@ if(marketking()->vendor_has_panel('orders')){
 
 
                                                             } else if (defined('WF_PKLIST_VERSION')){
-                                                                $html='';
+                                                                
                                                                 ?>
-                                                                <table class="wf_invoice_metabox">
+                                                                <table class="wf_invoice_metabox" style="width:100%;">          
                                                                     <?php
-                                                                    $html=apply_filters('wt_print_metabox',$html,$order,$order_id);
+                                                                    $data_arr=array();
+                                                                    $data_arr=apply_filters('wt_print_docdata_metabox',$data_arr, $order, $order_id);
+                                                                    if(count($data_arr)>0){
+                                                                        ?>
+                                                                        <tr>
+                                                                            <td style="font-weight:bold;">
+                                                                                <h4 style="margin:0px; padding-top:5px; padding-bottom:3px; border-bottom:dashed 1px #ccc;"><?php _e('Document details','print-invoices-packing-slip-labels-for-woocommerce'); ?></h4>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td style="padding-bottom:10px;">
+                                                                                <?php
+                                                                                
+                                                                                foreach($data_arr as $datav)
+                                                                                {
+                                                                                    echo '<span style="font-weight:500;">';
+                                                                                    echo ("" !== $datav['label'] ? $datav['label'].': ' : '');
+                                                                                    echo '</span>';
+                                                                                    echo $datav['value'].'<br />';
+                                                                                }
+                                                                                ?>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <?php
+                                                                        }
+                                                                    ?>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <h4 style="margin:0px; padding-top:5px; padding-bottom:3px; border-bottom:dashed 1px #ccc;"><?php _e('Print/Download','print-invoices-packing-slip-labels-for-woocommerce'); ?></h4>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td style="height:3px; font-size:0px; line-height:0px;"></td>
+                                                                    </tr>
+                                                                    <?php
+                                                                    $btn_arr=array();
+                                                                    $btn_arr=apply_filters('wt_print_actions', $btn_arr, $order, $order_id, 'detail_page');
+
+                                                                    foreach($btn_arr as $btn_key=>$args){
+                                                                        $btn_arr[$btn_key]['is_show_prompt'] = 1;
+                                                                    }
+                                                                    
+                                                                    Wf_Woocommerce_Packing_List_Admin::generate_print_button_html($btn_arr, $order, $order_id, 'detail_page'); //generate buttons
+
+                                                                    add_action('wp_footer', function(){
+                                                                        // remove wp-admin from download links
+                                                                        ?>
+                                                                        <script>
+                                                                            jQuery(document).ready(function(){
+                                                                                jQuery('.wf_invoice_metabox a').each(function(){
+                                                                                    let link = jQuery(this).prop('href');
+                                                                                    link = link.replace('/wp-admin', '');
+                                                                                    jQuery(this).prop('href', link);
+                                                                                });
+                                                                            });
+                                                                        </script>
+                                                                        <?php
+                                                                    });
+
+
                                                                     ?>
                                                                 </table>
                                                                 <?php
@@ -464,18 +681,26 @@ if(marketking()->vendor_has_panel('orders')){
                                                             
                                                             </div>
                                                         </div>
+
                                                     </div>
                                                     <?php
+
+                                                    do_action('marketking_order_after_invoice_packing');
 
                                                     
                                                 }
                                             }
                                             ?>
                                             <div id="woocommerce-order-notes" class="card-inner">
+                                                <?php do_action('marketking_order_before_order_notes'); ?>
+
                                                 <h6 class="overline-title-alt mb-3"><?php esc_html_e('Order Notes','marketking-multivendor-marketplace-for-woocommerce');?></h6>
                                                 <?php WC_Meta_Box_Order_Notes::output($post);  ?>
 
                                             </div><!-- .card-inner -->
+
+                                            <?php do_action('marketking_order_after_order_notes'); ?>
+
 
                                             <div id="marketking_custom_boxes_area">
                                             <?php

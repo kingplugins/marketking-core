@@ -17,6 +17,16 @@ if(marketking()->vendor_has_panel('profile-settings')){
     ?>
     <div class="nk-content marketking_profile_settings_page">
         <div class="container-fluid">
+            <?php
+            if (isset($_GET['update'])){
+                $add = sanitize_text_field($_GET['update']);;
+                if ($add === 'success'){
+                    ?>                                    
+                    <div class="alert alert-primary alert-icon"><em class="icon ni ni-check-circle"></em> <strong><?php esc_html_e('Your settings have been saved successfully','marketking-multivendor-marketplace-for-woocommerce');?></strong>.</div>
+                    <?php
+                }
+            }
+            ?>
             <div class="nk-content-inner">
                 <div class="nk-content-body">
                     <div class="nk-block">

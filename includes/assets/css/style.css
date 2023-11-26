@@ -173,6 +173,19 @@ button.marketking_myaccount_view_message_button{
     align-items: center;
     justify-content: space-between;
 }
+a.marketking_vendor_social_link:focus {
+    outline: none;
+}
+a.marketking_vendor_social_link {
+    display: inline-block;
+    margin-right: 6px;
+}
+a.marketking_vendor_social_link:hover{
+    filter:brightness(0.9);
+}
+.marketking_icon_grayscale{
+    filter: grayscale();
+}
 button.marketking_myaccount_view_message_button:hover{
     background-color: #303030 !important;
     color: #fff !important;
@@ -182,6 +195,7 @@ button.marketking_myaccount_view_message_button:hover{
     width: 19px;
     margin-right: 10px;
 }
+
 .marketking_myaccount_messages_pagination_container{
     display: flex;
     justify-content: space-between;
@@ -191,6 +205,7 @@ button.marketking_myaccount_view_message_button:hover{
     display: flex;
     justify-content: space-between;
 }
+
 .marketking_myaccount_messages_pagination_button a{
     width: 230px;
     height: 35px;
@@ -2718,9 +2733,21 @@ svg.marketking_purchase_list_new_button_icon {
     background: rgb(30, 115, 190); 
     color: rgb(255, 255, 255);
 }
-.theme-dt-the7 .marketking_arrow_icon_view_shop, .theme-primrose .marketking_arrow_icon_view_shop, .theme-cartify .marketking_arrow_icon_view_shop, .theme-shopkeeper .marketking_arrow_icon_view_shop, .theme-blaszok .marketking_arrow_icon_view_shop, .theme-bazar .marketking_arrow_icon_view_shop {
+.theme-astra .marketking_arrow_icon_view_shop, .theme-dt-the7 .marketking_arrow_icon_view_shop, .theme-primrose .marketking_arrow_icon_view_shop, .theme-cartify .marketking_arrow_icon_view_shop, .theme-shopkeeper .marketking_arrow_icon_view_shop, .theme-blaszok .marketking_arrow_icon_view_shop, .theme-bazar .marketking_arrow_icon_view_shop {
     width: auto !important;
     height: auto !important;
+}
+select[name="marketking_stores_vendors_table_length"], .marketking_frontend_store_categories_select_container .select2-selection{
+    background-image: none;
+}
+.theme-astra.woocommerce-checkout .product-name {
+    display: block !important;
+}
+.woocommerce-checkout.theme-astra .product-quantity {
+    display: inline-block !important;
+}
+.woocommerce-checkout.theme-astra .ast-product-image {
+    display: inline-flex !important;
 }
 .theme-shopkeeper .marketking_split_cart_form h3 {
     font-size: 20px;
@@ -2758,6 +2785,12 @@ svg.marketking_purchase_list_new_button_icon {
     }
     td.marketking_vendor_name {
         max-width: 150px;
+        font-size:17px;
+    }
+}
+@media screen and (max-width: 350px) { 
+    td.marketking_vendor_name {
+        font-size:14px;
     }
 }
 @media screen and (max-width: 750px) { 

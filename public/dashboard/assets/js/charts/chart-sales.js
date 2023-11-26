@@ -591,9 +591,22 @@
     var colortouse = "#9d72ff";
     var hovercolortouse = "#9d72ff";
   }
+
+  var spacevar = '';
+  if (marketking_display_settings.currency_symbol.length > 2){
+    spacevar = ' ';
+  }
+
+  // parse data and add 2 digits
+  if (marketking_display_settings.earningsvalues !== undefined){
+    for (var i = 0; i < marketking_display_settings.earningsvalues.length; ++i) {
+        marketking_display_settings.earningsvalues[i] = marketking_display_settings.earningsvalues[i].toFixed(2);
+    }
+  }
+  
   var salesOverview = {
     labels: marketking_display_settings.earningslabels,
-    dataUnit: marketking_display_settings.currency_symbol,
+    dataUnit: marketking_display_settings.currency_symbol + spacevar,
     lineTension: 0.1,
     datasets: [{
       label: "Sales Overview",

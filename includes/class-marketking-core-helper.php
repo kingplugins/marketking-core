@@ -16,6 +16,99 @@ class Marketkingcore_Helper{
 		self::$data[$var] = $value;
 	}
 
+	public static function social_site_active($site){
+	    $active_sites = get_option('marketking_social_sites_setting', array('facebook', 'twitter', 'youtube', 'instagram', 'linkedin', 'pinterest'));
+	    if (!is_array($active_sites)){
+	    	$active_sites = array();
+	    }
+	    if (in_array($site, $active_sites)){
+	        return true;
+	    }
+	    return false;
+	}
+
+	public static function is_advertised($product_id){
+		$is_advertised = get_post_meta($product_id, 'marketking_is_advertised', true);
+		if ($is_advertised === 'yes'){
+			// check expiry
+			$expiry_date = intval(get_post_meta($product_id, 'marketking_advertisement_expires', true));
+			if ($expiry_date < time()){
+				// has expired
+				update_post_meta($product_id, 'marketking_is_advertised', 'no');
+
+				// remove featured
+				if (intval(get_option( 'marketking_advertising_featured_setting', 1 )) === 1){
+					$wc_product = wc_get_product($product_id);
+				    $wc_product->set_featured(0);
+				    $wc_product->save();
+				}
+
+				// removed from advertised ids list
+				$marketking_advertised_product_ids = get_option('marketking_advertised_product_ids');
+				if (is_array($marketking_advertised_product_ids)){
+					if (($key = array_search($product_id, $marketking_advertised_product_ids)) !== false) {
+					    unset($marketking_advertised_product_ids[$key]);
+					}
+					update_option('marketking_advertised_product_ids', $marketking_advertised_product_ids);
+				}
+
+
+				return false;
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	// returns string;
+	public static function get_ad_days_left($product_id){
+		// check expiry
+		$expiry_date = intval(get_post_meta($product_id, 'marketking_advertisement_expires', true));
+		$time_left = $expiry_date - time();
+		$days_left = intval(round($time_left / 86400));
+
+		if ($days_left < 1){
+			$days_left = '< 1';
+		}
+
+		return $days_left;
+	}
+
+	// returns int
+	public static function get_ad_days_left_val($product_id){
+		// check expiry
+		$expiry_date = intval(get_post_meta($product_id, 'marketking_advertisement_expires', true));
+		$time_left = $expiry_date - time();
+		$days_left = intval($time_left / 86400);
+
+		return $days_left;
+	}
+
+
+	// get number of subscription vendors in cart
+	public static function get_number_of_subscription_vendors_cart(){
+
+		$subscription_vendors = array();
+		if (class_exists('WC_Subscriptions')){
+			if ( ! empty( WC()->cart->cart_contents )) {
+				foreach ( WC()->cart->cart_contents as $cart_item ) {
+					if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
+						array_push($subscription_vendors, marketking()->get_product_vendor($cart_item['product_id']));
+					}
+				}
+			}
+			$subscription_vendors = array_filter(array_unique($subscription_vendors));
+		}
+
+		if (apply_filters('marketking_allow_multiple_subscription_vendors_same_order', false)){
+			$subscription_vendors = array();
+		}
+
+		return count($subscription_vendors);
+
+	}
+
 	public static function switch_to_user_locale($email_address){
 
 		$user = get_user_by('email', $email_address);
@@ -76,6 +169,169 @@ class Marketkingcore_Helper{
 		return $vendor_shipping_methods;
 	}
 
+	public static function get_store_notice($vendor_id){
+		$notice_enabled = get_user_meta($vendor_id,'marketking_notice_enabled', true);
+		if ($notice_enabled === 'yes'){
+			$notice_message = get_user_meta($vendor_id,'marketking_notice_message', true);
+		} else {
+			$notice_message = '';
+		}
+		return $notice_message;
+	}
+
+	public static function get_advertising_credits($vendor_id){
+		$credits = get_user_meta($vendor_id, 'marketking_advertising_credits_available', true);
+
+		if (empty($credits)){
+			$credits = 0;
+		} else {
+			$credits = intval($credits);
+		}
+		
+		return $credits;
+	}
+
+	public static function get_vendor_details_tab($vendor_id){
+	  	// if email or phone, show contact info
+	  	$showphone = get_user_meta($vendor_id,'marketking_show_store_phone', true);
+	  	$showemail = get_user_meta($vendor_id,'marketking_show_store_email', true);
+	  	$company = get_user_meta($vendor_id,'billing_company', true);
+
+	  	$phone = get_user_meta($vendor_id,'billing_phone', true);
+	  	$email = get_userdata($vendor_id)->user_email;
+	  	?>
+	  	<h3><?php esc_html_e('Vendor Information', 'marketking-multivendor-marketplace-for-woocommerce'); ?></h3>
+
+	  	<?php
+
+	  	if (apply_filters('marketking_vendor_details_show_vendor', true)){
+
+		  	echo '<strong>'.esc_html__('Vendor: ','marketking-multivendor-marketplace-for-woocommerce').'</strong>';
+		  	$store_name = marketking()->get_store_name_display($vendor_id);
+		  	echo esc_html($store_name).'<br>';
+
+		  }
+
+		  if (apply_filters('marketking_vendor_details_show_badges', true)){
+
+		  	// display badges if applicable
+		  	if (defined('MARKETKINGPRO_DIR')){
+		  		if (intval(get_option('marketking_enable_badges_setting', 1)) === 1){
+		  			marketkingpro()->display_vendor_badges($vendor_id);
+		  		}
+		  	}
+		  }
+
+	  	marketking()->display_about_us($vendor_id);
+
+	  	  	
+	  	?>
+	  	<?php
+	  	if (apply_filters('marketking_vendor_details_show_rating', true)){
+
+		  	// rating
+		  	$rating = marketking()->get_vendor_rating($vendor_id);
+		  	// if there's any rating
+		  	if (intval($rating['count'])!==0){
+		  		// show rating
+		  		if (intval($rating['count']) === 1){
+		  			$review = esc_html__('review','marketking-multivendor-marketplace-for-woocommerce');
+		  		} else {
+		  			$review = esc_html__('reviews','marketking-multivendor-marketplace-for-woocommerce');
+		  		}
+		  		echo '<strong>'.esc_html__('Rating:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($rating['rating']).' '.esc_html__('rating from','marketking-multivendor-marketplace-for-woocommerce').' '.esc_html($rating['count']).' '.esc_html($review);
+		  		echo '<br>';
+		  	}
+		  }
+	  	
+	  	?>
+	  	<?php
+
+	  	if (apply_filters('marketking_vendor_details_show_company', true)){
+
+		  	if (!empty($company)){
+		  		echo '<br><strong>'.esc_html__('Company:','marketking-multivendor-marketplace-for-woocommerce').'</strong> ';
+
+		  		echo apply_filters('marketking_vendor_company_name', $company, $vendor_id);
+
+		  		echo '<br>';
+		  	}
+
+		  }
+	  	$customer = new WC_Customer($vendor_id);
+	  	if (apply_filters('marketking_allow_vendor_address_frontend', true)){
+			  	if (is_a($customer,'WC_Customer')){
+			  		$address = $customer->get_billing();
+
+			  		if (apply_filters('marketking_vendor_details_show_address', true)){
+
+				  		if (is_array($address)){
+					  		if (!empty($address['address_1']) || !empty($address['address_2'])){
+					  			echo '<strong>'.esc_html__('Address:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($address['address_1']).' '.esc_html($address['address_2']).', '.esc_html($address['city']).', '.esc_html($address['postcode']);
+
+					  			if (!empty($address['country'])){
+					  				if (isset($address['state']) && isset($address['country'])){
+					  					$countrystates = WC()->countries->get_states( $address['country'] );
+					  					$countrycountry = WC()->countries->countries;
+					  					if (isset($countrystates[$address['state']]) && isset($countrycountry[ $address['country'] ])){
+					  						echo ', '.$countrystates[$address['state']].', '.$countrycountry[ $address['country'] ].'<br>';
+					  					}
+					  				}
+					  			}
+					  		}
+					  	}
+					  }
+			  	}
+	  	}
+	  	
+
+	  	// Store Cat
+	  	if (defined('MARKETKINGPRO_DIR')){
+
+	  		if (apply_filters('marketking_vendor_details_show_categories', true)){
+
+			  	if (intval(get_option('marketking_enable_storecategories_setting', 1)) === 1){
+			  		$selectedarr = get_user_meta($vendor_id,'marketking_store_categories', true);
+
+			  		if (!empty($selectedarr)){
+			  			if (count($selectedarr) == 1){
+			  				$text = esc_html__('Store Category','marketking-multivendor-marketplace-for-woocommerce');
+			  			} else {
+			  				$text = esc_html__('Store Categories','marketking-multivendor-marketplace-for-woocommerce');
+			  			}
+
+			  			foreach ($selectedarr as $index => $catid){
+			  				$catname = get_term($catid)->name;
+			  				$selectedarr[$index] = $catname;
+			  			}
+
+			  			$cats = implode(', ',$selectedarr);
+			  			echo '<br><strong>'.$text.':</strong> '.$cats.'<br>';
+			  		}
+			  	}
+
+		  	}
+		  }
+
+
+	  	if (apply_filters('marketking_vendor_details_show_phone', true)){
+			if ($showphone === 'yes'){
+				echo '<strong>'.esc_html__('Phone:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($phone).'<br>';
+			}
+		}
+		if (apply_filters('marketking_vendor_details_show_email', true)){
+			if ($showemail === 'yes'){
+				echo '<strong>'.esc_html__('Email:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($email).'<br>';
+			}
+		}
+
+		do_action('marketking_vendor_details_store_page', $vendor_id);
+
+	  	
+	  	echo '<br>';
+}
+
+
 	public static function is_virtual_downloadable_order( $order_id ) {
 
 	    // Get order
@@ -89,7 +345,15 @@ class Marketkingcore_Helper{
 
 	    foreach ( $items as $item ) {
 	        // Get product id
-	        $product = wc_get_product( $item['product_id'] );
+	    	$product_id = $item['product_id'];
+	        if (isset($item['variation_id'])){
+	        	if (!empty($item['variation_id']) && $item['variation_id'] !== 0){
+	        		$product_id = $item['variation_id'];
+	        	}
+	        }
+
+	        $product = wc_get_product( $product_id );
+
 
 	        if ($product){
 	        	// Is virtual
@@ -543,7 +807,9 @@ class Marketkingcore_Helper{
 				if ($currenttime > $closingstart && $currenttime < $closingend){
 
 					if (marketking()->vendor_products_are_hidden($vendor_id) === 'no'){
-						marketking()->set_vendor_products_visibility($vendor_id,'hidden');
+						if (apply_filters('marketking_vacation_sets_visibility', true)){
+							marketking()->set_vendor_products_visibility($vendor_id,'hidden');
+						}
 					}
 
 					return true;
@@ -551,10 +817,14 @@ class Marketkingcore_Helper{
 				} else {
 
 					if (marketking()->vendor_products_are_hidden($vendor_id) === 'yes'){
-						marketking()->set_vendor_products_visibility($vendor_id,'visible');
+						if (apply_filters('marketking_vacation_sets_visibility', true)){
+							marketking()->set_vendor_products_visibility($vendor_id,'visible');
+						}
 
 						// vacation finished, close vacation mode
 						update_user_meta($vendor_id, 'marketking_vacation_enabled', 'no');
+						do_action('marketking_vacation_open_shop', $user_id);
+
 
 					}
 
@@ -830,16 +1100,17 @@ class Marketkingcore_Helper{
 
 		// admin cannot be inactive
 		if (intval($vendor_id) === intval($admin_user_id)){
-			return false;
+			return apply_filters('marketking_vendor_is_inactive', false, $vendor_id);
 		}
 		if (intval($vendor_id) === 1){
-			return false;
+			return apply_filters('marketking_vendor_is_inactive', false, $vendor_id);
 		}
 
 		if (get_user_meta($vendor_id, 'marketking_group', true) === 'none'){
-			return true;
+			return apply_filters('marketking_vendor_is_inactive', true, $vendor_id);
 		}
-		return false;
+
+		return apply_filters('marketking_vendor_is_inactive', false, $vendor_id);
 	}
 
 	public static function display_stores_list($vendors, $showcat = 'yes'){
@@ -1045,6 +1316,18 @@ class Marketkingcore_Helper{
 
 		    $img = esc_html(strtoupper(substr($store_name, 0, 2)));
 
+		    // check if there is an avatar URL
+		    if (apply_filters('marketking_use_gravatar_profile', false)){
+		    	if ($vendor_id !== 0 && $vendor_id !== 1){
+		    		$avatar = get_avatar_url($vendor_id);
+		    		if (!empty($avatar)){
+		    			$img = $avatar;
+		    		}
+		    	}
+		    }
+
+		    $img = apply_filters('marketking_user_profile_image_messages', $img, $vendor_id);		    
+
 
 		} else {
 		    $img = marketking()->get_resized_image($img,'thumbnail');
@@ -1120,14 +1403,16 @@ class Marketkingcore_Helper{
 		$shipping_fee_recipient = get_option('marketking_shipping_fee_recipient_setting', 'vendor');
 
 		if ($tax_fee_recipient === 'vendor' || $tax_fee_recipient === 'admin'){
-			$calculation_basis -= $tax_total;
+			if (apply_filters('marketking_remove_tax_calculation_basis', true)){
+				$calculation_basis -= $tax_total;
+			}
 		}
 
 		if ($shipping_fee_recipient === 'vendor' || $shipping_fee_recipient === 'admin'){
 			$calculation_basis -= $shipping_total;
 		}
 
-		update_post_meta($order_id,'tax_fee_recipient', $tax_fee_recipient);
+		$order->update_meta_data('tax_fee_recipient', $tax_fee_recipient);
 
 		// get calculation formula
 		// simple formula
@@ -1154,7 +1439,7 @@ class Marketkingcore_Helper{
 		} else {
 			// complex commissions enabled
 			$commission_rules_total = 0;
-			$rules = marketking()->get_all_vendor_rules($vendor_id);
+			$rules = marketking()->get_all_vendor_rules($vendor_id, $order_id);
 
 			// 1. apply rules that apply once per order
 			$rules_that_apply_once = marketking()->filter_which_rules_apply_once($rules);
@@ -1252,6 +1537,8 @@ class Marketkingcore_Helper{
 			$vendor_commission = $order_total - $commission;
 		}
 
+		$order->save();
+
 		return apply_filters('marketking_final_vendor_commission', $vendor_commission, $order_id, $vendor_id);
 
 	}
@@ -1335,7 +1622,23 @@ class Marketkingcore_Helper{
 						}
 					}
 				}
+			}
 
+			// if is product ids multiple
+			if ($explosion[0] === 'replace'){
+				$multiple_options = get_post_meta($rule_id, 'marketking_rule_product_ids', true);
+				$multiple_options_array = explode(',', $multiple_options);
+
+				// check each option against the product
+				foreach ($multiple_options_array as $index => $option){
+					$multiple_options_array[$index] = trim($option);
+				}
+				$multiple_options_array = array_filter(array_unique($multiple_options_array));
+
+				if (in_array($product_id, $multiple_options_array)){
+					array_push($rules_that_apply, $rule_id);
+					break;
+				}
 			}
 
 		}
@@ -1504,7 +1807,7 @@ class Marketkingcore_Helper{
 	}
 
 	// returns an ARRAY of rule ids that apply to the vendor
-	public static function get_all_vendor_rules($vendor_id){
+	public static function get_all_vendor_rules($vendor_id, $order_id = 0){
 		// get rules that apply to all vendors
 		$all_vendor_rules = get_posts([
 				'post_type' => 'marketking_rule',
@@ -1583,7 +1886,7 @@ class Marketkingcore_Helper{
 
 		$final_rules_array = array_merge($all_vendor_rules, $individual_rules, $group_rules, $rules_that_apply);
 		$final_rules_array = array_filter(array_unique($final_rules_array));
-		return $final_rules_array;
+		return apply_filters('marketking_rules_apply_vendor', $final_rules_array, $vendor_id, $order_id);
 	}
 
 	public static function get_earnings($vendor_id,$timeframe, $days = false, $months = false, $years = false, $admin_earnings = false, $from = false, $to = false, $reports = false){
@@ -1768,7 +2071,15 @@ class Marketkingcore_Helper{
 	}
 
 	public static function get_vendor_total_sales($vendor_id){
-		$vendor_orders = get_posts( array( 'post_type' => 'shop_order','post_status'=>'any','numberposts' => -1, 'author'   => $vendor_id, 'fields' =>'ids') );
+		$vendor_orders = get_posts( 
+			array( 
+				'post_type' => 'shop_order',
+				'post_status'=> apply_filters('marketking_vendor_total_sales_statuses', array('wc-completed','wc-processing','wc-on-hold','wc-pending')),
+				'numberposts' => -1, 
+				'author'   => $vendor_id, 
+				'fields' =>'ids'
+			) 
+		);
 		$total = 0;
 		foreach ($vendor_orders as $order){
 			$orderobj = wc_get_order($order);
@@ -1777,7 +2088,7 @@ class Marketkingcore_Helper{
 		return $total;
 	}
 
-	public static function create_earning($vendor_id, $order_id, $value){
+	public static function create_earning($vendor_id, $order_id, $value, $note = false){
 		// Create transaction
 		$earning = array(
 			'post_title' => sanitize_text_field(esc_html__('Earning','marketking-multivendor-marketplace-for-woocommerce')),
@@ -1788,16 +2099,41 @@ class Marketkingcore_Helper{
 		$earning_post_id = wp_insert_post($earning);
 		$order = wc_get_order($order_id);
 
-		// set meta
-		update_post_meta($earning_post_id, 'time', time());
-		update_post_meta($earning_post_id, 'order_id', $order_id);
-		update_post_meta($earning_post_id, 'customer_id', $order->get_customer_id());
-		update_post_meta($earning_post_id, 'order_status', $order->get_status());
+		if ($order){
+			// set meta
+			update_post_meta($earning_post_id, 'time', time());
+			update_post_meta($earning_post_id, 'order_id', $order_id);
+			update_post_meta($earning_post_id, 'customer_id', $order->get_customer_id());
+			update_post_meta($earning_post_id, 'order_status', $order->get_status());
 
-		update_post_meta($earning_post_id, 'vendor_id', $vendor_id);
+			update_post_meta($earning_post_id, 'vendor_id', $vendor_id);
 
-		update_post_meta($order_id, 'marketking_earning_id', $earning_post_id);
-		update_post_meta($earning_post_id, 'marketking_commission_total', $value);
+			update_post_meta($earning_post_id, 'marketking_commission_total', $value);
+
+			$order->update_meta_data('marketking_earning_id', $earning_post_id);
+			$order->save();
+		} else {
+			if ($order_id == 'manual'){
+				// set meta
+				update_post_meta($earning_post_id, 'time', time());
+				update_post_meta($earning_post_id, 'order_id', $order_id);
+				update_post_meta($earning_post_id, 'customer_id', '');
+				update_post_meta($earning_post_id, 'order_status', '');
+
+				update_post_meta($earning_post_id, 'vendor_id', $vendor_id);
+				update_post_meta($earning_post_id, 'marketking_commission_total', $value);
+
+				// do NOT replace with $order obj, this is a post not an order object
+				update_post_meta($order_id, 'marketking_earning_id', $earning_post_id);
+
+				if ($note !== false){
+					update_post_meta($earning_post_id, 'note', $note);
+				}
+			}
+
+		}
+
+		
 
 		return $earning_post_id;
 	}
@@ -1832,7 +2168,7 @@ class Marketkingcore_Helper{
 
 	public static function get_not_visible_ids_cache(){
 
-		$not_visible_ids = get_transient('marketking_not_visible_ajax_visibility');
+		$not_visible_ids = get_option('marketking_not_visible_ajax_visibility', array());
 
 		$not_visible_ids = apply_filters('marketking_ids_post_in_visibility', $not_visible_ids);
 
@@ -1971,7 +2307,7 @@ class Marketkingcore_Helper{
 
 		$newcache = marketking()->add_all_wpml_products($newcache);
 
-		set_transient('marketking_not_visible_ajax_visibility', $newcache);
+		update_option('marketking_not_visible_ajax_visibility', $newcache);
 
 
 	}
@@ -2030,7 +2366,9 @@ class Marketkingcore_Helper{
 		$not_visible_ids = marketking()->add_all_wpml_products($not_visible_ids);
 
 		// update cache
-		set_transient('marketking_not_visible_ajax_visibility', $not_visible_ids);
+		update_option('marketking_not_visible_ajax_visibility', $not_visible_ids);
+
+		update_option('marketking_rebuild_visibility_cache', 'no');
 
 	}
 
@@ -2364,8 +2702,22 @@ class Marketkingcore_Helper{
 		return false;
 	}
 
+
+	public static function vendor_all_products_individually($vendor_id){
+		$groupid = get_user_meta($vendor_id,'marketking_group', true);
+
+		$all_down = get_post_meta($groupid, 'marketking_group_products_sold_individually_setting', true );
+		if (intval($all_down) === 1){
+			return true;
+		}
+
+		return false;
+	}
+	
+
 	public static function vendor_can_product_type($vendor_id, $type){
 
+		$can = true;
 		// check vendor group
 		$groupid = get_user_meta($vendor_id,'marketking_group', true);
 		if (!empty($groupid)){
@@ -2373,16 +2725,49 @@ class Marketkingcore_Helper{
 			if (!empty($selected_options_string)){
 				$selected_options = explode(',', $selected_options_string);			
 				if (!in_array($type, $selected_options)){
-					return false;
+					$can = false;
+				}
+			}
+
+			// remove subscription options if module or vendor does not have it enabled
+			$subscription_options = array('subscription', 'variable-subscription');
+			if (in_array($type, $subscription_options)){
+				if (intval(get_option( 'marketking_enable_subscriptions_setting', 0 )) !== 1 || !marketking()->vendor_has_panel('subscriptions')){
+					$can = false;
 				}
 			}
 		}
 
-		return true;
+		return apply_filters('marketking_vendor_can_product_type', $can, $vendor_id, $type);
+	}
+
+	public static function vendor_can_coupon_type($vendor_id, $type){
+
+		$can = true;
+		// check vendor group
+		$groupid = get_user_meta($vendor_id,'marketking_group', true);
+		if (!empty($groupid)){
+
+			$disallowed_types = array('fixed_cart', 'renewal_percent', 'renewal_fee', 'renewal_cart', 'initial_cart');
+			if (in_array($type, $disallowed_types)){
+				$can = false;
+			}
+
+			// remove subscription options if module or vendor does not have it enabled
+			$subscription_options = array('sign_up_fee', 'sign_up_fee_percent', 'recurring_fee', 'recurring_percent', 'renewal_percent', 'renewal_fee', 'renewal_cart', 'initial_cart');
+			if (in_array($type, $subscription_options)){
+				if (intval(get_option( 'marketking_enable_subscriptions_setting', 0 )) !== 1 || !marketking()->vendor_has_panel('subscriptions')){
+					$can = false;
+				}
+			}
+		}
+
+		return apply_filters('marketking_vendor_can_coupon_type', $can, $vendor_id, $type);
 	}
 
 	public static function vendor_can_product_category($vendor_id, $category){
 
+		$can = true;
 		// check vendor group
 		$groupid = get_user_meta($vendor_id,'marketking_group', true);
 		if (!empty($groupid)){
@@ -2390,16 +2775,17 @@ class Marketkingcore_Helper{
 			if (!empty($selected_options_string)){
 				$selected_options = explode(',', $selected_options_string);			
 				if (!in_array($category, $selected_options) && !in_array('category_'.$category, $selected_options)){
-					return false;
+					$can = false;
 				}
 			}
 		}
 
-		return true;
+		return apply_filters('marketking_vendor_can_product_category', $can, $vendor_id, $category);
 	}
 
 	public static function vendor_can_product_tag($vendor_id, $category){
 
+		$can = true;
 		// check vendor group
 		$groupid = get_user_meta($vendor_id,'marketking_group', true);
 		if (!empty($groupid)){
@@ -2407,12 +2793,13 @@ class Marketkingcore_Helper{
 			if (!empty($selected_options_string)){
 				$selected_options = explode(',', $selected_options_string);			
 				if (!in_array($category, $selected_options) && !in_array('category_'.$category, $selected_options)){
-					return false;
+					$can = false;
 				}
 			}
 		}
 
-		return true;
+		return apply_filters('marketking_vendor_can_product_tag', $can, $vendor_id, $category);
+
 	}
 
 	public static function get_excluded_category_ids($vendor_id){
@@ -2549,18 +2936,27 @@ class Marketkingcore_Helper{
 	}
 
 	public static function get_vendor_id_in_store_url(){
-		$store_url = get_query_var('vendorid');
-		$users = get_users(array(
-			'meta_key'     => 'marketking_store_url',
-			'meta_value'   => $store_url,
-			'meta_compare' => '=',
-		));
 
-		if (!empty($users)){
-			$vendor_id = $users[0]->ID;
+		if (is_product()){
+			global $post;
+			if (isset($post->ID)){
+				$vendor_id = marketking()->get_product_vendor($post->ID);
+			}
 		} else {
-			$vendor_id = 0;
+			$store_url = get_query_var('vendorid');
+			$users = get_users(array(
+				'meta_key'     => 'marketking_store_url',
+				'meta_value'   => $store_url,
+				'meta_compare' => '=',
+			));
+
+			if (!empty($users)){
+				$vendor_id = $users[0]->ID;
+			} else {
+				$vendor_id = 0;			
+			}
 		}
+		
 
 		return $vendor_id;
 	}
@@ -2594,7 +2990,8 @@ class Marketkingcore_Helper{
             			while ( $the_query->have_posts() ) {	
 
             				// Set products content transient
-            				$content = do_shortcode('[products limit="'.apply_filters('marketking_default_products_number',12).'" paginate="true" visibility="visible"]');
+            				$content = do_shortcode(apply_filters('marketking_products_shortcode','[products limit="'.apply_filters('marketking_default_products_number',12).'" paginate="true" visibility="visible "cache="false"]'));
+
             				set_transient('marketking_display_products_shortcode_elementor_content'.get_current_user_id(), $content);					
 
             				$the_query->the_post();
@@ -2746,17 +3143,50 @@ class Marketkingcore_Helper{
 	
 	public static function is_vendor_dashboard(){
 
+		$scheme  = (!isset($_SERVER["HTTPS"]) || $_SERVER["HTTPS"] === "off") ? "http" : "https";
+		$url     = "$scheme://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+		$post_id = url_to_postid( $url );
+
+		if ($post_id === intval(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true) ) ) {
+			return true;
+		}
+
 		global $post;
 		if (isset($post->ID)){
 			if ( intval($post->ID) === intval(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true) ) ){
 				return true;
 			}
 		}
+		global $marketking_is_dashboard;
+		if ($marketking_is_dashboard){
+			return true;
+		}
 		return false;
+	}
+
+	public static function get_advertised_product_ids(){
+		global $marketking_advertised_product_ids;
+		if (!is_array($marketking_advertised_product_ids)){
+			// retrieve it from transient
+			$marketking_advertised_product_ids = get_option('marketking_advertised_product_ids');
+		}
+
+		if (!is_array($marketking_advertised_product_ids)){
+			$marketking_advertised_product_ids = array();
+		}
+
+		return $marketking_advertised_product_ids;
 	}
 
 
 	public static function is_vendor_store_page(){
+
+		// new, works more often, though not as precise
+		$store_url = get_query_var('vendorid');
+		if (!empty($store_url)){
+			return true;
+		}
+
 		global $post;
 
 		if (isset($post->ID)){

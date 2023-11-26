@@ -1,0 +1,7 @@
+/*
+*
+* This CSS file is enqueued to add icons on the vendor store page
+* 
+**/
+
+@font-face { font-family: "Nioicon"; src: url("../fonts/Nioicon.eot"); src: url("../fonts/Nioicon.eot#iefix") format("embedded-opentype"), url("../fonts/Nioicon.ttf") format("truetype"), url("../fonts/Nioicon.woff") format("woff"), url("../fonts/Nioicon.svg#Nioicon") format("svg"); font-weight: normal; font-style: normal; font-display: block; }

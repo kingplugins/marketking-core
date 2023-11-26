@@ -27,6 +27,11 @@ class Marketking_Order_Splitter{
 		    $vendor_subtotal += $item->get_subtotal();
 		}
 
+		// division by 0 error
+		if (floatval($order_subtotal) === 0 || empty($order_subtotal)){
+			$order_subtotal = 1;
+		}
+
 		$proportion = ($vendor_subtotal/$order_subtotal);
 
 		$fees_total = $fees_total*$proportion;
@@ -56,7 +61,13 @@ class Marketking_Order_Splitter{
 				$subtotal = $this->get_subtotal($vendor_id,['location' => 'cart']);
 			}
 
-			$proportion = ($subtotal/WC()->cart->get_subtotal());
+			// prevent division by 0 error
+			$cart_subtotal = WC()->cart->get_subtotal();
+			if (empty($cart_subtotal) or floatval($cart_subtotal) === 0){
+				$cart_subtotal = 1;
+			}
+
+			$proportion = ($subtotal/$cart_subtotal);
 			$fees_total = $fees_total*$proportion;
 		}
 
@@ -107,7 +118,13 @@ class Marketking_Order_Splitter{
 						$subtotal = $this->get_subtotal($vendor_id,['location' => 'cart']);
 					}
 
-					$proportion = ($subtotal/WC()->cart->get_subtotal());
+					// prevent division by 0 error
+					$cart_subtotal = WC()->cart->get_subtotal();
+					if (empty($cart_subtotal) or floatval($cart_subtotal) === 0){
+						$cart_subtotal = 1;
+					}
+
+					$proportion = ($subtotal/$cart_subtotal);
 					$shipping_tax_vendor = $shipping_tax*$proportion;
 					
 				}
@@ -146,7 +163,13 @@ class Marketking_Order_Splitter{
 						$subtotal = $this->get_subtotal($vendor_id,['location' => 'cart']);
 					}
 
-					$proportion = ($subtotal/WC()->cart->get_subtotal());
+					// prevent division by 0 error
+					$cart_subtotal = WC()->cart->get_subtotal();
+					if (empty($cart_subtotal) or floatval($cart_subtotal) === 0){
+						$cart_subtotal = 1;
+					}
+
+					$proportion = ($subtotal/$cart_subtotal);
 
 					$fee_tax_vendor +=($value*$proportion);
 				}
@@ -196,7 +219,14 @@ class Marketking_Order_Splitter{
 			}
 
 			$shipping_total = WC()->cart->get_shipping_total();
-			$proportion = ($subtotal/WC()->cart->get_subtotal());
+
+			// prevent division by 0 error
+			$cart_subtotal = WC()->cart->get_subtotal();
+			if (empty($cart_subtotal) or floatval($cart_subtotal) === 0){
+				$cart_subtotal = 1;
+			}
+			
+			$proportion = ($subtotal/$cart_subtotal);
 			$shipping = $shipping_total*$proportion;
 			
 		}
@@ -406,6 +436,9 @@ class Marketking_Order_Splitter{
 			
 			// finally, let the order re-calculate itself and save
 			$order->calculate_totals();
+
+			$order->update_meta_data('marketking_already_processed_order', 'yes');
+
 			$order_id = $order->save();
 
 			// update total_sales count for sub-order
@@ -419,6 +452,8 @@ class Marketking_Order_Splitter{
 			$result = wp_update_post($update_args);
 
 			remove_action('woocommerce_order_item_shipping_after_calculate_taxes', array($this, 'set_shipping_tax_false'), 10, 2);
+
+			do_action('marketking_order_split_created', $order_id);
 
 			//  check if order is paid for and entirely virtual / downloadable, and if so, automatically complete it
 			/*
@@ -438,9 +473,6 @@ class Marketking_Order_Splitter{
 			}
 			*/
 			
-
-
-
 		}
 
 		// set parent order note
@@ -492,7 +524,11 @@ class Marketking_Order_Splitter{
 			// copy shipping from parent order, and then set its value to be proportional
 
 			// get proportion
-			$proportion = $order->get_subtotal()/$parent_order->get_subtotal();
+			$ordersubtotal = $parent_order->get_subtotal();
+			if (floatval($ordersubtotal) === 0 || empty($ordersubtotal)){
+				$ordersubtotal = 1;
+			}
+			$proportion = $order->get_subtotal()/$ordersubtotal;
 
 	        $item = new \WC_Order_Item_Shipping();
 

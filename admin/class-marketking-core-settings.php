@@ -178,6 +178,35 @@ class Marketkingcore_Settings {
 				add_settings_field('marketking_memberships_assign_group_time_setting', esc_html__('Group Assignment', 'marketking-multivendor-marketplace-for-woocommerce'), array($this,'marketking_memberships_assign_group_time_setting_content'), 'marketking', 'marketking_memberships_settings_section');
 			}				
 		}
+
+		// advertising
+		add_settings_section('marketking_advertising_settings_section', '',	'',	'marketking');
+
+		if (defined('MARKETKINGPRO_DIR')){
+			if (intval(get_option('marketking_enable_advertising_setting', 0)) === 1){
+
+				register_setting('marketking', 'marketking_credit_price_setting');
+				add_settings_field('marketking_credit_price_setting', esc_html__('Cost Per 1 Credit', 'marketking-multivendor-marketplace-for-woocommerce').'<div class="marketking_tooltip" data-tooltip="'.esc_html__('How much it costs vendors to purchase 1 credit point (in real currency).','marketking-multivendor-marketplace-for-woocommerce').'" >
+			<i class="question circle icon"></i>
+		</div>', array($this,'marketking_credit_price_setting_content'), 'marketking', 'marketking_advertising_settings_section');
+
+				register_setting('marketking', 'marketking_credit_cost_per_day_setting');
+				add_settings_field('marketking_credit_cost_per_day_setting', esc_html__('Credit Cost Per Day', 'marketking-multivendor-marketplace-for-woocommerce').'<div class="marketking_tooltip" data-tooltip="'.esc_html__('How many credits are needed to advertise a product for 1 day','marketking-multivendor-marketplace-for-woocommerce').'" >
+			<i class="question circle icon"></i>
+				</div>', array($this,'marketking_credit_cost_per_day_setting_content'), 'marketking', 'marketking_advertising_settings_section');
+
+				register_setting('marketking', 'marketking_advertising_featured_setting');
+				add_settings_field('marketking_advertising_featured_setting', esc_html__('Mark Advertised Products as Featured', 'marketking-multivendor-marketplace-for-woocommerce').'<div class="marketking_tooltip" data-tooltip="'.esc_html__('Advertised productss will be marked as featured. Products will be automatically removed from featured list after advertisement is expired.','marketking-multivendor-marketplace-for-woocommerce').'" >
+					<i class="question circle icon"></i>
+				</div>', array($this,'marketking_advertising_featured_setting_content'), 'marketking', 'marketking_advertising_settings_section');
+
+				register_setting('marketking', 'marketking_advertised_products_top_setting');
+				add_settings_field('marketking_advertised_products_top_setting', esc_html__('Display Advertised Products on Top', 'marketking-multivendor-marketplace-for-woocommerce').'<div class="marketking_tooltip" data-tooltip="'.esc_html__('Advertised products will be displayed on top of the catalog listing pages: Shop page, Single Store Page etc.','marketking-multivendor-marketplace-for-woocommerce').'" >
+					<i class="question circle icon"></i>
+				</div>', array($this,'marketking_advertised_products_top_setting_content'), 'marketking', 'marketking_advertising_settings_section');
+
+			}				
+		}
 		
 		if(!defined('MARKETKINGPRO_DIR') || (intval(get_option( 'marketking_enable_complexcommissions_setting', 1 )) !== 1)){
 			// Commission Type
@@ -209,6 +238,21 @@ class Marketkingcore_Settings {
 			</div>', array($this,'marketking_reverse_commission_rules_setting_content'), 'marketking', 'marketking_main_settings_section_commissions');
 
 		}
+
+		/* Social Sharing */
+		add_settings_section('marketking_social_setings_section', '',	'',	'marketking');
+
+		register_setting('marketking', 'marketking_social_sites_setting');
+		add_settings_field('marketking_social_sites_setting', esc_html__('Social Media Sites', 'marketking-multivendor-marketplace-for-woocommerce').'<div class="marketking_tooltip" data-tooltip="'.esc_html__('Which social sites should be available to vendors?','marketking-multivendor-marketplace-for-woocommerce').'" >
+			<i class="question circle icon"></i>
+		</div>', array($this,'marketking_social_sites_setting_content'), 'marketking', 'marketking_social_setings_section');
+
+		// Enable support through external URL
+		register_setting('marketking', 'marketking_social_icons_grayscale_setting');
+		add_settings_field('marketking_social_icons_grayscale_setting', esc_html__('Grayscale Icons', 'marketking-multivendor-marketplace-for-woocommerce').'<div class="marketking_tooltip" data-tooltip="'.esc_html__('Turns frontend icons from color to black and white','marketking-multivendor-marketplace-for-woocommerce').'" >
+			<i class="question circle icon"></i>
+		</div>', array($this,'marketking_social_icons_grayscale_setting_content'), 'marketking', 'marketking_social_setings_section');
+
 
 		/* Shipping Tracking */
 		add_settings_section('marketking_shippingtracking_setings_section', '',	'',	'marketking');
@@ -576,6 +620,35 @@ class Marketkingcore_Settings {
 		echo '
 		<div class="ui toggle checkbox" >
 		  <input type="checkbox" name="marketking_enable_support_external_setting" value="1" '.checked(1,get_option( 'marketking_enable_support_external_setting', 1 ), false).'>
+		  <label></label>
+		</div>
+		';
+	}
+
+	function marketking_social_icons_grayscale_setting_content(){
+
+		echo '
+		<div class="ui toggle checkbox" >
+		  <input type="checkbox" name="marketking_social_icons_grayscale_setting" value="1" '.checked(1,get_option( 'marketking_social_icons_grayscale_setting', 0 ), false).'>
+		  <label></label>
+		</div>
+		';
+	}
+
+	function marketking_advertising_featured_setting_content(){
+
+		echo '
+		<div class="ui toggle checkbox" >
+		  <input type="checkbox" name="marketking_advertising_featured_setting" value="1" '.checked(1,get_option( 'marketking_advertising_featured_setting', 1 ), false).'>
+		  <label></label>
+		</div>
+		';
+	}
+
+	function marketking_advertised_products_top_setting_content(){
+		echo '
+		<div class="ui toggle checkbox" >
+		  <input type="checkbox" name="marketking_advertised_products_top_setting" value="1" '.checked(1,get_option( 'marketking_advertised_products_top_setting', 1 ), false).'>
 		  <label></label>
 		</div>
 		';
@@ -978,6 +1051,34 @@ class Marketkingcore_Settings {
 		<?php
 	}
 
+
+	function marketking_social_sites_setting_content(){
+		$selected = get_option('marketking_social_sites_setting', array('facebook', 'twitter', 'youtube', 'instagram', 'linkedin', 'pinterest'));
+		
+		if (!is_array($selected)){
+			$selected = array();
+		}
+		?>
+		<select name="marketking_social_sites_setting[]" class="ui fluid search dropdown" multiple="">
+			<?php
+			if (defined('MARKETKINGPRO_DIR')){
+				$providers = array('facebook', 'twitter', 'youtube', 'instagram', 'linkedin', 'pinterest');
+				foreach ($providers as $provider){
+					?>
+					<option value="<?php echo esc_attr($provider); ?>" <?php
+
+					if (in_array($provider, $selected)){
+						echo 'selected="selected"';	
+					}
+					?>><?php echo ucfirst(esc_html($provider)); ?></option>
+					<?php
+				} 
+			}
+			?>
+		</select>
+		<?php
+	}
+
 	function marketking_shipping_providers_setting_content(){
 		$selected = get_option('marketking_shipping_providers_setting',array('sp-other'));
 		
@@ -1034,6 +1135,9 @@ class Marketkingcore_Settings {
 					  'post_status' => 'publish',
 					  'numberposts' => -1
 					]);
+
+					echo '<option value="none" '.selected('none', $checkedgroup, false).'>'.esc_html__('Deactivate vendor (disables selling)','marketking-multivendor-marketplace-for-woocommerce').'</option>';
+
 
 					foreach ($groups as $group){
 						echo '<option value="'.esc_attr($group->ID).'" '.selected($group->ID, $checkedgroup, false).'>'.esc_html($group->post_title).'</option>';
@@ -1096,6 +1200,22 @@ class Marketkingcore_Settings {
 		echo '<input type="number" name="marketking_offers_shown_default_number_setting" min="0" id="marketking_offers_shown_default_number_setting" class="regular-text" value="'.esc_attr(get_option('marketking_offers_shown_default_number_setting',1)).'">';
 		
 	}
+
+	function marketking_credit_price_setting_content(){
+		
+		echo '<input type="number" name="marketking_credit_price_setting" min="0" id="marketking_credit_price_setting" step="0.01" class="regular-text" value="'.esc_attr(get_option('marketking_credit_price_setting',1)).'">';
+		
+	}
+
+	function marketking_credit_cost_per_day_setting_content(){
+		
+		echo '<input type="number" name="marketking_credit_cost_per_day_setting" min="1" step="1" id="marketking_credit_cost_per_day_setting" class="regular-text" value="'.esc_attr(get_option('marketking_credit_cost_per_day_setting',1)).'">';
+		
+	}
+
+	
+
+	
 
 	function marketking_commission_type_setting_content(){
 		$type = get_option('marketking_commission_type_setting', 'percentage');
@@ -1366,6 +1486,30 @@ class Marketkingcore_Settings {
 
 
 					if (defined('MARKETKINGPRO_DIR')){
+						if (intval(get_option('marketking_enable_social_setting', 1)) === 1){
+							?>
+							<a class="green item <?php echo $this->marketking_isactivetab('social'); ?>" data-tab="social">
+								<i class="facebook square icon"></i>
+								<div class="header"><?php esc_html_e('Social Sharing','marketking-multivendor-marketplace-for-woocommerce'); ?></div>
+							</a>
+							<?php
+						}
+					}
+
+
+					if (defined('MARKETKINGPRO_DIR')){
+						if (intval(get_option('marketking_enable_advertising_setting', 0)) === 1){
+							?>
+							<a class="green item <?php echo $this->marketking_isactivetab('advertising'); ?>" data-tab="advertising">
+								<i class="bullhorn icon"></i>
+								<div class="header"><?php esc_html_e('Advertising','marketking-multivendor-marketplace-for-woocommerce'); ?></div>
+							</a>
+							<?php
+						}
+					}
+
+
+					if (defined('MARKETKINGPRO_DIR')){
 						?>
 						<a class="green item marketking_license marketking_othersettings_margin <?php  echo $this->marketking_isactivetab('license'); ?>" data-tab="license">
 							<i class="key icon"></i>
@@ -1483,6 +1627,8 @@ class Marketkingcore_Settings {
 
 						</div>
 					</div>
+
+
 
 					<!-- Appearance Tab -->
 					<div class="ui bottom attached tab segment <?php echo $this->marketking_isactivetab('appearance'); ?>" data-tab="appearance">
@@ -1759,6 +1905,23 @@ class Marketkingcore_Settings {
 						</div>
 					</div>
 
+					<!-- Advertising Tab--> 
+					<div class="ui bottom attached tab segment <?php echo $this->marketking_isactivetab('advertising'); ?>" data-tab="advertising">
+						<div class="marketking_attached_content_wrapper">
+							<h2 class="ui block header">
+								<i class="bullhorn icon"></i>
+								<div class="content">
+									<?php esc_html_e('Advertising','marketking-multivendor-marketplace-for-woocommerce'); ?>
+								</div>
+							</h2>
+						
+							<table class="form-table">
+								<?php do_settings_fields( 'marketking', 'marketking_advertising_settings_section' ); ?>
+							</table>
+
+						</div>
+					</div>
+
 
 					<!-- MEMBERSHIPS TAB -->
 					<div class="ui bottom attached tab segment <?php echo $this->marketking_isactivetab('memberships'); ?>" data-tab="memberships">
@@ -1883,6 +2046,27 @@ class Marketkingcore_Settings {
 						</div>
 					</div>
 
+					<!-- Social Tab -->
+					<div class="ui bottom attached tab segment <?php echo $this->marketking_isactivetab('social'); ?>" data-tab="social">
+						<div class="marketking_attached_content_wrapper">
+							<h2 class="ui block header">
+								<i class="facebook square icon"></i>
+								<div class="content">
+									<?php esc_html_e('Social Sharing','marketking-multivendor-marketplace-for-woocommerce'); ?>
+								</div>
+							</h2>
+							
+							<?php if (intval(get_option('marketking_enable_social_setting', 1)) === 1) {  ?>
+
+								<table class="form-table marketking_vendor_capabilities_container">
+									<?php do_settings_fields('marketking', 'marketking_social_setings_section'); ?>
+								</table>
+
+							<?php }	?>	
+
+						</div>
+					</div>
+
 					<!-- License Tab--> 
 					<div class="ui bottom attached tab segment <?php echo $this->marketking_isactivetab('license'); ?>" data-tab="license">
 						<div class="marketking_attached_content_wrapper">
@@ -1910,11 +2094,15 @@ class Marketkingcore_Settings {
 							if (strlen($host_names[count($host_names)-2]) <= 3){    // likely .com.au, .co.uk, .org.uk etc
 							    $bottom_host_name_new = $host_names[count($host_names)-3] . "." . $host_names[count($host_names)-2] . "." . $host_names[count($host_names)-1];
 							    // legacy, do not deactivate existing sites
+							    /*
 							    if (get_option('pluginactivation_'.$email.'_'.$license.'_'.$bottom_host_name) === 'active'){
 							        // old activation active, proceed with old activation
 							    } else {
 							        $bottom_host_name = $bottom_host_name_new;
 							    }
+							    */
+							    $bottom_host_name = $bottom_host_name_new;
+
 							}
 
 							
@@ -1946,6 +2134,9 @@ class Marketkingcore_Settings {
 							  </div>
 							  <ul class="list">
 							    <li><a href="https://kingsplugins.com/licensing-faq/" target="_blank"><?php esc_html_e('Licensing and Activation FAQ & Guide','marketking-multivendor-marketplace-for-woocommerce'); ?></a></li>
+							    <li><a href="https://kingsplugins.com/licensing-faq#headline-66-565" target="_blank"><?php esc_html_e('How to activate if you purchased on Envato Market','b2bking'); ?></a></li>
+							    <li><a href="https://kingsplugins.com/woocommerce-multivendor/marketking/pricing/#div_block-10-84" target="_blank"><?php esc_html_e('Purchase a new license','salesking'); ?></a></li>
+
 							  </ul>
 							</div>
 							

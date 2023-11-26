@@ -18,6 +18,16 @@ For example, if your theme is storefront, you can copy this file under wp-conten
     ?>
     <div class="nk-content marketking_dashboard_page">
         <div class="container-fluid">
+            <?php
+            // vacation notice
+            if (marketking()->is_on_vacation($user_id)){
+                ?>
+                <a href="<?php echo esc_attr(trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)))).'vacation';?>">
+                    <div class="alert alert-fill alert-danger alert-icon"><em class="icon ni ni-sun-fill"></em> <strong><?php esc_html_e('Your store is in vacation mode and products cannot be purchased. You can modify this via Settings -> Vacation.','marketking-multivendor-marketplace-for-woocommerce');?></strong></div>
+                </a><br>
+                <?php 
+            }
+            ?>
             <div class="nk-content-inner">
                 <div class="nk-content-body">
                     <div class="nk-block-head nk-block-head-sm">
@@ -26,7 +36,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                 <h4 class="nk-block-title page-title"><?php esc_html_e('Dashboard', 'marketking-multivendor-marketplace-for-woocommerce');?></h4>
                                 <div class="nk-block-des text-soft fs-15px">
                                     <?php
-                                    $name = $currentuser->first_name.' '.$currentuser->last_name;
+                                    $name = wp_get_current_user()->first_name.' '.wp_get_current_user()->last_name;
                                     ?>
                                     <p><?php esc_html_e('Welcome to your vendor dashboard', 'marketking-multivendor-marketplace-for-woocommerce');?><?php 
                                     if (!empty($name)){
@@ -56,7 +66,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                                     if (intval(get_option( 'marketking_enable_earnings_setting', 1 )) === 1){
                                                         ?>
                                                         <div class="card-tools">
-                                                            <a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'earnings';?>" class="link"><?php esc_html_e('View earnings', 'marketking-multivendor-marketplace-for-woocommerce');?></a>
+                                                            <a href="<?php echo esc_attr(trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)))).'earnings';?>" class="link"><?php esc_html_e('View earnings', 'marketking-multivendor-marketplace-for-woocommerce');?></a>
                                                         </div>
                                                         <?php
                                                     }
@@ -111,7 +121,30 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                                 </div>
                                             </div>
                                             <div class="nk-ecwg7-ck">
-                                                <canvas class="ecommerce-doughnut-s1" id="orderStatistics"></canvas>
+                                                <?php
+
+                                                $vendor_orders = get_posts( array( 
+                                                    'post_type' => 'shop_order',
+                                                    'post_status'=>'any',
+                                                    'date_query' => array(
+                                                            'after' => date('Y-m-d', strtotime('-30 days')) 
+                                                        ),
+                                                    'numberposts' => -1,
+                                                    'author'   => get_current_user_id(),
+                                                    'fields' =>'ids'
+                                                ));
+
+                                                if (empty($vendor_orders)){
+                                                    ?>
+                                                    <p class="marketking_no_orders"><?php esc_html_e('There are no orders yet...','marketking-multivendor-marketplace-for-woocommerce'); ?></p>
+
+                                                    <?php
+                                                } else {
+                                                    ?>
+                                                    <canvas class="ecommerce-doughnut-s1" id="orderStatistics"></canvas>
+                                                    <?php
+                                                }
+                                                ?>
                                             </div>
                                             <ul class="nk-ecwg7-legends">
                                                 <li>
@@ -153,10 +186,10 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                                     // if earnings enabled,
                                                     $vendor_orders = get_posts( array( 
                                                         'post_type' => 'shop_order',
-                                                        'post_status'=>'any',
+                                                        'post_status'=> 'any',
                                                         'date_query' => array(
-                                                                'after' => date('Y-m-d', strtotime('-30 days')) 
-                                                            ),
+                                                            'after' => date('Y-m-d', strtotime('-31 days')) 
+                                                        ),
                                                         'numberposts' => -1,
                                                         'author'   => $user_id,
                                                         'fields'   => 'ids'
@@ -178,7 +211,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                                         $order = wc_get_order($order_id);
                                                         if ($order!== false){
                                                             $item_count += $order->get_item_count();
-                                                            array_push($order_totals, $order->get_total());
+                                                            array_push($order_totals, ($order->get_total() - $order->get_shipping_total() ));
 
                                                             $customer_id = $order->get_customer_id();
                                                             if ($customer_id === false || intval($customer_id) === 0){
@@ -207,7 +240,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                             </li>
                                             <li class="item">
                                                 <div class="info">
-                                                    <div class="title"><?php esc_html_e('Customers', 'marketking-multivendor-marketplace-for-woocommerce');?></div>
+                                                    <div class="title"><?php esc_html_e('Customers (Unique)', 'marketking-multivendor-marketplace-for-woocommerce');?></div>
                                                     <div class="count"><?php
                                                     echo esc_html($nr_of_customers);                                                
                                                     ?></div>
@@ -226,7 +259,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                             </li>
                                             <li class="item">
                                                 <div class="info">
-                                                    <div class="title"><?php esc_html_e('Average Order','marketking-multivendor-marketplace-for-woocommerce');?></div>
+                                                    <div class="title"><?php esc_html_e('Average Order','marketking-multivendor-marketplace-for-woocommerce');?><em class="icon ni ni-help marketking_info_icon nk-tooltip" data-toggle="tooltip" data-bs-placement="right" title="<?php esc_html_e('Average order value, excluding shipping cost.','marketking-multivendor-marketplace-for-woocommerce');?>"></em></div>
                                                     <div class="count"><?php
                                                         echo wc_price($average_order);
                                                     ?></div>
@@ -275,43 +308,83 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                                     $orderobj = wc_get_order($order_id);
                                                     if ($orderobj !== false){
                                                         $date = $orderobj->get_date_created();
+
+                                                        $order_link = esc_attr(trailingslashit(get_page_link(get_option( 'marketking_vendordash_page_setting', 'disabled' ))).'manage-order/'.$orderobj->get_id());
+                                                        if(!marketking()->vendor_has_panel('orders')){
+                                                            $order_link = trailingslashit(get_page_link(get_option( 'marketking_vendordash_page_setting', 'disabled' )));
+                                                        }
+
                                                         ?>
                                                             <div class="nk-tb-item">
-                                                                <div class="nk-tb-col">
-                                                                    <span class="tb-lead">#<?php echo esc_html($orderobj->get_id());?></span>
-                                                                </div>
-                                                                <div class="nk-tb-col tb-col-sm">
-                                                                    <div class="user-card">
-                                                                        <div class="user-avatar sm bg-purple-dim">
-                                                                            <span><?php
-                                                                     $customer_id = $orderobj -> get_customer_id();
-                                                                     $data = get_userdata($customer_id);
+                                                                    <div class="nk-tb-col">
+                                                                        <a href="<?php 
 
-                                                                     // if guest user, show name by order
-                                                                     if ($data === false){
-                                                                        $name = $orderobj -> get_formatted_billing_full_name() . ' '.esc_html__('(guest user)','marketking-multivendor-marketplace-for-woocommerce');
-                                                                     } else {
-                                                                        $name = $data->first_name.' '.$data->last_name;
+                                                                        echo $order_link;?>">
 
-                                                                     }
-                                                                     $name = apply_filters('marketking_customers_page_name_display', $name, $customer_id);
+                                                                            <span class="tb-lead">#<?php 
 
-                                                                     echo strtoupper(substr($name,0, 2));
+                                                                            $order_id = $orderobj->get_id();
 
-                                                                     ?></span>
-                                                                        </div>
-                                                                        <div class="user-name">
-                                                                            <span class="tb-lead"><?php echo esc_html($name);?></span>
-                                                                        </div>
+                                                                            // sequential
+                                                                            $order_nr_sequential = get_post_meta($order_id,'_order_number', true);
+                                                                            if (!empty($order_nr_sequential)){
+                                                                                echo $order_nr_sequential;
+                                                                            } else {
+                                                                                echo esc_html($order_id);
+                                                                            }
+
+                                                                            ?></span>
+                                                                        </a>
                                                                     </div>
+                                                                <div class="nk-tb-col tb-col-sm">
+                                                                    <a href="<?php 
+
+                                                                        echo $order_link;
+                                                                        ?>">
+
+                                                                        <div class="user-card">
+                                                                            <div class="user-avatar sm bg-purple-dim">
+                                                                                <span><?php
+                                                                         $customer_id = $orderobj -> get_customer_id();
+                                                                         $data = get_userdata($customer_id);
+
+                                                                         // if guest user, show name by order
+                                                                         if ($data === false){
+                                                                            $name = $orderobj -> get_formatted_billing_full_name() . ' '.esc_html__('(guest user)','marketking-multivendor-marketplace-for-woocommerce');
+                                                                         } else {
+                                                                            $name = $data->first_name.' '.$data->last_name;
+
+                                                                         }
+                                                                         $name = apply_filters('marketking_customers_page_name_display', $name, $customer_id);
+
+                                                                         echo strtoupper(substr($name,0, 2));
+
+                                                                         ?></span>
+                                                                            </div>
+                                                                            <div class="user-name">
+                                                                                <span class="tb-lead"><?php echo esc_html($name);?></span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </a>
                                                                 </div>
                                                                 <div class="nk-tb-col tb-col-md">
-                                                                    <span class="tb-sub"><?php 
-                                                                    echo $date->date_i18n( get_option('date_format'), $date->getTimestamp()+(get_option('gmt_offset')*3600) );
-                                                                    ?></span>
+                                                                    <a href="<?php 
+                                                                        
+                                                                        echo $order_link;
+                                                                        ?>">
+                                                                        <span class="tb-sub"><?php 
+                                                                        echo $date->date_i18n( get_option('date_format'), $date->getTimestamp()+(get_option('gmt_offset')*3600) );
+                                                                        ?></span>
+                                                                    </a>
                                                                 </div>
                                                                 <div class="nk-tb-col">
-                                                                    <span class="tb-sub tb-amount"><?php echo wc_price($orderobj->get_total());?></span>
+                                                                    <a href="<?php 
+
+                                                                        echo $order_link;
+                                                                        ?>">
+
+                                                                        <span class="tb-sub tb-amount"><?php echo wc_price($orderobj->get_total());?></span>
+                                                                    </a>
                                                                 </div>
                                                                 <div class="nk-tb-col">
                                                                     <?php
@@ -338,12 +411,33 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                                                     } else if ($status === 'failed'){
                                                                         $badge = 'badge-danger';
                                                                         $statustext = esc_html__('Order Failed','marketking-multivendor-marketplace-for-woocommerce');
+                                                                    } else {
+                                                                        // custom status
+                                                                        $badge = apply_filters('marketking_custom_status_badge', 'badge-gray', $status);
+                                                                        $wcstatuses = wc_get_order_statuses();
+                                                                        if (isset($wcstatuses['wc-'.$status])){
+                                                                            $statustext = $wcstatuses['wc-'.$status];
+                                                                        } else {
+                                                                            $statustext = '';
+                                                                        }
+                                                                        $statustext = apply_filters('marketking_custom_status_text', $statustext, $status);
                                                                     }
                                                                     ?>
-                                                                    <span class="badge badge-dot badge-dot-xs <?php echo esc_attr($badge);?>"><?php
-                                                                        echo esc_html($statustext);
-                                                                    ?></span>
+                                                                    <a href="<?php 
 
+                                                                        $order_link = esc_attr(trailingslashit(get_page_link(get_option( 'marketking_vendordash_page_setting', 'disabled' ))).'manage-order/'.$orderobj->get_id());
+                                                                        if(!marketking()->vendor_has_panel('orders')){
+                                                                            $order_link = trailingslashit(get_page_link(get_option( 'marketking_vendordash_page_setting', 'disabled' )));
+                                                                        }
+
+                                                                        echo $order_link;
+
+                                                                        ?>">
+
+                                                                        <span class="badge badge-dot badge-dot-xs <?php echo esc_attr($badge);?>"><?php
+                                                                            echo esc_html($statustext);
+                                                                        ?></span>
+                                                                    </a>
                                                                 </div>
                                                             </div>
                                                         <?php

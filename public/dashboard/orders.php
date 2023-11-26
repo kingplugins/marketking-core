@@ -16,7 +16,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
 if (intval(get_option( 'marketking_agents_can_manage_orders_setting', 1 )) === 1){
     if(marketking()->vendor_has_panel('orders')){
         ?>
-        <div class="nk-content marketking_orders_page">
+        <div class="nk-content marketking_orders_page" style="margin-top:65px">
             <div class="container-fluid">
                 <div class="nk-content-inner">
                     <div class="nk-content-body">
@@ -33,6 +33,27 @@ if (intval(get_option( 'marketking_agents_can_manage_orders_setting', 1 )) === 1
                                         <a href="#" class="btn btn-icon btn-trigger toggle-expand mr-n1" data-target="more-options"><em class="icon ni ni-more-v"></em></a>
                                         <div class="toggle-expand-content" data-content="more-options">
                                             <ul class="nk-block-tools g-3">
+
+                                                <li class="marketking_status_dropdown_menu_wrapper"><div class="drodown">
+                                                    <a href="#" class="dropdown-toggle dropdown-indicator btn btn-outline-light btn-white" data-toggle="dropdown"><?php esc_html_e('Status','marketking-multivendor-marketplace-for-woocommerce');?>
+                                                    </a>
+                                                    <div class="dropdown-menu dropdown-menu-end marketking_status_dropdown_menu">
+                                                        <ul class="link-list-opt no-bdr">
+                                                            <li class="marketking_status_option"><a href="#">
+                                                                <input type="hidden" class="status_value" value="<?php esc_html_e('Pending Payment','marketking-multivendor-marketplace-for-woocommerce');?>"><em class="icon ni ni-update"></em><span><?php esc_html_e('Pending Payment','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+
+                                                            <?php do_action('marketking_orders_page_status_dropdown'); ?>
+
+                                                            <li class="marketking_status_option"><a href="#"><input type="hidden" class="status_value" value="<?php esc_html_e('Processing','marketking-multivendor-marketplace-for-woocommerce');?>"><em class="icon ni ni-setting"></em><span><?php esc_html_e('Processing','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+                                                            <li class="marketking_status_option"><a href="#"><input type="hidden" class="status_value" value="<?php esc_html_e('On Hold','marketking-multivendor-marketplace-for-woocommerce');?>"><em class="icon ni ni-pause-circle"></em><span><?php esc_html_e('On Hold','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+                                                            <li class="marketking_status_option"><a href="#"><input type="hidden" class="status_value" value="<?php esc_html_e('Completed','marketking-multivendor-marketplace-for-woocommerce');?>"><em class="icon ni ni-check-round-cut"></em><span><?php esc_html_e('Completed','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+                                                            <li class="marketking_status_option"><a href="#"><input type="hidden" class="status_value" value="<?php esc_html_e('Refunded','marketking-multivendor-marketplace-for-woocommerce');?>"><em class="icon ni ni-invest"></em><span><?php esc_html_e('Refunded','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+                                                            <li class="marketking_status_option"><a href="#"><input type="hidden" class="status_value" value="<?php esc_html_e('Cancelled','marketking-multivendor-marketplace-for-woocommerce');?>"><em class="icon ni ni-na"></em><span><?php esc_html_e('Cancelled','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+                                                            <li class="marketking_status_option"><a href="#"><input type="hidden" class="status_value" value="<?php esc_html_e('Failed','marketking-multivendor-marketplace-for-woocommerce');?>"><em class="icon ni ni-cross-circle"></em><span><?php esc_html_e('Failed','marketking-multivendor-marketplace-for-woocommerce');?></span></a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div></li>
+
                                                 <li>
                                                     <div class="form-control-wrap">
                                                         <div class="form-icon form-icon-right">
@@ -41,6 +62,7 @@ if (intval(get_option( 'marketking_agents_can_manage_orders_setting', 1 )) === 1
                                                         <input type="text" class="form-control" id="marketking_orders_search" placeholder="<?php esc_html_e('Search orders...','marketking-multivendor-marketplace-for-woocommerce');?>">
                                                     </div>
                                                 </li>
+                                               
                                             </ul>
                                         </div>
                                     </div>
@@ -111,10 +133,33 @@ if (intval(get_option( 'marketking_agents_can_manage_orders_setting', 1 )) === 1
                                                 <td class="nk-tb-col" data-order="<?php
                                                     echo esc_attr($order);
                                                 ?>">
-                                                    <a href="<?php echo esc_attr(get_page_link(get_option( 'marketking_vendordash_page_setting', 'disabled' )).'manage-order/'.$order);?>">
+                                                    <a href="<?php echo esc_attr(trailingslashit(get_page_link(get_option( 'marketking_vendordash_page_setting', 'disabled' ))).'manage-order/'.$order);?>">
 
                                                         <div>
-                                                            <span class="tb-lead">#<?php echo esc_html($order).' '.$orderobj->get_formatted_billing_full_name();?></span>
+                                                            <span class="tb-lead">#<?php 
+
+                                                            // sequential
+                                                            $order_nr_sequential = get_post_meta($order,'_order_number', true);
+                                                            if (!empty($order_nr_sequential)){
+                                                                echo $order_nr_sequential;
+                                                            } else {
+                                                                echo esc_html($order);
+                                                            }
+                                                            echo ' ';
+
+                                                            $name = $orderobj->get_formatted_billing_full_name();
+
+                                                            $name = apply_filters('marketking_customers_page_name_display', $name, $orderobj);
+                                                            
+                                                            echo esc_html($name);
+
+                                                            // subscription renewal
+                                                            $renewal = get_post_meta($order, '_subscription_renewal', true);
+                                                            if (!empty($renewal)){
+                                                                echo ' ('.esc_html__('susbcription renewal', 'marketking-multivendor-marketplace-for-woocommerce').')';
+                                                            }
+
+                                                        ?></span>
                                                         </div>
                                                     </a>
                                                 </td>
@@ -158,9 +203,20 @@ if (intval(get_option( 'marketking_agents_can_manage_orders_setting', 1 )) === 1
                                                         } else if ($status === 'failed'){
                                                             $badge = 'badge-danger';
                                                             $statustext = esc_html__('Failed','marketking-multivendor-marketplace-for-woocommerce');
+                                                        } else {
+                                                            // custom status
+                                                            $badge = apply_filters('marketking_custom_status_badge', 'badge-gray', $status);
+                                                            $wcstatuses = wc_get_order_statuses();
+                                                            if (isset($wcstatuses['wc-'.$status])){
+                                                                $statustext = $wcstatuses['wc-'.$status];
+                                                            } else {
+                                                                $statustext = '';
+                                                            }
+                                                            $statustext = apply_filters('marketking_custom_status_text', $statustext, $status);
                                                         }
+
                                                         ?>
-                                                        <span class="badge badge-sm badge-dot has-bg <?php echo esc_attr($badge);?> d-none d-mb-inline-flex"><?php
+                                                        <span class="badge badge-sm badge-dot has-bg <?php echo esc_attr($badge);?> d-mb-inline-flex"><?php
                                                         echo esc_html($statustext);
                                                         ?></span>
                                                     </div>
@@ -236,7 +292,7 @@ if (intval(get_option( 'marketking_agents_can_manage_orders_setting', 1 )) === 1
                                                             <td class="nk-tb-col">
                                                                 <div class="marketking_manage_order_container"> 
 
-                                                                    <a href="<?php echo esc_attr(get_page_link(get_option( 'marketking_vendordash_page_setting', 'disabled' )).'manage-order/'.$orderobj->get_id());?>"><button class="btn btn-sm btn-dim btn-secondary marketking_manage_order" value="<?php echo esc_attr($orderobj->get_id());?>"><em class="icon ni ni-bag-fill"></em><span><?php esc_html_e('View Order','marketking-multivendor-marketplace-for-woocommerce');?></span></button></a>
+                                                                    <a href="<?php echo esc_attr(trailingslashit(get_page_link(get_option( 'marketking_vendordash_page_setting', 'disabled' ))).'manage-order/'.$orderobj->get_id());?>"><button class="btn btn-sm btn-dim btn-secondary marketking_manage_order" value="<?php echo esc_attr($orderobj->get_id());?>"><em class="icon ni ni-bag-fill"></em><span><?php esc_html_e('View Order','marketking-multivendor-marketplace-for-woocommerce');?></span></button></a>
                                                                 </div>
                                                             </td>
                                                         <?php

@@ -2,7 +2,7 @@
 
 /*
 Individual Store Page
-* @version 1.1.7
+* @version 1.2.0
 
 This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
 
@@ -69,6 +69,20 @@ if ($store_style === 1){
 		}
 		?>
 		<div id="marketking_vendor_store_page_banner" style="background-image: url('<?php echo esc_url($img);?>');">
+			<?php
+			// display socials if applicable
+			if (defined('MARKETKINGPRO_DIR')){
+				if (intval(get_option('marketking_enable_social_setting', 1)) === 1){
+					?>
+					<div id="marketking_vendor_page_social_container">
+					<?php
+					marketkingpro()->display_social_links($vendor_id, 10, 20);
+					?>
+					</div>
+					<?php
+				}
+			}
+			?>
 		</div>
 	</div>
 	<?php
@@ -94,6 +108,20 @@ if ($store_style === 2){
 			<div id="marketking_vendor_store_page_profile_name" class="marketking_store_style_2">
 				<?php echo marketking()->get_store_name_display($vendor_id); ?>
 			</div>
+			<?php
+			// display badges if applicable
+			if (defined('MARKETKINGPRO_DIR')){
+				if (intval(get_option('marketking_enable_badges_setting', 1)) === 1){
+					?>
+					<div id="marketking_vendor_page_badges_container">
+					<?php
+					marketkingpro()->display_vendor_badges($vendor_id, 4, 20);
+					?>
+					</div>
+					<?php
+				}
+			}
+			?>
 		</div>			
 		<?php
 		$img = marketking()->get_store_banner_image_link($vendor_id);
@@ -104,6 +132,20 @@ if ($store_style === 2){
 		}
 		?>
 		<div id="marketking_vendor_store_page_banner" class="marketking_store_style_2" style="background-image: url('<?php echo esc_url($img);?>');">
+			<?php
+			// display socials if applicable
+			if (defined('MARKETKINGPRO_DIR')){
+				if (intval(get_option('marketking_enable_social_setting', 1)) === 1){
+					?>
+					<div id="marketking_vendor_page_social_container">
+					<?php
+					marketkingpro()->display_social_links($vendor_id, 10, 20);
+					?>
+					</div>
+					<?php
+				}
+			}
+			?>
 		</div>
 	</div>
 	<?php
@@ -129,6 +171,20 @@ if ($store_style === 3){
 			<div id="marketking_vendor_store_page_profile_name" class="marketking_store_style_3">
 				<?php echo marketking()->get_store_name_display($vendor_id); ?>
 			</div>
+			<?php
+			// display badges if applicable
+			if (defined('MARKETKINGPRO_DIR')){
+				if (intval(get_option('marketking_enable_badges_setting', 1)) === 1){
+					?>
+					<div id="marketking_vendor_page_badges_container">
+					<?php
+					marketkingpro()->display_vendor_badges($vendor_id, 4, 20);
+					?>
+					</div>
+					<?php
+				}
+			}
+			?>
 		</div>			
 		<?php
 		$img = marketking()->get_store_banner_image_link($vendor_id);
@@ -139,6 +195,20 @@ if ($store_style === 3){
 		}
 		?>
 		<div id="marketking_vendor_store_page_banner" class="marketking_store_style_3" style="background-image: url('<?php echo esc_url($img);?>');">
+			<?php
+			// display socials if applicable
+			if (defined('MARKETKINGPRO_DIR')){
+				if (intval(get_option('marketking_enable_social_setting', 1)) === 1){
+					?>
+					<div id="marketking_vendor_page_social_container">
+					<?php
+					marketkingpro()->display_social_links($vendor_id, 10, 20);
+					?>
+					</div>
+					<?php
+				}
+			}
+			?>
 		</div>
 	</div>
 	<?php
@@ -212,6 +282,7 @@ if ($store_style === 3){
 		  	}
 
 		  	do_action('marketking_store_page_tabright', $vendor_id);
+
 		}
   	?>
   </div>
@@ -234,7 +305,8 @@ if ($store_style === 3){
 		}
   	}
    	
-  	echo do_shortcode('[products limit="'.apply_filters('marketking_default_products_number',12).'" paginate="true" visibility="visible"]');	
+  	echo do_shortcode(apply_filters('marketking_products_shortcode','[products limit="'.apply_filters('marketking_default_products_number',12).'" paginate="true" visibility="visible "cache="false"]'));	
+
 
 
   ?>
@@ -338,119 +410,8 @@ if ($store_style === 3){
 
 <div id="marketking_vendor_tab_info" class="marketking_tab <?php echo marketking()->marketking_tab_active('info');?>">
   <?php
-  	// if email or phone, show contact info
-  	$showphone = get_user_meta($vendor_id,'marketking_show_store_phone', true);
-  	$showemail = get_user_meta($vendor_id,'marketking_show_store_email', true);
-  	$company = get_user_meta($vendor_id,'billing_company', true);
-
-  	$phone = get_user_meta($vendor_id,'billing_phone', true);
-  	$email = get_userdata($vendor_id)->user_email;
-  	?>
-  	<h3><?php esc_html_e('Vendor Information', 'marketking-multivendor-marketplace-for-woocommerce'); ?></h3>
-
-  	<?php
-
-  	echo '<strong>'.esc_html__('Vendor: ','marketking-multivendor-marketplace-for-woocommerce').'</strong>';
-  	$store_name = marketking()->get_store_name_display($vendor_id);
-  	echo esc_html($store_name).'<br>';
-
-  	// display badges if applicable
-  	if (defined('MARKETKINGPRO_DIR')){
-  		if (intval(get_option('marketking_enable_badges_setting', 1)) === 1){
-  			marketkingpro()->display_vendor_badges($vendor_id);
-  		}
-  	}
-
-  	marketking()->display_about_us($vendor_id);
-
-  	  	
-  	?>
-  	<?php
-  	// rating
-  	$rating = marketking()->get_vendor_rating($vendor_id);
-  	// if there's any rating
-  	if (intval($rating['count'])!==0){
-  		// show rating
-  		if (intval($rating['count']) === 1){
-  			$review = esc_html__('review','marketking-multivendor-marketplace-for-woocommerce');
-  		} else {
-  			$review = esc_html__('reviews','marketking-multivendor-marketplace-for-woocommerce');
-  		}
-  		echo '<strong>'.esc_html__('Rating:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($rating['rating']).' '.esc_html__('rating from','marketking-multivendor-marketplace-for-woocommerce').' '.esc_html($rating['count']).' '.esc_html($review);
-  		echo '<br>';
-  	}
   	
-  	?>
-  	<?php
-  	if (!empty($company)){
-  		echo '<br><strong>'.esc_html__('Company:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($company).'<br>';
-  	}
-
-  	$customer = new WC_Customer($vendor_id);
-  	if (apply_filters('marketking_allow_vendor_address_frontend', true)){
-		  	if (is_a($customer,'WC_Customer')){
-		  		$address = $customer->get_billing();
-
-		  		if (is_array($address)){
-			  		if (!empty($address['address_1']) || !empty($address['address_2'])){
-			  			echo '<strong>'.esc_html__('Address:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($address['address_1']).' '.esc_html($address['address_2']).', '.esc_html($address['city']).', '.esc_html($address['postcode']);
-
-			  			if (!empty($address['country'])){
-			  				if (isset($address['state']) && isset($address['country'])){
-			  					$countrystates = WC()->countries->get_states( $address['country'] );
-			  					$countrycountry = WC()->countries->countries;
-			  					if (isset($countrystates[$address['state']]) && isset($countrycountry[ $address['country'] ])){
-			  						echo ', '.$countrystates[$address['state']].', '.$countrycountry[ $address['country'] ].'<br>';
-			  					}
-			  				}
-			  			}
-			  		}
-			  	}
-		  	}
-  	}
-  	
-
-
-  	// Store Cat
-  	if (defined('MARKETKINGPRO_DIR')){
-
-	  	if (intval(get_option('marketking_enable_storecategories_setting', 1)) === 1){
-	  		$selectedarr = get_user_meta($vendor_id,'marketking_store_categories', true);
-
-	  		if (!empty($selectedarr)){
-	  			if (count($selectedarr) == 1){
-	  				$text = esc_html__('Store Category','marketking-multivendor-marketplace-for-woocommerce');
-	  			} else {
-	  				$text = esc_html__('Store Categories','marketking-multivendor-marketplace-for-woocommerce');
-	  			}
-
-	  			foreach ($selectedarr as $index => $catid){
-	  				$catname = get_term($catid)->name;
-	  				$selectedarr[$index] = $catname;
-	  			}
-
-	  			$cats = implode(', ',$selectedarr);
-	  			echo '<br><strong>'.$text.':</strong> '.$cats.'<br>';
-	  		}
-	  		
-
-	  	}
-	  }
-
-
-  
-		if ($showphone === 'yes'){
-			echo '<strong>'.esc_html__('Phone:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($phone).'<br>';
-		}
-		if ($showemail === 'yes'){
-			echo '<strong>'.esc_html__('Email:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($email).'<br>';
-		}
-
-		do_action('marketking_vendor_details_store_page', $vendor_id);
-
-  	
-  	echo '<br>';
-
+  	marketking()->get_vendor_details_tab($vendor_id);
   	
 	?>
 </div>

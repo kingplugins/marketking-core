@@ -137,6 +137,37 @@ button.marketking_color_scheme_button {
     background: white !important;
 }
 
+.marketking_sellerdocs_howto_notice, .marketking_roptions_howto_notice, .marketking_rfields_howto_notice, .marketking_refunds_howto_notice, .marketking_badges_howto_notice, .marketking_verifications_howto_notice, .marketking_memberships_howto_notice, .marketking_abusereports_howto_notice, .marketking_messages_howto_notice, .marketking_announcements_howto_notice, .marketking_commissionrules_howto_notice, .marketking_grules_howto_notice, .marketking_groups_howto_notice{
+    border-radius: 6px;
+    padding: 3px 12px;
+    border-left-color: #b7b7b7;
+    margin-top: 6px;
+}
+.marketking_sellerdocs_howto_notice .notice-dismiss, .marketking_roptions_howto_notice .notice-dismiss, .marketking_rfields_howto_notice .notice-dismiss, .marketking_refunds_howto_notice .notice-dismiss, .marketking_badges_howto_notice .notice-dismiss, .marketking_verifications_howto_notice .notice-dismiss, .marketking_memberships_howto_notice .notice-dismiss, .marketking_abusereports_howto_notice .notice-dismiss, .marketking_messages_howto_notice .notice-dismiss, .marketking_announcements_howto_notice .notice-dismiss, .marketking_commissionrules_howto_notice .notice-dismiss, .marketking_grules_howto_notice .notice-dismiss, .marketking_groups_howto_notice .notice-dismiss{
+    height: 42px;
+}
+.post-type-marketking_docs .wp-list-table, .marketking_page_not_initial .wp-list-table, .post-type-marketking_option .wp-list-table, .post-type-marketking_field .wp-list-table, .post-type-marketking_refund .wp-list-table, .post-type-marketking_badge .wp-list-table, .post-type-marketking_vreq .wp-list-table, .post-type-marketking_mpack .wp-list-table, .post-type-marketking_abuse .wp-list-table, .post-type-marketking_message .wp-list-table, .post-type-marketking_announce .wp-list-table, .post-type-marketking_grule .wp-list-table, .post-type-marketking_rule .wp-list-table, .post-type-marketking_group .wp-list-table{
+    box-shadow: 0 3px 6px rgba(0,0,0,.06);
+    border-radius: 5px;
+    border-color: #d8d8d8;
+}
+.post-type-marketking_docs a.page-title-action, .marketking_page_not_initial a.page-title-action, .post-type-marketking_option a.page-title-action, .post-type-marketking_field a.page-title-action, .post-type-marketking_refund a.page-title-action, .post-type-marketking_badge a.page-title-action, .post-type-marketking_vreq a.page-title-action, .post-type-marketking_mpack a.page-title-action, .post-type-marketking_abuse a.page-title-action, .post-type-marketking_message a.page-title-action, .post-type-marketking_announce a.page-title-action, .post-type-marketking_rule a.page-title-action, .post-type-marketking_grule a.page-title-action, .post-type-marketking_group a.page-title-action {
+    padding: 1px 13px !important;
+    border-radius: 6px !important;
+    margin-left: 5px !important;
+    font-size:13px !important;
+    border: 1px solid #906b1c !important;
+    color: #906b1c !important;
+    font-weight: 600;
+}
+.column-ads {
+    width: 10%;
+}
+
+input.advertising_days_input {
+    width: 300px;
+}
+
 .marketking_vendor_td{
     height: 80px;
     display: flex;
@@ -199,12 +230,28 @@ div#marketking_admin_header_bar_right {
 input.marketking_reports_date_input {
     min-height: 35px;
 }
+.post-type-marketking_rule .select2-container--default .select2-results__option--highlighted, .post-type-marketking_group .select2-container--default .select2-results__option--highlighted{
+    background: #868686 !important;
+}
 .marketking_reports_fromto {
     display: inline-flex;
     align-items: center;
 }
 .marketking_reports_fromto_text {
     margin: 0px 10px;
+}
+.marketking_credit_history_container{
+    height: 90px;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    padding: 15px;
+}
+.marketking_credit_left_container{
+    height: 90px;
+}
+button#marketking_download_vendor_credit_history {
+    margin-bottom: 13px;
 }
 div#marketking_reports_quick_links {
     display: flex;
@@ -213,12 +260,23 @@ div#marketking_reports_quick_links {
     font-size: 12px;
     padding-top: 10px;
 }
+.marketking_user_registration_user_data_container_element_text_editable {
+    background: white !important;
+    border: 1px solid #bebebe !important;
+}
+
 .marketking_reports_link, a.marketking_reports_link {
     color: #777 !important;
 }
 .marketking_reports_link:hover{
     cursor: pointer;
     font-weight: bold;
+}
+#marketking_dashboard_wrapper .row {
+    gap: initial !important;
+}
+.marketking_shipping_tracking_container{
+    margin:10px 0px;
 }
 a.marketking_admin_header_right_element {
     color: #c9c8cf;
@@ -230,6 +288,25 @@ a.marketking_admin_header_right_element {
     margin: 0px 10px;
     letter-spacing: 0.3px;
     font-size: 13px;
+    cursor: pointer;
+}
+#marketking_configure_method_details_content .input-text, #marketking_configure_method_details_content .select, #marketking_configure_method_details_content input {
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin-left: 20px;
+}
+#marketking_configure_method_details_content .wc-settings-sub-title {
+    font-size: 20px;
+    margin-top: 20px;
+}
+.marketking_shipping_page tbody th, .marketking_shipping_page tbody td, .marketking_shipping_page thead th{
+    padding: 20px;
+}
+#marketking_add_another_shipment_button{
+    margin-top: 10px;
+}
+.marketking_new_shipment_hidden{
+    display:none !important;
 }
 a.marketking_admin_header_right_element_button {
     color: #c9c8cf;
@@ -251,6 +328,113 @@ a.marketking_admin_header_right_element_button:hover button{
 }
 .taxonomy-storecat .column-posts {
     display: none;
+}
+
+.notice-marketking-active {
+    background-color: #f8fff1;
+    margin: 0px !important;
+    padding: 10px 11px !important;
+    border-left: 0px !important;
+    border-top: 0px !important;
+    border-right: 0px !important;
+    border-bottom: 1px dashed #c8dcc2;
+}
+.notice-marketking-active p:before {
+    content: "\f12a";
+    color: #4d7d4c;
+    width: 25px;
+}
+.marketking-container-active {
+    border-left: 4px solid #5d9b5c !important;
+}
+
+.notice-marketking-active p a {
+    display: inline-block;
+    color: #4d7d4c;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.notice-marketking-active p a:hover {
+    opacity: 0.8; 
+}
+
+.notice-marketking-inactive {
+    background-color: #fff7f7;
+    margin: 0px !important;
+    padding: 10px 11px !important;
+    border-left: 0px !important;
+    border-top: 0px !important;
+    border-right: 0px !important;
+    border-bottom: 1px dashed #dcc2c2;
+}
+.notice-marketking-inactive p:before {
+    content: "\f112";
+    color: #bd5858;
+    width: 25px;
+}
+.marketking-container-inactive {
+    border-left: 4px solid #bd5858 !important;
+}
+.notice-marketking-inactive p a {
+    display: inline-block;
+    color: #309b31;
+    font-weight: 600;
+    margin-left: 4px;
+}
+.marketking_notice_purchase{
+    color: #666 !important;
+}
+
+.notice-marketking-inactive p a:hover {
+    opacity: 0.8; 
+}
+img.marketking_notice_icon {
+    width: 30px;
+    background: #282828;
+    padding: 9px 14px 14px 12px;
+    border-radius: 23px;
+    border: 1px solid #eaeaea;
+}
+.marketking_dismiss_review_notice {
+    display: flex;
+}
+.marketking_notice_left_screen {
+    display: flex;
+    align-items: center;
+    padding: 0px 21px 0px 5px;
+}
+.marketking_notice_button {
+    margin-top: 7px !important;
+    margin-right: 10px !important;
+}
+.marketking_main_notice {
+    border-left-color: #e2ac4b;
+}
+button.button-secondary.marketking_notice_button {
+    background: white !important;
+    border: 1px solid #ccc;
+    color: #333 !important;
+}
+button.button-secondary:hover.marketking_notice_button {
+    border: 1px solid #a3a3a3;
+}
+button.button-primary.marketking_notice_button, button.button-primary:focus.marketking_notice_button, button.button-primary:target.marketking_notice_button {
+    background: #e2ac4b;
+    border-color: #e2ac4b;
+}
+.toplevel_page_marketking img.marketking_notice_icon, .marketking_page_marketking_tools img.marketking_notice_icon, .marketking_page_marketking_dashboard img.marketking_notice_icon, .marketking_page_marketking_reports img.marketking_notice_icon {
+    width: 56px !important;
+}
+.toplevel_page_marketking .marketking_notice_right_screen h3, .marketking_page_marketking_tools .marketking_notice_right_screen h3, .marketking_page_marketking_dashboard .marketking_notice_right_screen h3, .marketking_page_marketking_reports .marketking_notice_right_screen h3 {
+    margin-top: 16px;
+}
+.marketking_page_marketking_dashboard .marketking_notice_right_screen h3, .marketking_page_marketking_reports .marketking_notice_right_screen h3{
+    font-size: 18px !important;
+}
+button.button-primary:hover.marketking_notice_button {
+    background: #d18b0e;
+    border-color: #d18b0e;
 }
 .marketking-form-select-container {
     padding: 10px 15px;
@@ -695,7 +879,7 @@ input.marketking_field_settings_metabox_top_column_sort_text {
     color: #252525;
 }
 .post-type-shop_order .wp-list-table .column-earnings {
-    width: 8ch;
+    width: 15ch;
     text-align: center;
 }
 svg.marketking_field_settings_metabox_top_column_required_title_icon {
@@ -2727,7 +2911,7 @@ input.marketking_user_registration_user_data_container_element_text {
     width: 100%;
     font-weight: 500;
     line-height: 21px;
-    color: #252525;
+    color: #686868;
 }
 input.marketking_user_registration_user_data_container_element_text:focus, textarea.marketking_user_registration_user_data_container_element_textarea:focus{
 	box-shadow: none;
@@ -3109,7 +3293,7 @@ select.marketking_user_settings_select:focus{
     background-color:#202224;
 }
 input#marketking_bonus_payment {
-    background: #C4C4C4;
+    background: #cfcfcf;
     border-radius: 3px;
     border: none;
     top: 2px;

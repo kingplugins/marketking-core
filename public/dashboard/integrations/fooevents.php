@@ -51,6 +51,53 @@ class Marketking_Foo{
 
         wp_localize_script( 'woocommerce-events-admin-script', 'localRemindersObj', $local_reminders_args );
 
+        if (class_exists('Fooevents_Multiday_Events')){
+            $foomultidayconfig = new Fooevents_Multiday_Events_Config();
+            wp_enqueue_script( 'events-multi-day-script', $foomultidayconfig->scripts_path . 'events-multi-day-admin.js', array( 'jquery-ui-datepicker', 'wp-color-picker' ), $foomultidayconfig->plugin_data['Version'], true );
+
+            $day_term = '';
+            //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            if ( ! empty( $_GET['post'] ) ) {
+
+                //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                $post_id  = sanitize_text_field( wp_unslash( $_GET['post'] ) );
+                $day_term = get_post_meta( $post_id, 'WooCommerceEventsDayOverride', true );
+
+            }
+
+            if ( empty( $day_term ) ) {
+
+                $day_term = get_option( 'WooCommerceEventsDayOverride', true );
+
+            }
+
+            if ( empty( $day_term ) || 1 == $day_term ) {
+
+                $day_term = __( 'Day', 'fooevents-multiday-events' );
+
+            }
+
+                $local_args = array(
+                    'closeText'       => __( 'Done', 'woocommerce-events' ),
+                    'currentText'     => __( 'Today', 'woocommerce-events' ),
+                    'monthNames'      => strip_array_indices( $wp_locale->month ),
+                    'monthNamesShort' => strip_array_indices( $wp_locale->month_abbrev ),
+                    'monthStatus'     => __( 'Show a different month', 'woocommerce-events' ),
+                    'dayNames'        => strip_array_indices( $wp_locale->weekday ),
+                    'dayNamesShort'   => strip_array_indices( $wp_locale->weekday_abbrev ),
+                    'dayNamesMin'     => strip_array_indices( $wp_locale->weekday_initial ),
+                    'dateFormat'      => date_format_php_to_js( get_option( 'date_format' ) ),
+                    'firstDay'        => get_option( 'start_of_week' ),
+                    'isRTL'           => $wp_locale->is_rtl(),
+                    'dayTerm'         => esc_attr( $day_term ),
+                    'startTimeTerm'   => __( 'Start time', 'fooevents-multiday-events' ),
+                    'endTimeTerm'     => __( 'End time', 'fooevents-multiday-events' ),
+                );
+
+                wp_localize_script( 'events-multi-day-script', 'localObjMultiDay', $local_args );
+        }
+       
+
         $local_args_print = array(
             'ajaxurl'         => admin_url( 'admin-ajax.php' ),
             'ajaxSaveSuccess' => __( 'Your stationery settings have been saved.', 'woocommerce-events' ),
@@ -73,6 +120,12 @@ class Marketking_Foo{
 
                         $bundle_script = file_get_contents($fooconfig->scripts_path . 'events-printing-admin.js');
                         echo $bundle_script; 
+
+
+                        $foomultidayconfig = new Fooevents_Multiday_Events_Config();
+                        $bundle_script = file_get_contents($foomultidayconfig->scripts_path . 'events-multi-day-admin.js');
+                        echo $bundle_script; 
+
                         ?>
                     });
                 </script>

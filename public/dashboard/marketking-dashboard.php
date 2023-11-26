@@ -152,7 +152,7 @@
 
                 // get page
                 $page = get_query_var('dashpage');
-                
+
                 if (empty($page)){
                     // Agent dashboard here
                     include(apply_filters('marketking_dashboard_template','dashboard-content.php'));
@@ -169,6 +169,10 @@
                 } else if ($page === 'messages'){
                     if (defined('MARKETKINGPRO_DIR')){
                         echo marketkingpro()->get_page('messages');
+                    }
+                }  else if ($page === 'subscriptions'){
+                    if (defined('MARKETKINGPRO_DIR')){
+                        echo marketkingpro()->get_page('subscriptions');
                     }
                 } else if ($page === 'customers'){
                     include(apply_filters('marketking_dashboard_template','customers.php'));
@@ -203,6 +207,10 @@
                 } else if ($page === 'storeseo'){
                     if (defined('MARKETKINGPRO_DIR')){
                         echo marketkingpro()->get_page('storeseo');
+                    }
+                } else if ($page === 'social'){
+                    if (defined('MARKETKINGPRO_DIR')){
+                        echo marketkingpro()->get_page('social');
                     }
                 } else if ($page === 'verification'){
                     if (defined('MARKETKINGPRO_DIR')){
@@ -294,7 +302,90 @@
                     if (defined('MARKETKINGPRO_DIR')){
                         echo marketkingpro()->get_page('export-products');
                     }
-                }   
+                } else if ( $page === 'expressconnect'){
+
+                    if( !class_exists("Stripe\Stripe") ) {
+                      require_once( MARKETKINGPRO_DIR . 'includes/assets/lib/Stripe/init.php' );
+                    }
+
+                    try {
+                        ?>
+
+                        <div class="nk-content p-0">
+                            <div class="nk-content-inner">
+                                <div class="nk-content-body">
+                                    <div class="connecting_to_stripe">
+                                    <?php
+                                    esc_html_e('Connecting to Stripe, please wait...','marketking-multivendor-marketplace-for-woocommerce');
+                                    ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php
+                        
+
+                        $settings = get_option('woocommerce_marketking_stripe_gateway_settings');
+
+                        $testmode = false;
+
+                        if (isset( $settings['test_mode'] )){
+                            if ($settings['test_mode'] === 'yes'){
+                                $testmode = true;
+                            }
+                        }
+                        if (!isset($settings['test_secret_key'])){
+                            $settings['test_secret_key'] = '';
+                        }
+                        if (!isset($settings['secret_key'])){
+                            $settings['secret_key'] = '';
+                        }
+
+                        $secret_key = $testmode ? $settings['test_secret_key'] : $settings['secret_key'];
+                          
+                        $stripe = new \Stripe\StripeClient($secret_key);
+                        $account = $stripe->accounts->create([
+                        'type' => 'express',
+                        'capabilities' => [
+                          'card_payments' => ['requested' => true],
+                          'transfers' => ['requested' => true],
+                        ],
+                        ]);
+                        $account_id = $account->id;
+
+                        $refresh_url = $return_url = esc_attr(trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)))).'payouts';
+
+                        $link = $stripe->accountLinks->create([
+                        'account' => $account_id,
+                        'refresh_url' => $refresh_url,
+                        'return_url' => $return_url,
+                        'type' => 'account_onboarding',
+                        ]);
+
+                        $url = $link->url;
+                        // redirect to url
+
+                        ?>
+                        <script>window.location = "<?php echo $url;?>";</script>
+                        <?php
+
+                    } catch ( Throwable $ex ) {
+
+                      ?>
+
+                      <div class="nk-content p-0">
+                          <div class="nk-content-inner">
+                              <div class="nk-content-body">
+                                  <div class="connecting_to_stripe">
+                                  <?php
+                                  echo $ex->getMessage();
+                                  ?>
+                              </div>
+                          </div>
+                      </div>
+                      <?php
+
+                    }
+                }
 
                 do_action('marketking_extend_page', $page);
 
@@ -303,7 +394,9 @@
                     ?>
                     <div id="marketking_footer_hidden">
                         <?php
-                        wp_footer();
+                        if (apply_filters('marketking_display_footer_scripts', true)){
+                            wp_footer();
+                        }
                         ?>
                     </div>
                     <?php

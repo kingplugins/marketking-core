@@ -123,7 +123,7 @@ do_action( 'wpo_wcpdf_before_document_label', 'invoice', $document->order ); ?>
 						$order = wc_get_order($order_id);
 						$method = $order->get_payment_method();
 
-						if(get_option( 'marketking_cod_behaviour_setting', 'default' ) === 'reverse' && $method === 'cod'){
+						if(get_option( 'marketking_cod_behaviour_setting', 'default' ) === 'reverse' && $method === 'cod' && apply_filters('marketking_apply_cod_reverse', true, $order)){
 							$subtotal = wc_price($order->get_total()-marketking()->get_order_earnings($order_id));
 						}
 

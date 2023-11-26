@@ -3,14 +3,13 @@
 /*
 
 Edit Product Page
-* @version 1.0.4
+* @version 1.1.0
 
 This template file can be edited and overwritten with your own custom template. To do this, simply copy this file under your theme (or child theme) folder, in a folder named 'marketking', and then edit it there. 
 
 For example, if your theme is storefront, you can copy this file under wp-content/themes/storefront/marketking/ and then edit it with your own custom content and changes.
 
 */
-
 
 ?>
 <?php
@@ -19,6 +18,10 @@ For example, if your theme is storefront, you can copy this file under wp-conten
         if (marketking()->is_vendor_team_member()){
             $checkedval = intval(get_user_meta(get_current_user_id(),'marketking_teammember_available_panel_editproducts', true));
         }
+
+        if (!apply_filters('marketking_vendors_can_edit_products', true)){
+            return;
+        }   
 
         $productid = sanitize_text_field(marketking()->get_pagenr_query_var());
         $canadd = marketking()->vendor_can_add_more_products($user_id);
@@ -30,9 +33,11 @@ For example, if your theme is storefront, you can copy this file under wp-conten
 
         // Bookings Ref RR
         if (intval(get_option( 'marketking_enable_bookings_setting', 0 )) === 1){
-            if(marketking()->vendor_has_panel('bookings')){
-                if(class_exists('WC_Bookings')){
-                    Marketking_WC_Bookings_Metabox::output_metabox();
+             if(defined('MARKETKINGPRO_DIR')){
+                if(marketking()->vendor_has_panel('bookings')){
+                    if(class_exists('WC_Bookings')){
+                        Marketking_WC_Bookings_Metabox::output_metabox();
+                    }
                 }
             }
         }
@@ -56,7 +61,20 @@ For example, if your theme is storefront, you can copy this file under wp-conten
         }
 
         if ( (int) marketking()->get_product_vendor( $productid ) !== (int) $user_id ) {
-           return;
+            // check that we're not on add page
+            if (get_query_var('pagenr') !== 'add'){
+                return;
+            } else {
+                // clear standby product and reload
+                marketking()->clear_product_standby($productid);
+                marketking()->set_product_standby();
+
+                ?>
+                <script>
+                    location.reload();
+                </script>
+                <?php
+            }
         }
 
         // either not team member, or team member with permission to add
@@ -70,16 +88,40 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                         <div class="nk-content-inner">
                             <div class="nk-content-body">
                                 <form id="marketking_save_product_form">
-                                <?php                               
+
+                                <?php
+
+                                if (!marketking()->vendor_can_publish_products($user_id)){
+                                    ?>
+                                    <input type="hidden" id="marketking_can_publish_products" value="no">
+                                    <?php
+                                } else {
+                                    ?>
+                                    <input type="hidden" id="marketking_can_publish_products" value="yes">
+                                    <?php
+                                }                              
 
                                 if ($exists === 'new'){
-                                    $text = esc_html__('Save New Product','marketking-multivendor-marketplace-for-woocommerce');
-                                    $icon = 'ni-plus';
-                                    $actionedit = 'add';
+                                    if (!marketking()->vendor_can_publish_products($user_id)){
+                                        $text = esc_html__('Send New Product for Review','marketking-multivendor-marketplace-for-woocommerce');
+                                        $icon = 'ni-plus';
+                                        $actionedit = 'add';
+                                    } else {
+                                        $text = esc_html__('Save New Product','marketking-multivendor-marketplace-for-woocommerce');
+                                        $icon = 'ni-plus';
+                                        $actionedit = 'add';
+                                    }
                                 } else {
-                                    $text = esc_html__('Update Product','marketking-multivendor-marketplace-for-woocommerce');
-                                    $icon = 'ni-edit-fill';
-                                    $actionedit = 'edit';
+                                    if (!marketking()->vendor_can_publish_products($user_id)){
+                                        $text = esc_html__('Send for Review','marketking-multivendor-marketplace-for-woocommerce');
+                                        $icon = 'ni-edit-fill';
+                                        $actionedit = 'edit';
+                                    } else {
+                                        $text = esc_html__('Publish Product','marketking-multivendor-marketplace-for-woocommerce');
+                                        $icon = 'ni-edit-fill';
+                                        $actionedit = 'edit';
+                                    }
+                                    
                                 }
 
                                 ?>
@@ -96,41 +138,39 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                                         $status = 'publish';
                                                     }
 
+                                                    if ($actionedit === 'add'){
+                                                        $status = 'new';
+                                                    }
+
                                                 ?>
                                                 <p class="marketking_status_text">- &nbsp;</p>
-                                                <select name="marketking_edit_product_status" id="marketking_edit_product_status" class="marketking_status_<?php echo esc_attr($status);?>">
-                                                    <?php
-                                                        // check if user is allowed to publish directly
-                                                        if (marketking()->vendor_can_publish_products($user_id)){
-                                                            ?>
-                                                                <option value="publish" <?php selected($status, 'publish', true);?>><?php esc_html_e('Published','marketking-multivendor-marketplace-for-woocommerce');?></option>
-                                                            <?php
-                                                        } else {
-                                                            ?>
-                                                                <option value="pending" <?php selected($status, 'pending', true);?>><?php esc_html_e('Ready for Review','marketking-multivendor-marketplace-for-woocommerce');?></option>
-                                                            <?php
-                                                        }
-                                                    ?>
-                                                    <option value="draft" <?php selected($status, 'draft', true);?>><?php esc_html_e('Draft','marketking-multivendor-marketplace-for-woocommerce');?></option>
+                                                <select name="marketking_edit_product_status" id="marketking_edit_product_status" class="marketking_status_<?php echo esc_attr($status);?>" disabled>
+                                                    <option value="publish" <?php selected($status, 'publish', true);?>><?php esc_html_e('Published Product','marketking-multivendor-marketplace-for-woocommerce');?></option>
+                                                    <option value="pending" <?php selected($status, 'pending', true);?>><?php esc_html_e('Product Pending Review','marketking-multivendor-marketplace-for-woocommerce');?></option>
+                                                    <option value="draft" <?php selected($status, 'draft', true);?>><?php esc_html_e('Draft Product','marketking-multivendor-marketplace-for-woocommerce');?></option>
+                                                    <option value="new" <?php selected($status, 'new', true);?>><?php esc_html_e('New Product','marketking-multivendor-marketplace-for-woocommerce');?></option>
                                                 </select>&nbsp;
-                                                <?php
-                                                if (!marketking()->vendor_can_publish_products($user_id)){
-                                                    $tip = esc_html__('When a product is ready to be published, save it as "Ready for Review", to let the admins it is ready. If you are still working on, and making changes to the product, save it as "Draft".','marketking-multivendor-marketplace-for-woocommerce');
-                                                    echo ' '.wc_help_tip($tip, false);
-                                                }
-                                                ?>
+                                               
                                             </div>
                                         </div><!-- .nk-block-head-content -->
                                         <div class="nk-block-head-content">
                                             <div class="toggle-wrap nk-block-tools-toggle">
-                                                <a href="#" class="btn btn-icon btn-trigger toggle-expand mr-n1" data-target="pageMenu"><?php esc_html_e('Tools','marketking-multivendor-marketplace-for-woocommerce'); ?><em class="icon ni ni-more-v"></em></a>
-                                                <div class="toggle-expand-content" data-content="pageMenu">
+                                                <div data-content="pageMenu">
                                                     <ul class="nk-block-tools g-3">
                                                         <input type="hidden" id="marketking_save_product_button_id" value="<?php echo esc_attr($productid);?>">
                                                         <input type="hidden" id="post_ID" value="<?php echo esc_attr($productid);?>">
                                                         <li class="nk-block-tools-opt">
+                                                            <?php
+                                                            if (!marketking()->vendor_can_publish_products($user_id)){
+                                                                $tip = esc_html__('When a product is ready to be published, let us know by clicking on "Send for Review". If you are still working on the product, save it as a draft instead.','marketking-multivendor-marketplace-for-woocommerce');
+                                                                echo '<div class="marketking_product_help_tip">'.wc_help_tip($tip, false).'</div>';
+                                                            }
+                                                            ?>
                                                             <div id="marketking_save_product_button">
                                                                 <a href="#" class="toggle btn btn-primary d-md-inline-flex"><em class="icon ni <?php echo esc_attr($icon);?>"></em><span><?php echo esc_html($text); ?></span></a>
+                                                            </div>
+                                                            <div id="marketking_save_as_draft_button">
+                                                                <a href="#" class="toggle btn btn-gray d-md-inline-flex ml-2"><em class="icon ni ni-file-text"></em><span><?php esc_html_e('Save as Draft','marketking-multivendor-marketplace-for-woocommerce'); ?></span></a>
                                                             </div>
                                                             <?php
                                                             if ($exists === 'existing'){
@@ -175,11 +215,31 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                     </div><!-- .nk-block-between -->
                                 </div><!-- .nk-block-head -->
                                 <?php
+
+                                // view button html
+                                if ($status === 'pending' || $status === 'draft'){
+                                    $button_text = esc_html__('Preview Product', 'marketking-multivendor-marketplace-for-woocommerce');
+                                } else {
+                                    $button_text = esc_html__('View Product', 'marketking-multivendor-marketplace-for-woocommerce');
+                                }
+
+                                ob_start();
+                                ?>
+                                <a target="_blank" href="<?php 
+                                $permalink = $product->get_permalink();
+                                echo esc_attr($permalink);
+                                ?>
+                                "><button type="button" class="btn btn-sm btn-gray view_product_button">
+                                <em class="icon ni ni-eye-fill button-icon"></em><?php echo esc_html($button_text); ?></button></a>
+                                <?php
+                                $view_button_html = ob_get_clean();
+
+
                                 if (isset($_GET['add'])){
                                     $add = sanitize_text_field($_GET['add']);;
                                     if ($add === 'success'){
                                         ?>                                    
-                                        <div class="alert alert-primary alert-icon"><em class="icon ni ni-check-circle"></em> <strong><?php esc_html_e('Your product has been created successfully','marketking-multivendor-marketplace-for-woocommerce');?></strong>. <?php esc_html_e('You can now continue to edit it','marketking-multivendor-marketplace-for-woocommerce');?>.</div>
+                                        <div class="alert alert-primary alert-icon"><em class="icon ni ni-check-circle"></em> <strong><?php esc_html_e('Your product has been created successfully','marketking-multivendor-marketplace-for-woocommerce');?></strong>. <?php esc_html_e('You can now continue to edit it','marketking-multivendor-marketplace-for-woocommerce');?>.<?php echo $view_button_html; ?></div>
                                         <?php
                                     }
                                 }
@@ -187,10 +247,11 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                     $add = sanitize_text_field($_GET['update']);;
                                     if ($add === 'success'){
                                         ?>                                    
-                                        <div class="alert alert-primary alert-icon"><em class="icon ni ni-check-circle"></em> <strong><?php esc_html_e('Your product has been updated successfully','marketking-multivendor-marketplace-for-woocommerce');?></strong>.</div>
+                                        <div class="alert alert-primary alert-icon"><em class="icon ni ni-check-circle"></em> <strong><?php esc_html_e('Your product has been updated successfully','marketking-multivendor-marketplace-for-woocommerce');?></strong>.<?php echo $view_button_html;?></div>
                                         <?php
                                     }
                                 }
+                                
                                 ?>
 
                                 <!-- PRODUCT TITLE -->
@@ -231,7 +292,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                 <div class="row">
                                     <!-- GALLERY -->
                                     <br><br>
-                                    <div class="col-xxl-3 col-md-6 marketking_card_gal_cat_tags">
+                                    <div class="col-xxl-3 col-md-6 marketking_card_gal_cat_tags marketking_main_product_image_block">
                                         <div class="code-block"><h6 class="overline-title title"><?php esc_html_e('Main Product Image','marketking-multivendor-marketplace-for-woocommerce');?></h6>
                                             <img id="marketking_edit_product_main_image" src="<?php
                                             // if edit product
@@ -263,7 +324,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
 
                                         </div>
                                     </div>
-                                    <div class="col-xxl-3 col-md-6 marketking_card_gal_cat_tags">
+                                    <div class="col-xxl-3 col-md-6 marketking_card_gal_cat_tags marketking_image_gallery_block">
                                         <div class="code-block"><h6 class="overline-title title"><?php esc_html_e('Image Gallery','marketking-multivendor-marketplace-for-woocommerce');?></h6>
                                             <?php
 
@@ -277,7 +338,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                         </div>
                                     </div>
                                     <!-- CATEGORIES AND TAGS -->
-                                    <div class="col-xxl-3 col-md-6 marketking_card_gal_cat_tags">
+                                    <div class="col-xxl-3 col-md-6 marketking_card_gal_cat_tags marketking_categories_block">
                                         <div class="code-block marketking_cattag_card"><h6 class="overline-title title"><?php esc_html_e('Categories','marketking-multivendor-marketplace-for-woocommerce');?></h6>
                                             <div class="form-group">
                                                 <div class="form-control-wrap">
@@ -327,7 +388,7 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                     <?php
                                     if(intval(get_option( 'marketking_vendors_can_tags_setting',1 )) === 1){
                                         ?>
-                                        <div class="col-xxl-3 col-md-6 marketking_card_gal_cat_tags">
+                                        <div class="col-xxl-3 col-md-6 marketking_card_gal_cat_tags marketking_tags_block">
                                             <div class="code-block marketking_cattag_card"><h6 class="overline-title title"><?php esc_html_e('Tags','marketking-multivendor-marketplace-for-woocommerce');?></h6>
                                                 <div class="form-group">
                                                     <div class="form-control-wrap">
@@ -359,6 +420,25 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                 </div>
                                 <?php do_action('marketking_edit_product_after_tags', $post); ?>
 
+                                <?php
+                                // debug test woo3d viewer
+                                if(defined('WOO3DV_VERSION')){
+                                    ?>
+                                    <div class="row">
+                                        <div class="col-xxl-6 col-md-6 marketking_card_gal_cat_tags">
+                                            <div class="code-block marketking_cattag_card"><h6 class="overline-title title"><?php esc_html_e('Product 3D Model','marketking-multivendor-marketplace-for-woocommerce');?></h6>
+                                                <?php
+                                                $_GET['post'] = $productid;
+                                                $_GET['action'] = 'edit';
+                                                $_GET['page'] = 'woo3dv';
+                                                woo3dv_meta_box_output();
+                                                ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <?php
+                                }
+                                ?>
 
                                 <?php
                                 // QR CODE INTEGRATION // https://wordpress.org/plugins/qr-code-woocommerce/
@@ -438,7 +518,131 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                 }
                                 ?>
 
+                                <!-- ADVERTISING -->
+                                <?php
+                                if (intval(get_option( 'marketking_enable_advertising_setting', 0 )) === 1){
+                                    if(marketking()->vendor_has_panel('advertising')){
+                                        ?>
+                                        <div class="row">
+                                            <div class="col-xxl-12 marketking_card_gal_cat_tags marketking_advertising_block">
+                                                <div class="code-block marketking_cattag_card marketking_advertising_card">
+                                                    <h6 class="overline-title title"><?php esc_html_e('Product Advertising','marketking-multivendor-marketplace-for-woocommerce');?></h6>
+                                                    <div class="form-group">
+                                                        <div class="form-control-wrap">
+                                                            <?php
+                                                            if ($exists === 'new'){
+                                                                esc_html_e('You must save the product first, before being able to advertise it.','marketking-multivendor-marketplace-for-woocommerce');
+                                                            } else {
 
+                                                                if (marketking()->is_advertised($productid)){
+                                                                    $days_left = marketking()->get_ad_days_left($productid);
+                                                                    ?>
+                                                                    <div class="marketking_product_advertised"><em class="icon ni ni-star-round"></em><?php echo esc_html__('This product is already advertised:','marketking-multivendor-marketplace-for-woocommerce').' '.$days_left.' '.esc_html__('days left','marketking-multivendor-marketplace-for-woocommerce'); ?></div>
+
+                                                                    <?php
+                                                                } else {
+                                                                    // not advertised
+                                                                }
+                                                                
+                                                                // first get and display the number of credits the vendor has
+                                                                $advertising_credits = marketking()->get_advertising_credits($user_id);
+
+                                                                ?>
+                                                                <div class="nk-block">
+                                                                    <h6 class="lead-text"><?php esc_html_e('Advertising Credits','marketking-multivendor-marketplace-for-woocommerce');?></h6>
+                                                                    <div class="card">
+                                                                        <div class="card-inner card-inner-credits">
+                                                                            <div class="between-center flex-wrap flex-md-nowrap g-3 col-xl-12 col-xxl-6">
+                                                                                <div class="media media-center gx-3 wide-xs">
+                                                                                    <div class="media-object">
+                                                                                        <em class="icon icon-circle icon-circle-lg ni ni-coins marketking-icon-gray"></em>
+                                                                                    </div>
+                                                                                    <div class="media-content">
+                                                                                        <p><?php echo esc_html__('Available credits:','marketking-multivendor-marketplace-for-woocommerce').' <strong class="marketking_credits_number">'.esc_html($advertising_credits);?></strong></p>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="nk-block-actions flex-shrink-0 buy_credits_initial">
+                                                                                    <button type="button" class="btn btn-sm btn-secondary buy_credits_initial_button">
+                                                                                        <em class="icon ni ni-cart button-icon"></em><?php esc_html_e('Buy Credits','marketking-multivendor-marketplace-for-woocommerce');?>
+
+                                                                                    <button type="button" class="btn btn-sm btn-gray download_credit_history" value="<?php echo esc_attr($user_id);?>">
+                                                                                        <em class="icon ni ni-todo button-icon"></em><?php esc_html_e('View Log','marketking-multivendor-marketplace-for-woocommerce');?>
+
+                                                                                </div>
+                                                                                <div class="nk-block-actions flex-shrink-0 buy_credits_second" style="display:none">
+                                                                                    <?php
+                                                                                    $credit_cost = get_option('marketking_credit_price_setting',1);
+                                                                                    echo '<div class="cost_per_credit">'.esc_html__('Cost per credit','marketking-multivendor-marketplace-for-woocommerce').': '.wc_price($credit_cost).'</div>';
+
+                                                                                    ?>
+                                                                                    <input type="number" class="add_credits_cart_input form-control form-control-sm" placeholder="<?php esc_attr_e('Number of Credits','marketking-multivendor-marketplace-for-woocommerce');?>">
+                                                                                    <a href="#" class="btn btn-primary add_credits_cart_button">
+                                                                                        <em class="icon ni ni-cart-fill"></em>
+                                                                                        <?php esc_html_e('Add to Cart','marketking-multivendor-marketplace-for-woocommerce');?></a>
+
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <?php
+
+                                                            }
+
+                                                            ?>
+                                                            <div class="nk-block">
+                                                                <h6 class="lead-text"><?php esc_html_e('Advertise Product','marketking-multivendor-marketplace-for-woocommerce');?></h6>
+                                                                <div class="card">
+                                                                    <div class="card-inner card-inner-credits">
+                                                                        <div class="between-center flex-wrap flex-md-nowrap g-3 col-xl-12 col-xxl-6">
+                                                                            <div class="media media-center gx-3 wide-xs">
+                                                                                <div class="media-object">
+                                                                                    <em class="icon icon-circle icon-circle-lg ni ni-star-fill marketking-icon-main"></em>
+                                                                                </div>
+                                                                                <div class="media-content">
+                                                                                    <p><?php 
+
+                                                                                    $credit_cost =get_option('marketking_credit_cost_per_day_setting',1);
+
+                                                                                    echo esc_html__('Cost per day:','marketking-multivendor-marketplace-for-woocommerce').' <strong class="marketking_credits_number">'.esc_html($credit_cost).' '.esc_html__('credits','marketking-multivendor-marketplace-for-woocommerce');?></strong></p>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="nk-block-actions flex-shrink-0 advertise_initial">
+                                                                                <button type="button" class="btn btn-sm btn-primary advertise_initial_button">
+                                                                                    <em class="icon ni ni-star button-icon"></em><?php esc_html_e('Advertise Now','marketking-multivendor-marketplace-for-woocommerce');?>
+
+                                                                            </div>
+                                                                            <div class="nk-block-actions flex-shrink-0 advertise_second" style="display:none">
+                                                                                <?php
+                                                                                $credit_cost = get_option('marketking_credit_price_setting',1);
+                                                                                echo '<div class="cost_per_credit">'.esc_html__('How many days to advertise?','marketking-multivendor-marketplace-for-woocommerce').'</div>';
+
+                                                                                ?>
+                                                                                <input type="number" min="1" step="1" class="advertising_days_input form-control form-control-sm" placeholder="<?php esc_attr_e('Number of advertising days','marketking-multivendor-marketplace-for-woocommerce');?>">
+                                                                                <a href="#" class="btn btn-primary purchase_ads_button">
+                                                                                    <em class="icon ni ni-star-fill"></em>
+                                                                                    <?php esc_html_e('Purchase Ad','marketking-multivendor-marketplace-for-woocommerce');?></a>
+
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+
+
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <?php
+                                    }
+                                }
+                                ?>
                                 <!-- DESCRIPTION -->
                                 <br><br>
                                 <div class="row">

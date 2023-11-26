@@ -24,10 +24,95 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
 
                             <?php
 
-                            if (isset($_GET['code'])){
-                                ?>                                    
-                                <div class="alert alert-primary alert-icon"><em class="icon ni ni-check-circle"></em> <strong><?php esc_html_e('You have successfully connected your Stripe account.','marketking-multivendor-marketplace-for-woocommerce');?></strong></div>
-                                <?php
+                            $settings = get_option('woocommerce_marketking_stripe_gateway_settings');
+
+                            $testmode = false;
+
+                            if (isset( $settings['test_mode'] )){
+                                if ($settings['test_mode'] === 'yes'){
+                                    $testmode = true;
+                                }
+                            }
+
+                            if (!isset($settings['test_client_id'])){
+                                $settings['test_client_id'] = '';
+                            }
+                            if (!isset($settings['test_secret_key'])){
+                                $settings['test_secret_key'] = '';
+                            }
+                            if (!isset($settings['client_id'])){
+                                $settings['client_id'] = '';
+                            }
+                            if (!isset($settings['secret_key'])){
+                                $settings['secret_key'] = '';
+                            }
+
+                            $client_id = $testmode ? $settings['test_client_id'] : $settings['client_id'];
+                            $secret_key = $testmode ? $settings['test_secret_key'] : $settings['secret_key'];
+                            if (isset($client_id) && isset($secret_key)) {
+                                
+                                $is_stripe_connected = false;
+                                $stripe_user_id = get_user_meta( $user_id, 'stripe_user_id', true );
+                                $vendor_connected = get_user_meta( $user_id, 'vendor_connected', true );
+                                if( $stripe_user_id && $vendor_connected ) {
+                                    $is_stripe_connected = true;
+                                }
+
+                                if (isset($_GET['code'])) {
+                                    $code = sanitize_text_field($_GET['code']);
+                                    
+                                    $token_request_body = array(
+                                        'grant_type' => 'authorization_code',
+                                        'client_id' => $client_id,
+                                        'code' => $code,
+                                        'client_secret' => $secret_key
+                                    );
+
+                                    $req = curl_init('https://connect.stripe.com/oauth/token');
+                                    curl_setopt($req, CURLOPT_RETURNTRANSFER, true);
+                                    curl_setopt($req, CURLOPT_POST, true);
+                                    curl_setopt($req, CURLOPT_POSTFIELDS, http_build_query($token_request_body));
+                                    curl_setopt($req, CURLOPT_SSL_VERIFYPEER, false);
+                                    curl_setopt($req, CURLOPT_SSL_VERIFYHOST, 2);
+                                    curl_setopt($req, CURLOPT_VERBOSE, true);
+                                    // TODO: Additional error handling
+                                    $respCode = curl_getinfo($req, CURLINFO_HTTP_CODE);
+                                    $resp = json_decode(curl_exec($req), true);
+                                    curl_close($req);
+                                    if (!isset($resp['error'])) {
+                                        update_user_meta( $user_id, 'vendor_connected', 1);
+                                        update_user_meta( $user_id, 'admin_client_id', $client_id);
+                                        if (isset($resp['access_token'])){
+                                            update_user_meta( $user_id, 'access_token', $resp['access_token']);
+                                        }
+                                        if (isset($resp['refresh_token'])){
+                                            update_user_meta( $user_id, 'refresh_token', $resp['refresh_token']);
+                                        }
+                                        if (isset($resp['stripe_publishable_key'])){
+                                            update_user_meta( $user_id, 'stripe_publishable_key', $resp['stripe_publishable_key']);
+                                        }
+                                        if (isset($resp['stripe_user_id'])){
+                                            update_user_meta( $user_id, 'stripe_user_id', $resp['stripe_user_id']);
+                                        }
+
+                                        ?>                                    
+                                        <div class="alert alert-primary alert-icon"><em class="icon ni ni-check-circle"></em> <strong><?php esc_html_e('You have successfully connected your Stripe account.','marketking-multivendor-marketplace-for-woocommerce');?></strong></div>
+                                        <?php
+                                    } else {
+                                        ?>                                    
+                                        <div class="alert alert-fill alert-danger alert-iconn"><em class="icon ni ni-cross-circle"></em> <strong><?php
+
+                                        echo 'Error: '.sanitize_text_field($resp['error']);
+                                        if (isset($resp['error_description'])){
+                                            echo sanitize_text_field($resp['error_description']);
+                                        }
+
+                                        update_option('marketking_stripe_connect_error', $resp);
+
+                                        ?></strong></div>
+                                        <?php
+                                    }
+                                }
                             }
 
                             ?>
@@ -63,7 +148,17 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                     </div><!-- .col -->
                                     <div class="col-xxl-6 col-sm-6">
                                         <div class="card bg-lighten h-100">
-                                            <div class="card-header"><?php esc_html_e('Payout Account','marketking-multivendor-marketplace-for-woocommerce');?></div>
+                                            <div class="card-header" style="display: flex; align-items: center;"><?php esc_html_e('Payout Account','marketking-multivendor-marketplace-for-woocommerce');?>
+                                                
+                                                <?php
+                                                $active_withdrawal = get_user_meta($user_id,'marketking_active_withdrawal', true);
+                                                if ($active_withdrawal === 'yes'){
+                                                    ?>
+                                                    <span class="badge rounded-pill bg-warning withdrawal-pending"><?php esc_html_e('Withdrawal request pending','marketking-multivendor-marketplace-for-woocommerce');?></span>
+                                                    <?php
+                                                }
+                                                ?>
+                                            </div>
                                             <div class="card-inner">
                                                 <?php
                                                 // get method set if any
@@ -79,7 +174,9 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                                 }
                                                 ?>
                                                 <h6 class="card-title mb-4"><?php esc_html_e('Set payout account','marketking-multivendor-marketplace-for-woocommerce');?> <?php if (!empty($method)){echo '('.esc_html($method).' '.esc_html__('currently selected', 'marketking-multivendor-marketplace-for-woocommerce').')';}?></h6>
-                                                <a href="#" class="btn btn-gray btn-sm" data-toggle="modal" data-target="#modal_set_payout_method"><em class="icon ni ni-setting"></em><span><?php esc_html_e('Configure','marketking-multivendor-marketplace-for-woocommerce');?></span> </a>
+
+
+                                                <a href="#" class="btn btn-gray btn-sm marketking_set_payout_button" data-toggle="modal" data-target="#modal_set_payout_method"><em class="icon ni ni-setting"></em><span><?php esc_html_e('Configure','marketking-multivendor-marketplace-for-woocommerce');?></span> </a>
 
                                                 <?php
                                                 // withdrawal requests module
@@ -87,7 +184,9 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                                 if (defined('MARKETKINGPRO_DIR')){
                                                     if (intval(get_option('marketking_enable_withdrawals_setting', 1)) === 1){
                                                         ?>
-                                                        <a href="#" class="btn btn-gray btn-sm" data-toggle="modal" data-target="#modal_make_withdrawal"><em class="icon ni ni-wallet-in"></em><span><?php esc_html_e('Withdraw','marketking-multivendor-marketplace-for-woocommerce');?></span> </a>
+                                                        <a href="#" class="btn btn-gray btn-sm marketking_withdrawal_button" data-toggle="modal" data-target="#modal_make_withdrawal"><em class="icon ni ni-wallet-in"></em><span><?php esc_html_e('Withdraw','marketking-multivendor-marketplace-for-woocommerce');
+
+                                                    ?></span> </a>
 
                                                         <?php
                                                     }
@@ -185,6 +284,7 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                         <div class="modal-body">
                             <form action="#" class="form-validate is-alter" id="marketking_set_payout_form">
                                 <?php
+                                $method = get_user_meta($user_id,'marketking_agent_selected_payout_method', true);
                                 $withdrawal_limit = get_option('marketking_withdrawal_limit_setting', 500);
                                 if (empty($method)){
                                     esc_html_e('You must configure a payment method before making a withdrawal.','marketking-multivendor-marketplace-for-woocommerce');
@@ -196,23 +296,46 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                     if ($active_withdrawal === 'yes'){
                                         $amount = get_user_meta($user_id,'marketking_withdrawal_amount', true);
                                         esc_html_e('You already have an active request for ','marketking-multivendor-marketplace-for-woocommerce'); echo wc_price($amount).'.';
-                                        esc_html_e(' You can make a new request to overwrite it. Request 0 to cancel it.','marketking-multivendor-marketplace-for-woocommerce');
                                         echo '<br><br>';
                                     }
 
                                     echo '<input type="hidden" id="marketking_max_withdraw" value="'.esc_attr(round(floatval($outstanding_balance), 2)).'">';
+                                    echo '<input type="hidden" id="marketking_min_withdraw" value="'.esc_attr(round(floatval($withdrawal_limit), 2)).'">';
 
-                                    ?>
-                                    <div class="form-group">
-                                        <label class="form-label" for="withdrawal-amount"><?php esc_html_e('Withdrawal Amount','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
-                                        <div class="form-control-wrap">
-                                            <input type="number" class="form-control" id="withdrawal-amount" <?php
-                                                echo 'max="'.esc_attr(round(floatval($outstanding_balance), 2)).'"';
-                                            ?> name="withdrawal-amount" placeholder="<?php esc_html_e('Enter your withdrawal amount here...','marketking-multivendor-marketplace-for-woocommerce');?>">
+                                    if ($active_withdrawal !== 'yes'){
+
+                                        ?>
+                                        <div class="form-group">
+                                            <label class="form-label" for="withdrawal-amount"><?php esc_html_e('Withdrawal Amount','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
+                                            <div class="form-control-wrap">
+                                                <span class="marketking_withdrawal_amount_available"><?php esc_html_e('Available for withdrawal:','marketking-multivendor-marketplace-for-woocommerce'); ?><?php echo ' '.wc_price(round(floatval($outstanding_balance), 2));?></span>
+                                                <input type="number" class="form-control" id="withdrawal-amount" min="<?php echo esc_attr(floatval($withdrawal_limit));?>" <?php
+                                                    echo 'max="'.esc_attr(round(floatval($outstanding_balance), 2)).'"';
+                                                ?> name="withdrawal-amount" placeholder="<?php esc_html_e('Enter your withdrawal amount here...','marketking-multivendor-marketplace-for-woocommerce');?>">
+                                            </div>
                                         </div>
-                                    </div>
+                                        <?php
+                                    }
+                                    ?>
                                      <div class="form-group">
-                                         <button type="button" id="marketking_make_withdrawal" class="btn btn-lg btn-primary"><?php esc_html_e('Make Request','marketking-multivendor-marketplace-for-woocommerce'); ?></button>
+                                         <button type="button" id="marketking_make_withdrawal" class="btn btn-primary"><?php 
+
+                                         if ($active_withdrawal !== 'yes'){
+                                            esc_html_e('Make Request','marketking-multivendor-marketplace-for-woocommerce'); 
+                                         } else {
+                                            esc_html_e('Cancel Current Request','marketking-multivendor-marketplace-for-woocommerce'); 
+                                            echo '<input type="hidden" id="cancel_request" value="1">';
+                                         }
+
+                                     ?></button>
+
+                                        <?php 
+                                        if ($active_withdrawal !== 'yes'){
+                                            ?>
+                                             <button type="button" id="marketking_withdrawal_max" class="btn btn-secondary"><?php esc_html_e('Select Max','marketking-multivendor-marketplace-for-woocommerce');?></a>
+                                            <?php 
+                                        }
+                                        ?>
                                      </div>
                                     <?php
                                 }
@@ -300,7 +423,7 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                $info = explode('**&&', $info);
 
                                $i = 0;
-                               while ($i < 17){
+                               while ($i < 19){
                                 if (!isset($info[$i])){
                                     $info[$i] = '';
                                 }
@@ -311,7 +434,7 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                     ?>
 
                                     <div class="form-group marketking_paypal_info">
-                                        <label class="form-label" for="paypal-email"><?php esc_html_e('PayPal Email Address','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
+                                        <label class="form-label" for="paypal-email"><?php esc_html_e('PayPal Email Address','marketking-multivendor-marketplace-for-woocommerce'); ?></label> (*)
                                         <div class="form-control-wrap">
                                             <input type="email" class="form-control" id="paypal-email" name="paypal-email" placeholder="<?php esc_html_e('Enter your PayPal email address here...','marketking-multivendor-marketplace-for-woocommerce');?>" value="<?php echo esc_attr($info[0]);?>">
                                         </div>
@@ -321,14 +444,15 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
 
                                 if ($bank === 1){
                                     ?>
+                                    <h6 class="marketking_bank_info"><?php esc_html_e('Personal / Business Details','marketking-multivendor-marketplace-for-woocommerce'); ?></h6><br class="marketking_bank_info">
                                     <div class="form-group marketking_bank_info">
-                                        <label class="form-label" for="full-name"><?php esc_html_e('Full Name','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
+                                        <label class="form-label" for="full-name"><?php esc_html_e('Full Name','marketking-multivendor-marketplace-for-woocommerce'); ?></label> (*)
                                         <div class="form-control-wrap">
                                             <input type="text" class="form-control" id="full-name" name="full-name" value="<?php echo esc_attr($info[2]);?>">
                                         </div>
                                     </div>
                                     <div class="form-group marketking_bank_info">
-                                        <label class="form-label" for="billing-address-1"><?php esc_html_e('Billing Address Line 1','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
+                                        <label class="form-label" for="billing-address-1"><?php esc_html_e('Billing Address Line 1','marketking-multivendor-marketplace-for-woocommerce'); ?></label> (*)
                                         <div class="form-control-wrap">
                                             <input type="text" class="form-control" id="billing-address-1" name="billing-address-1" value="<?php echo esc_attr($info[3]);?>">
                                         </div>
@@ -340,19 +464,19 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                         </div>
                                     </div>
                                     <div class="form-group marketking_bank_info">
-                                        <label class="form-label" for="city"><?php esc_html_e('City','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
+                                        <label class="form-label" for="city"><?php esc_html_e('City','marketking-multivendor-marketplace-for-woocommerce'); ?></label> (*)
                                         <div class="form-control-wrap">
                                             <input type="text" class="form-control" id="city" name="city" value="<?php echo esc_attr($info[5]);?>">
                                         </div>
                                     </div>
                                     <div class="form-group marketking_bank_info">
-                                        <label class="form-label" for="state"><?php esc_html_e('State','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
+                                        <label class="form-label" for="state"><?php esc_html_e('State','marketking-multivendor-marketplace-for-woocommerce'); ?></label> (*)
                                         <div class="form-control-wrap">
                                             <input type="text" class="form-control" id="state" name="state" value="<?php echo esc_attr($info[6]);?>">
                                         </div>
                                     </div>
                                     <div class="form-group marketking_bank_info">
-                                        <label class="form-label" for="postcode"><?php esc_html_e('Postcode','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
+                                        <label class="form-label" for="postcode"><?php esc_html_e('Postcode','marketking-multivendor-marketplace-for-woocommerce'); ?></label> (*)
                                         <div class="form-control-wrap">
                                             <input type="text" class="form-control" id="postcode" name="postcode" value="<?php echo esc_attr($info[7]);?>">
                                         </div>
@@ -363,49 +487,63 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                             <input type="text" class="form-control" id="country" name="country" value="<?php echo esc_attr($info[8]);?>">
                                         </div>
                                     </div>
+                                    <hr class="marketking_bank_info">
+                                    <h6 class="marketking_bank_info"><?php esc_html_e('Bank / Wire Transfer Details','marketking-multivendor-marketplace-for-woocommerce'); ?></h6><br>
                                     <div class="form-group marketking_bank_info">
-                                        <label class="form-label" for="bank-account-holder-name"><?php esc_html_e('Bank Account Holder Name','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
+                                        <label class="form-label" for="bank-account-holder-name"><?php esc_html_e('Account Holder Name','marketking-multivendor-marketplace-for-woocommerce'); ?></label> (*)
                                         <div class="form-control-wrap">
                                             <input type="text" class="form-control" id="bank-account-holder-name" name="bank-account-holder-name" value="<?php echo esc_attr($info[9]);?>">
                                         </div>
                                     </div>
                                     <div class="form-group marketking_bank_info">
-                                        <label class="form-label" for="bank-account-number"><?php esc_html_e('Bank Account Number/IBAN','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
+                                        <label class="form-label" for="bank-account-holder-name"><?php esc_html_e('Bank Name','marketking-multivendor-marketplace-for-woocommerce'); ?></label> (*)
                                         <div class="form-control-wrap">
-                                            <input type="text" class="form-control" id="bank-account-number" name="bank-account-number" value="<?php echo esc_attr($info[10]);?>">
+                                            <input type="text" class="form-control" id="bankname" name="bankname" value="<?php echo esc_attr($info[17]);?>">
                                         </div>
                                     </div>
                                     <div class="form-group marketking_bank_info">
+                                        <label class="form-label" for="bank-account-holder-name"><?php esc_html_e('BIC / SWIFT','marketking-multivendor-marketplace-for-woocommerce'); ?></label> (*)
+                                        <div class="form-control-wrap">
+                                            <input type="text" class="form-control" id="bankswift" name="bankswift" value="<?php echo esc_attr($info[18]);?>">
+                                        </div>
+                                    </div>
+                                    <div class="form-group marketking_bank_info">
+                                        <label class="form-label" for="bank-account-number"><?php esc_html_e('Bank Account Number/IBAN','marketking-multivendor-marketplace-for-woocommerce'); ?></label> (*)
+                                        <div class="form-control-wrap">
+                                            <input type="text" class="form-control" id="bank-account-number" name="bank-account-number" required value="<?php echo esc_attr($info[10]);?>">
+                                        </div>
+                                    </div>
+                                    <div class="form-group marketking_bank_info marketking_bank_branch_city_field">
                                         <label class="form-label" for="bank-branch-city"><?php esc_html_e('Bank Branch City','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
                                         <div class="form-control-wrap">
                                             <input type="text" class="form-control" id="bank-branch-city" name="bank-branch-city" value="<?php echo esc_attr($info[11]);?>">
                                         </div>
                                     </div>
-                                    <div class="form-group marketking_bank_info">
+                                    <div class="form-group marketking_bank_info marketking_bank_branch_country_field">
                                         <label class="form-label" for="bank-branch-country"><?php esc_html_e('Bank Branch Country','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
                                         <div class="form-control-wrap">
                                             <input type="text" class="form-control" id="bank-branch-country" name="bank-branch-country" value="<?php echo esc_attr($info[12]);?>">
                                         </div>
                                     </div>
-                                    <div class="form-group marketking_bank_info">
+                                    <div class="form-group marketking_bank_info marketking_intermediary_bank_field">
                                         <label class="form-label" for="intermediary-bank-bank-code"><?php esc_html_e('Intermediary Bank - Bank Code','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
                                         <div class="form-control-wrap">
                                             <input type="text" class="form-control" id="intermediary-bank-bank-code" name="intermediary-bank-bank-code" value="<?php echo esc_attr($info[13]);?>">
                                         </div>
                                     </div>
-                                    <div class="form-group marketking_bank_info">
+                                    <div class="form-group marketking_bank_info marketking_intermediary_bank_field">
                                         <label class="form-label" for="intermediary-bank-name"><?php esc_html_e('Intermediary Bank - Name','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
                                         <div class="form-control-wrap">
                                             <input type="text" class="form-control" id="intermediary-bank-name" name="intermediary-bank-name" value="<?php echo esc_attr($info[14]);?>">
                                         </div>
                                     </div>
-                                    <div class="form-group marketking_bank_info">
+                                    <div class="form-group marketking_bank_info marketking_intermediary_bank_field">
                                         <label class="form-label" for="intermediary-bank-city"><?php esc_html_e('Intermediary Bank - City','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
                                         <div class="form-control-wrap">
                                             <input type="text" class="form-control" id="intermediary-bank-city" name="intermediary-bank-city" value="<?php echo esc_attr($info[15]);?>">
                                         </div>
                                     </div>
-                                    <div class="form-group marketking_bank_info">
+                                    <div class="form-group marketking_bank_info marketking_intermediary_bank_field">
                                         <label class="form-label" for="intermediary-bank-country"><?php esc_html_e('Intermediary Bank - Country','marketking-multivendor-marketplace-for-woocommerce'); ?></label>
                                         <div class="form-control-wrap">
                                             <input type="text" class="form-control" id="intermediary-bank-country" name="intermediary-bank-country" value="<?php echo esc_attr($info[16]);?>">
@@ -438,70 +576,8 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                             <div class="form-group marketking_stripe_info">
                                                 <?php
 
-                                                $settings = get_option('woocommerce_marketking_stripe_gateway_settings');
-
-
-                                                $testmode = false;
-
-                                                if (isset( $settings['test_mode'] )){
-                                                    if ($settings['test_mode'] === 'yes'){
-                                                        $testmode = true;
-                                                    }
-                                                }
-
-                                                $client_id = $testmode ? $settings['test_client_id'] : $settings['client_id'];
-                                                $secret_key = $testmode ? $settings['test_secret_key'] : $settings['secret_key'];
                                                 if (isset($client_id) && isset($secret_key)) {
-                                                    
-                                                    $is_stripe_connected = false;
-                                                    $stripe_user_id = get_user_meta( $user_id, 'stripe_user_id', true );
-                                                    $vendor_connected = get_user_meta( $user_id, 'vendor_connected', true );
-                                                    if( $stripe_user_id && $vendor_connected ) {
-                                                        $is_stripe_connected = true;
-                                                    }
-                                                    
-                                                    if (isset($_GET['code'])) {
-                                                        $code = sanitize_text_field($_GET['code']);
-                                                        
-                                                        $token_request_body = array(
-                                                            'grant_type' => 'authorization_code',
-                                                            'client_id' => $client_id,
-                                                            'code' => $code,
-                                                            'client_secret' => $secret_key
-                                                        );
-
-                                                        $req = curl_init('https://connect.stripe.com/oauth/token');
-                                                        curl_setopt($req, CURLOPT_RETURNTRANSFER, true);
-                                                        curl_setopt($req, CURLOPT_POST, true);
-                                                        curl_setopt($req, CURLOPT_POSTFIELDS, http_build_query($token_request_body));
-                                                        curl_setopt($req, CURLOPT_SSL_VERIFYPEER, false);
-                                                        curl_setopt($req, CURLOPT_SSL_VERIFYHOST, 2);
-                                                        curl_setopt($req, CURLOPT_VERBOSE, true);
-                                                        // TODO: Additional error handling
-                                                        $respCode = curl_getinfo($req, CURLINFO_HTTP_CODE);
-                                                        $resp = json_decode(curl_exec($req), true);
-                                                        curl_close($req);
-                                                        if (!isset($resp['error'])) {
-                                                            update_user_meta( $user_id, 'vendor_connected', 1);
-                                                            update_user_meta( $user_id, 'admin_client_id', $client_id);
-                                                            if (isset($resp['access_token'])){
-                                                                update_user_meta( $user_id, 'access_token', $resp['access_token']);
-                                                            }
-                                                            if (isset($resp['refresh_token'])){
-                                                                update_user_meta( $user_id, 'refresh_token', $resp['refresh_token']);
-                                                            }
-                                                            if (isset($resp['stripe_publishable_key'])){
-                                                                update_user_meta( $user_id, 'stripe_publishable_key', $resp['stripe_publishable_key']);
-                                                            }
-                                                            if (isset($resp['stripe_user_id'])){
-                                                                update_user_meta( $user_id, 'stripe_user_id', $resp['stripe_user_id']);
-                                                            }
-
-                                                            ?>
-                                                            <?php
-                                                        }
-                                                    }
-                                                    
+                                                                                                 
                                                     if ( get_user_meta($user_id, 'vendor_connected', true) == 1 ) {
                                                         ?>
                                                         <div class="clear"></div>
@@ -525,7 +601,7 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                                                 </tbody>
                                                             </table>
                                                         </div>
-                                                    <?php 
+                                                        <?php 
                                                         $is_stripe_connected = true;
                                                     }
                                                     
@@ -539,7 +615,7 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                                         'response_type' => 'code',
                                                         'scope' => 'read_write',
                                                         'client_id' => $client_id,
-                                                        'redirect_uri' => esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'payouts',
+                                                        'redirect_uri' => esc_attr(trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)))).'payouts',
                                                         'state' => $user_id,
                                                         'stripe_user' => array( 
                                                             'email'         => $user_email,
@@ -549,9 +625,13 @@ if (intval(get_option( 'marketking_enable_payouts_setting', 1 )) === 1){
                                                             'last_name'     => $the_user->last_name
                                                             )
                                                         ), $user_id );
-                                                        if( apply_filters( 'marketking_is_allow_stripe_express_api', true ) ) {
+                                                        if( apply_filters( 'marketking_is_allow_stripe_express_api', false ) ) { // set it to STANDARD accounts by default
+                                                            //$url = esc_attr(trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)))).'expressconnect';
+
                                                             $authorize_request_body['suggested_capabilities'] = array( 'transfers', 'card_payments' );
+                                                            
                                                             $url = 'https://connect.stripe.com/express/oauth/authorize?' . http_build_query($authorize_request_body);
+
                                                         } else {
                                                             $url = 'https://connect.stripe.com/oauth/authorize?' . http_build_query($authorize_request_body);
                                                         }

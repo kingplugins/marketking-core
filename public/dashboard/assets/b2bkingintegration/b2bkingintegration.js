@@ -127,10 +127,10 @@
         // Edit Offer
         $('body').on('click', '.b2bking_offer_edit_table', function (){
             var offer_id = $(this).val();
+            // clear all values
+            clearOfferValues();
+            
             setTimeout(function(){
-                // clear all values
-                clearOfferValues();
-
                 // set button for save offer
                 $('.b2bking_marketking_save_new_offer').val(offer_id);
 

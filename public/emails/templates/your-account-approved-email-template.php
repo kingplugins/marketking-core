@@ -12,7 +12,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email );
 	<?php esc_html_e( 'You\'re all set and ready to start selling! Your account has been approved.', 'marketking-multivendor-marketplace-for-woocommerce');	?>
 	<br /><br />
 	<?php esc_html_e( 'You can access your vendor dashboard to manage products, orders, earnings and more at: ', 'marketking-multivendor-marketplace-for-woocommerce'); 
-		echo make_clickable( esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))) ) ;	?>
+		echo make_clickable( esc_attr(trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)))) ) ;	?>
 </p>
 <?php
 

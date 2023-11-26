@@ -171,6 +171,8 @@ For example, if your theme is storefront, you can copy this file under wp-conten
 
                                     ?>
                                     <td class="marketking_vendor_follow">
+                                        <?php do_action('marketking_vendor_follow_stores_list_start', $vendor_id); ?>
+
                                         <button class="marketking_follow_button" value="<?php echo esc_attr($vendor_id);?>"><?php
                                         if ($follows !== 'yes'){
                                             esc_html_e('Follow','marketking-multivendor-marketplace-for-woocommerce');
@@ -179,18 +181,26 @@ For example, if your theme is storefront, you can copy this file under wp-conten
                                         }
                                         
                                         ?></button>
+                                        <?php do_action('marketking_vendor_follow_stores_list_end', $vendor_id); ?>
                                     </td>
                                     <?php
                                 } else {
                                     ?>
                                     <td class="marketking_vendor_follow">
+                                        <?php do_action('marketking_vendor_follow_stores_list_start', $vendor_id); ?>
+
+                                        <?php do_action('marketking_vendor_follow_stores_list_end', $vendor_id); ?>
                                     </td>
                                     <?php
                                 }
                             } else {
                                 ?>
                                 <td class="marketking_vendor_follow">
+                                    <?php do_action('marketking_vendor_follow_stores_list_start', $vendor_id); ?>
+
                                     <?php esc_html_e('This is your store.','marketking-multivendor-marketplace-for-woocommerce');?>
+
+                                    <?php do_action('marketking_vendor_follow_stores_list_end', $vendor_id); ?>
                                 </td>
                                 <?php
                             }

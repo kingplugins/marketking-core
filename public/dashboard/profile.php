@@ -24,6 +24,16 @@ if(marketking()->vendor_has_panel('profile')){
         $address = get_user_meta($user_id,'billing_address_1', true);
         ?>
         <div class="container-fluid">
+            <?php
+            if (isset($_GET['update'])){
+                $add = sanitize_text_field($_GET['update']);;
+                if ($add === 'success'){
+                    ?>                                    
+                    <div class="alert alert-primary alert-icon"><em class="icon ni ni-check-circle"></em> <strong><?php esc_html_e('Your settings have been saved successfully','marketking-multivendor-marketplace-for-woocommerce');?></strong>.</div>
+                    <?php
+                }
+            }
+            ?>
             <div class="nk-content-inner">
                 <div class="nk-content-body">
                     <div class="nk-block">
@@ -192,34 +202,47 @@ if(marketking()->vendor_has_panel('profile')){
                                                                     <input type="text" maxlength="<?php echo esc_attr(apply_filters('marketking_store_name_max_length', 25)); ?>" class="form-control form-control-lg" id="store-name"  value="<?php echo esc_attr($store_name);?>" placeholder="<?php esc_html_e('Enter your store name...','marketking-multivendor-marketplace-for-woocommerce');?>">
                                                                 </div>
                                                             </div>
+
+                                                           
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="email"><?php esc_html_e('Email','marketking-multivendor-marketplace-for-woocommerce');?></label>
                                                                     <input type="email" class="form-control form-control-lg" value="<?php echo esc_attr($userdata->user_email);?>" id="email" placeholder="<?php esc_html_e('Enter your email...','marketking-multivendor-marketplace-for-woocommerce');?>"><br>
-                                                                    <div class="custom-control custom-switch mr-n2">
-                                                                        <input type="checkbox" class="custom-control-input" <?php
-                                                                        $check = get_user_meta($user_id,'marketking_show_store_email', true);
-                                                                        checked($check,'yes',true);
-                                                                        ?> name="showemail" id="showemail">
-                                                                        <label class="custom-control-label" for="showemail"><?php esc_html_e('Show email on store page','marketking-multivendor-marketplace-for-woocommerce');?></label>
-                                                                    </div>
+                                                                    <?php
+                                                                    if (apply_filters('marketking_show_email_phone_vendor_profile', true)){
+                                                                        ?>
+                                                                        <div class="custom-control custom-switch mr-n2">
+                                                                            <input type="checkbox" class="custom-control-input" <?php
+                                                                            $check = get_user_meta($user_id,'marketking_show_store_email', true);
+                                                                            checked($check,'yes',true);
+                                                                            ?> name="showemail" id="showemail">
+                                                                            <label class="custom-control-label" for="showemail"><?php esc_html_e('Show email on store page','marketking-multivendor-marketplace-for-woocommerce');?></label>
+                                                                        </div>
+                                                                        <?php
+                                                                    }
+                                                                    ?>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="phone"><?php esc_html_e('Phone','marketking-multivendor-marketplace-for-woocommerce');?></label>
                                                                     <input type="tel" class="form-control form-control-lg" value="<?php echo esc_attr($phone);?>" id="phone" placeholder="<?php esc_html_e('Enter your phone number...','marketking-multivendor-marketplace-for-woocommerce');?>"><br>
-                                                                    <div class="custom-control custom-switch mr-n2">
-                                                                        <input type="checkbox" class="custom-control-input" <?php
-                                                                        $check = get_user_meta($user_id,'marketking_show_store_phone', true);
-                                                                        checked($check,'yes',true);
-                                                                        ?> name="showphone" id="showphone">
-                                                                        <label class="custom-control-label" for="showphone"><?php esc_html_e('Show phone on store page','marketking-multivendor-marketplace-for-woocommerce');?></label>
-                                                                    </div>
+                                                                    <?php
+                                                                    if (apply_filters('marketking_show_email_phone_vendor_profile', true)){
+                                                                        ?>
+                                                                        <div class="custom-control custom-switch mr-n2">
+                                                                            <input type="checkbox" class="custom-control-input" <?php
+                                                                            $check = get_user_meta($user_id,'marketking_show_store_phone', true);
+                                                                            checked($check,'yes',true);
+                                                                            ?> name="showphone" id="showphone">
+                                                                            <label class="custom-control-label" for="showphone"><?php esc_html_e('Show phone on store page','marketking-multivendor-marketplace-for-woocommerce');?></label>
+                                                                        </div>
+                                                                        <?php
+                                                                    }
+                                                                    ?>
                                                                 </div>
                                                             </div>
-
-
+                                                            
                                                             <div class="col-12">
                                                                 <ul class="align-center flex-wrap flex-sm-nowrap gx-4 gy-2">
                                                                     <li>

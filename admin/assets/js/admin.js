@@ -134,6 +134,14 @@
    	   		}
    	   	})
 
+   	   	// check if license activation
+   	   	const urlParams = new URLSearchParams(window.location.search);
+   	   	const myParam = urlParams.get('tab');
+   	   	if (myParam === 'activate'){
+   	   		$('.marketking_license').click();
+   	   	}
+
+
 
 	});
 

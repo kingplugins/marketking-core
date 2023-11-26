@@ -15,13 +15,13 @@
  * @version 3.7.0
  */
 
+
 defined( 'ABSPATH' ) || exit;
 
 $text_align = is_rtl() ? 'right' : 'left';
 
 $order_id = $order->get_id();
 $suborders = marketking()->get_suborders_of_order($order_id);
-
 
 ?>
 <p style="margin: 0 0 16px;"><?php echo apply_filters('marketking_order_split_notice',esc_html__('Since your order contains products sold by different vendors, it has been split into multiple sub-orders. Each sub-order will be handled by their respective vendor independently.','marketking-multivendor-marketplace-for-woocommerce'));?></p>
@@ -30,6 +30,7 @@ $suborders = marketking()->get_suborders_of_order($order_id);
 foreach ($suborders as $suborder){
 	output_suborder_table($suborder, $sent_to_admin, $plain_text, $email, $text_align);
 }
+
 
 do_action( 'woocommerce_email_before_order_table', $order, $sent_to_admin, $plain_text, $email ); ?>
 

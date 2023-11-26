@@ -13,8 +13,10 @@ defined( 'ABSPATH' ) || exit;
         $favicon_setting = get_option('marketking_logo_favicon_setting','');
         if (empty($favicon_setting)){
             $favicon_setting = MARKETKINGCORE_URL. 'includes/assets/images/marketking-icon5.svg';
-
         }
+
+        global $marketking_is_dashboard;
+        $marketking_is_dashboard = true;
 
         ?>
         <link rel="shortcut icon" href="<?php echo apply_filters('marketking_favicon_url', $favicon_setting);?>"/>
@@ -111,6 +113,97 @@ defined( 'ABSPATH' ) || exit;
             
         }
 
+        //ireca themes car rental 
+        if (defined('OVACRS_PLUGIN_FILE')){
+            add_action('wp_print_styles', function(){
+               // Admin Css
+               wp_enqueue_style('datetimepicker', OVACRS_PLUGIN_URI.'assets/plugins/datetimepicker/jquery.datetimepicker.css', array(), null);
+               wp_enqueue_style('ovacrs-default', OVACRS_PLUGIN_URI.'assets/ovacrs_admin.css', array(), null);
+
+               wp_enqueue_style( 'ovacrs_woo_admin', plugins_url().'/woocommerce/assets/css/admin.css');
+               wp_enqueue_style( 'ovacrs_booking_admin', OVACRS_PLUGIN_URI.'admin/admin-style.css');
+
+            });
+
+            add_action('wp_print_scripts', function(){
+                // Date Time Picker
+                wp_enqueue_script('datetimepicker', OVACRS_PLUGIN_URI.'assets/plugins/datetimepicker/jquery.datetimepicker.js', array('jquery'), null, true );
+                wp_enqueue_script('ova_crs', OVACRS_PLUGIN_URI.'assets/ova-crs.js', array('jquery'), null, true );
+
+               wp_enqueue_script('admin_script', OVACRS_PLUGIN_URI.'admin/admin_script.js', array('jquery'),false,true);
+               wp_localize_script( 'admin_script', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+
+               add_action('wp_footer', function(){
+                   ?>
+                   <script type="text/javascript">
+                       jQuery(document).ready(function(){
+                           <?php 
+                           $bundle_script = file_get_contents(OVACRS_PLUGIN_URI.'assets/ova-crs.js');
+                           echo $bundle_script; 
+                           ?>
+                       });
+                   </script>
+                   <?php
+               }, 1000);
+
+               wp_enqueue_script('moment', OVACRS_PLUGIN_URI.'admin/fullcalendar/moment.min.js', array('jquery'),null,true);
+               wp_enqueue_script('fullcalendar', OVACRS_PLUGIN_URI.'admin/fullcalendar/main.js', array('jquery'),null,true);
+               wp_enqueue_script('locale-all', OVACRS_PLUGIN_URI.'admin/fullcalendar/locales-all.js', array('jquery'),null,true);
+               wp_enqueue_style('fullcalendar', OVACRS_PLUGIN_URI.'admin/fullcalendar/main.min.css', array(), null);
+               wp_enqueue_script('calendar_booking', OVACRS_PLUGIN_URI.'admin/calendar.js', array('jquery'), false, true );
+               
+            });
+        }
+
+        // pdf invoices webtoffee
+
+        if (defined('WF_PKLIST_VERSION')){
+            add_action('wp_print_scripts', function(){
+                wp_enqueue_script( WF_PKLIST_PLUGIN_NAME, WF_PKLIST_PLUGIN_URL . 'admin/js/wf-woocommerce-packing-list-admin.js', array( 'jquery','jquery-ui-autocomplete','wp-color-picker','jquery-tiptip'), WF_PKLIST_VERSION, false );
+                //order list page bulk action filter
+                $order_meta_autocomplete = Wf_Woocommerce_Packing_List_Admin::order_meta_dropdown_list();
+                $wf_admin_img_path= WF_PKLIST_PLUGIN_URL . 'admin/images/uploader_sample_img.png';
+                $is_rtl = is_rtl() ? 'rtl' : 'ltr';
+                $params=array(
+                    'nonces' => array(
+                            'wf_packlist' => wp_create_nonce(WF_PKLIST_PLUGIN_NAME),
+                     ),
+                    'ajaxurl' => admin_url('admin-ajax.php'),
+                    'no_image'=>$wf_admin_img_path,
+                    'bulk_actions'=>array(),
+                    'print_action_url'=>admin_url('?print_packinglist=true'),
+                    'order_meta_autocomplete' => json_encode($order_meta_autocomplete),
+                    'is_rtl' => $is_rtl,
+                    'msgs'=>array(
+                        'settings_success'=>__('Settings updated.','print-invoices-packing-slip-labels-for-woocommerce'),
+                        'all_fields_mandatory'=>__('All fields are mandatory','print-invoices-packing-slip-labels-for-woocommerce'),
+                        'settings_error'=>sprintf(__('Unable to update settings due to an internal error. %s To troubleshoot please click %s here. %s', 'print-invoices-packing-slip-labels-for-woocommerce'), '<br />', '<a href="https://www.webtoffee.com/how-to-fix-the-unable-to-save-settings-issue/" target="_blank">', '</a>'),
+                        'select_orders_first'=>__('You have to select order(s) first!','print-invoices-packing-slip-labels-for-woocommerce'),
+                        'invoice_not_gen_bulk'=>__('One or more order do not have invoice generated. Generate manually?','print-invoices-packing-slip-labels-for-woocommerce'),
+                        'error'=>__('Error','print-invoices-packing-slip-labels-for-woocommerce'),
+                        'please_wait'=>__('Please wait','print-invoices-packing-slip-labels-for-woocommerce'),
+                        'is_required'=>__("is required",'print-invoices-packing-slip-labels-for-woocommerce'),
+                        'invoice_title_prompt' => __("Invoice",'print-invoices-packing-slip-labels-for-woocommerce'),
+                        'invoice_number_prompt' => __("number has not been generated yet. Do you want to manually generate one ?",'print-invoices-packing-slip-labels-for-woocommerce'),
+                        'invoice_number_prompt_free_order' => __("‘Generate invoice for free orders’ is disabled in Invoice settings > Advanced. You are attempting to generate invoice for this free order. Proceed?",'print-invoices-packing-slip-labels-for-woocommerce'),
+                        'creditnote_number_prompt' => __("Refund in this order seems not having credit number yet. Do you want to manually generate one ?",'print-invoices-packing-slip-labels-for-woocommerce'),
+                        'invoice_number_prompt_no_from_addr' => __("Please fill the `from address` in the plugin's general settings.",'print-invoices-packing-slip-labels-for-woocommerce'),
+                        'fitler_code_copied' => __("Code Copied","print-invoices-packing-slip-labels-for-woocommerce"),
+                        'close'=>__("Close",'print-invoices-packing-slip-labels-for-woocommerce'),
+                        'save'=>__("Save",'print-invoices-packing-slip-labels-for-woocommerce'),
+                        'enter_mandatory_fields'=>__('Please enter mandatory fields','print-invoices-packing-slip-labels-for-woocommerce'),
+                        'buy_pro_prompt_order_meta' => __('You can add more than 1 order meta in','print-invoices-packing-slip-labels-for-woocommerce'),
+                        'buy_pro_prompt_edit_order_meta' => __('Edit','print-invoices-packing-slip-labels-for-woocommerce'),
+                        'buy_pro_prompt_edit_order_meta_desc' => __('You can edit an existing item by using its key.','print-invoices-packing-slip-labels-for-woocommerce'),
+                    )
+                );
+                wp_localize_script(WF_PKLIST_PLUGIN_NAME, 'wf_pklist_params', $params);
+            });
+
+
+        }
+       
+
         /* Crowdfunding for WooCommerce */
         if (defined('WC_CF_URL')){
             require_once WC_CF_DIR . 'include/class-admin.php';
@@ -121,6 +214,48 @@ defined( 'ABSPATH' ) || exit;
         if (intval(get_option('marketking_enable_bundles_setting', 1)) === 1){
 
             if(defined('MARKETKINGPRO_DIR')){
+                // yith bundle as well
+                if (defined('YITH_WCPB_VERSION')){
+                    $admin = YITH_WCPB_Admin();
+
+                    add_action('wp_print_styles', function(){
+                       wp_enqueue_style( 'yith-wcpb-admin-styles', YITH_WCPB_ASSETS_URL . '/css/admin.css', array(), YITH_WCPB_VERSION );
+                       wp_register_style( 'yith-wcpb-popup', YITH_WCPB_ASSETS_URL . '/css/yith-wcpb-popup.css', array(), YITH_WCPB_VERSION );
+                       wp_enqueue_style( 'yith-wcpb-popup' );
+                       wp_enqueue_style( 'yith-plugin-fw-fields' );
+                    });
+                    add_action('wp_print_scripts', function(){
+                       $metabox_js = defined( 'YITH_WCPB_PREMIUM' ) ? 'bundle_options_metabox_premium.js' : 'bundle_options_metabox.js';
+                       wp_register_script( 'yith-wcpb-popup', yit_load_js_file( YITH_WCPB_ASSETS_URL . '/js/yith-wcpb-popup.js' ), array( 'jquery' ), YITH_WCPB_VERSION, true );
+                       wp_register_script( 'yith_wcpb_bundle_options_metabox', yit_load_js_file( YITH_WCPB_ASSETS_URL . '/js/' . $metabox_js ), array( 'jquery', 'jquery-ui-sortable', 'yith-wcpb-popup' ), YITH_WCPB_VERSION, true );
+
+                       wp_enqueue_script( 'yith-plugin-fw-fields' );
+                       wp_enqueue_script( 'yith_wcpb_bundle_options_metabox' );
+
+                       wp_localize_script(
+                           'yith_wcpb_bundle_options_metabox',
+                           'ajax_object',
+                           array(
+                               'free_not_simple'     => __( 'You can add only simple products with the FREE version of YITH WooCommerce Product Bundles', 'yith-woocommerce-product-bundles' ),
+                               'yith_bundle_product' => __( 'You cannot add a bundle product', 'yith-woocommerce-product-bundles' ),
+                               'minimum_characters'  => apply_filters( 'yith_wcpb_minimum_characters_ajax_search', 3 ),
+                           )
+                       );
+
+                       wp_localize_script(
+                           'yith_wcpb_bundle_options_metabox',
+                           'yith_bundle_opts',
+                           array(
+                               'i18n'               => array(
+                                   'addedLabelSingular' => _n( '1 item added', '%s items added', 1, 'yith-woocommerce-product-bundles' ),
+                                   'addedLabelPlural'   => _n( '1 item added', '%s items added', 2, 'yith-woocommerce-product-bundles' ),
+                               ),
+                               'minimum_characters' => apply_filters( 'yith_wcpb_minimum_characters_ajax_search', 3 ),
+                           )
+                       );
+                    });
+
+                }
                 if (class_exists('WC_Bundles')){
 
                     // Admin notices handling.
@@ -352,6 +487,51 @@ defined( 'ABSPATH' ) || exit;
             }
         }
 
+        // Enhancer for WooCommerce Susbcription
+
+        if (defined('ENR_FILE')){
+
+            include_once(ENR_DIR.'includes/admin/class-enr-admin.php');
+            include_once(ENR_DIR.'includes/admin/class-enr-admin-post-types.php');
+
+            ENR_Admin::init();
+
+            add_action('wp_print_styles', function(){
+
+                wp_register_style( 'enr-admin', ENR_URL . '/assets/css/admin.css', array( 'woocommerce_admin_styles' ), _enr()->get_version() );
+                wp_enqueue_style( 'enr-admin' );
+
+            });
+            add_action('wp_print_scripts', function(){
+               wp_register_script( 'enr-admin', ENR_URL . '/assets/js/admin.js', array( 'jquery', 'wc-backbone-modal', 'wc-enhanced-select' ), _enr()->get_version() );
+
+               $billing_period_strings = WC_Subscriptions_Synchroniser::get_billing_period_ranges();
+               wp_localize_script( 'enr-admin', 'enr_admin_params', array(
+                   'period'                                       => wcs_get_subscription_period_strings(),
+                   'preview_email_inputs_nonce'                   => wp_create_nonce( 'enr-collect-preview-email-inputs' ),
+                   'preview_email_nonce'                          => wp_create_nonce( 'enr-preview-email' ),
+                   'email_default_data'                           => ENR_Meta_Box_Subscription_Email_Template_Data::get_default_data(),
+                   'email_placeholders'                           => ENR_Meta_Box_Subscription_Email_Template_Data::get_placeholders(),
+                   'subscription_lengths'                         => wcs_get_subscription_ranges(),
+                   'sync_options'                                 => array(
+                       'week'  => $billing_period_strings[ 'week' ],
+                       'month' => $billing_period_strings[ 'month' ],
+                       'year'  => WC_Subscriptions_Synchroniser::get_year_sync_options(),
+                   ),
+                   'back_to_all_subscription_plans_url'           => esc_url( admin_url( 'edit.php?post_type=enr_subsc_plan' ) ),
+                   'back_to_all_subscription_email_templates_url' => esc_url( admin_url( 'edit.php?post_type=enr_email_template' ) ),
+                   'back_to_all_label'                            => esc_attr__( 'Back to all', 'enhancer-for-woocommerce-subscriptions' ),
+               ) );
+
+               wp_enqueue_script( 'enr-admin' );
+
+               wp_enqueue_script( 'enr-post-ordering', ENR_URL . '/assets/js/post-ordering.js', array( 'jquery-ui-sortable' ), _enr()->get_version() );
+
+
+            });
+        }
+        
+
         
 
         // Advanced Product Labels
@@ -513,6 +693,26 @@ defined( 'ABSPATH' ) || exit;
 
                     if ( class_exists( 'WC_Bookings' ) ) {
 
+                        add_action('marketking_dashboard_head', function(){
+                            if (!defined('WF_PKLIST_VERSION')){
+                                ?>
+                                <style type="text/css">
+                                    .nk-app-root:nth-of-type(2) {
+                                        display: none;
+                                    }
+                                </style>
+                                <?php
+                            } else {
+                               ?>
+                               <style type="text/css">
+                                   .nk-app-root:nth-of-type(3) {
+                                       display: none;
+                                   }
+                               </style>
+                               <?php 
+                            }
+                        });
+
                         include( MARKETKINGPRO_DIR. "includes/wcbookings/integrations/wc-bookings/class-marketking-wc-bookings.php" );
 
                         if (defined('WC_ACCOMMODATION_BOOKINGS_INCLUDES_PATH')){
@@ -548,7 +748,7 @@ defined( 'ABSPATH' ) || exit;
                             <?php
                             if ( get_query_var( 'dashpage' ) !== 'booking-orders' ):
                                 ?>
-                                <a href="<?php echo esc_attr(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))).'products?type=booking'; ?>"
+                                <a href="<?php echo esc_attr(trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)))).'products?type=booking'; ?>"
                                    class="btn btn-sm btn-secondary  d-md-inline-flex"><em
                                             class="icon ni ni-package-fill"></em>
                                     <span><?php esc_html_e( 'Products', 'marketking-multivendor-marketplace-for-woocommerce' ); ?></span>
@@ -748,7 +948,100 @@ defined( 'ABSPATH' ) || exit;
             
         }
         */
-            
+
+        // All Products for WooCommerce Subscriptions
+        if (intval(get_option( 'marketking_enable_subscriptions_setting', 0 )) === 1){
+            if (class_exists('WC_Subscriptions')){
+                if (defined('WCS_ATT_VERSION')){
+
+                    $attplugin = WCS_ATT::instance();
+                    $attplugin->includes();
+                    $attplugin->admin_includes();
+                    require_once( WCS_ATT_ABSPATH . 'includes/admin/class-wcs-att-admin-notices.php' );
+                    require_once( WCS_ATT_ABSPATH . 'includes/admin/class-wcs-att-admin.php' );
+                    WCS_ATT_Admin::admin_init();
+
+                    add_action('wp_print_styles', function(){
+                        $add_scripts             = true;
+                        $writepanel_dependencies = array( 'jquery', 'jquery-ui-datepicker', 'wc-admin-meta-boxes', 'wc-admin-product-meta-boxes' );
+
+                        wp_register_style( 'wcsatt-writepanel-css', WCS_ATT()->plugin_url() . '/assets/css/admin/meta-boxes.css', array( 'woocommerce_admin_styles' ), WCS_ATT::VERSION );
+                        wp_style_add_data( 'wcsatt-writepanel-css', 'rtl', 'replace' );
+                        wp_enqueue_style( 'wcsatt-writepanel-css' );
+
+                        wp_register_style( 'wcsatt-admin-css', WCS_ATT()->plugin_url() . '/assets/css/admin/admin.css', array(), WCS_ATT::VERSION );
+                        wp_enqueue_style( 'wcsatt-admin-css' );
+
+                    });
+
+                    add_action('wp_print_scripts', function(){
+
+                        $post = '';
+                        $add_scripts             = true;
+                        $suffix      = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+
+                        $writepanel_dependencies = array( 'jquery', 'jquery-ui-datepicker', 'wc-admin-meta-boxes', 'wc-admin-product-meta-boxes' );
+
+                        wp_register_script( 'wcsatt-writepanel', WCS_ATT()->plugin_url() . '/assets/js/admin/meta-boxes' . $suffix . '.js', $writepanel_dependencies, WCS_ATT::VERSION );
+
+                        wp_enqueue_script( 'wcsatt-writepanel' );
+
+                        $params = array(
+                            'add_subscription_scheme_nonce'      => wp_create_nonce( 'wcsatt_add_subscription_scheme' ),
+                            'subscription_lengths'               => wcs_get_subscription_ranges(),
+                            'i18n_do_no_sync'                    => __( 'Disabled', 'woocommerce-all-products-for-subscriptions' ),
+                            'i18n_inherit_option'                => __( 'Inherit from product', 'woocommerce-all-products-for-subscriptions' ),
+                            'i18n_inherit_option_variable'       => __( 'Inherit from chosen variation', 'woocommerce-all-products-for-subscriptions' ),
+                            'i18n_override_option'               => __( 'Override product', 'woocommerce-all-products-for-subscriptions' ),
+                            'i18n_override_option_variable'      => __( 'Override all variations', 'woocommerce-all-products-for-subscriptions' ),
+                            'i18n_discount_description'          => __( 'Discount to apply to the product when this plan is selected.', 'woocommerce-all-products-for-subscriptions' ),
+                            'i18n_discount_description_variable' => __( 'Discount to apply to the chosen variation when this plan is selected.', 'woocommerce-all-products-for-subscriptions' ),
+                            'is_onboarding'                      => isset( $_GET[ 'wcsatt_onboarding' ] ) ? 'yes' : 'no',
+                            'wc_ajax_url'                        => admin_url( 'admin-ajax.php' ),
+                            'post_id'                            => is_object( $post ) ? $post->ID : '',
+                        );
+
+                        wp_localize_script( 'wcsatt-writepanel', 'wcsatt_admin_params', $params );
+                        
+                    });
+
+
+                }
+            }
+        }
+
+
+        // WooCommerce Subscription Downloads
+        /* NOT FULLY WORKING YET because the subscriptions search on products page works via WPDB and shows all subs not just the vendor's own
+        if (intval(get_option( 'marketking_enable_subscriptions_setting', 0 )) === 1){
+            if (class_exists('WC_Subscriptions')){
+                if (defined('WC_SUBSCRIPTION_DOWNLOADS_VERSION')){
+
+                    // we use woocommerce-subscription-downloads directly for the folder name, won't work with other folder names
+                    include( MARKETKINGCORE_DIR . '../woocommerce-subscription-downloads/includes/class-wc-subscription-downloads-products.php');
+                    include( MARKETKINGCORE_DIR . '../woocommerce-subscription-downloads/includes/class-wc-subscription-downloads-ajax.php');
+
+                    add_action('wp_print_scripts', function(){
+                        $suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+
+                        $pluginurl = plugins_url('../../../woocommerce-subscription-downloads/assets/js/admin/writepanel'. $suffix . '.js', __FILE__);
+
+                        wp_enqueue_script( 'wc_subscription_downloads_writepanel', $pluginurl, array( 'ajax-chosen', 'chosen' ), WC_SUBSCRIPTION_DOWNLOADS_VERSION, true );
+
+                        wp_localize_script(
+                            'wc_subscription_downloads_writepanel',
+                            'wc_subscription_downloads_product',
+                            array(
+                                'ajax_url' => admin_url( 'admin-ajax.php' ),
+                                'security' => wp_create_nonce( 'search-products' ),
+                            )
+                        );
+                    });
+                }
+            }
+        }
+        */
+
         // WooCommerce Subscriptions
         if (intval(get_option( 'marketking_enable_subscriptions_setting', 0 )) === 1){
 
@@ -998,6 +1291,118 @@ defined( 'ABSPATH' ) || exit;
 
             }
         }
+
+        // woo 3d viewer
+        if(defined('WOO3DV_VERSION')){
+            add_filter('marketking_vendor_upload_file_size', function($val){
+                return 104857600;
+            }, 10, 1);
+            add_action('wp_print_styles', function(){
+                woo3dv_enqueue_scripts_backend();
+            });
+            add_action('wp_print_scripts', function(){
+                wp_enqueue_script( 'iris', admin_url( 'js/iris.min.js' ), array( 'jquery-ui-draggable', 'jquery-ui-slider', 'jquery-touch-punch' ), false, 1 );
+                wp_enqueue_script( 'wp-color-picker', admin_url( 'js/color-picker.js' ), array( 'iris' ), false, 1 );
+                woo3dv_enqueue_scripts_backend();
+
+                $woo3dv_current_version = get_option('woo3dv_version');
+                $settings = get_option( 'woo3dv_settings' );
+                $upload_dir = wp_upload_dir();
+
+                wp_enqueue_script( 'woo3dv-backend-model.js',  WP_CONTENT_DIR . '/plugins/woo-3d-viewer/includes/js/woo3dv-backend-model.js', array( 'jquery' ), $woo3dv_current_version );
+
+                wp_localize_script( 'woo3dv-backend-model.js', 'woo3dv',
+                    array(
+                        'url' => admin_url( 'admin-ajax.php' ),
+                        'plugin_url' => plugin_dir_url( dirname( __FILE__ ) ),
+                        'upload_dir' => $upload_dir['baseurl'].'/woo3dv/',
+                        'shading' => $settings['shading'],
+                        'display_mode' => isset($settings['display_mode']) ? $settings['display_mode'] : '3d_model',
+                        'display_mode_mobile' => isset($settings['display_mode_mobile']) ? $settings['display_mode_mobile'] : '3d_model',
+                        'show_shadow' => $settings['show_shadow'],
+                        'shadow_softness' => $settings['shadow_softness'],
+                        'show_light_source1' => $settings['show_light_source1'],
+                        'show_light_source2' => $settings['show_light_source2'],
+                        'show_light_source3' => $settings['show_light_source3'],
+                        'show_light_source4' => $settings['show_light_source4'],
+                        'show_light_source5' => $settings['show_light_source5'],
+                        'show_light_source6' => $settings['show_light_source6'],
+                        'show_light_source7' => $settings['show_light_source7'],
+                        'show_light_source8' => $settings['show_light_source8'],
+                        'show_light_source9' => $settings['show_light_source9'],
+                        'show_light_source10' => $settings['show_light_source10'],
+                        'show_light_source20' => $settings['show_light_source20'],
+                        'show_light_source30' => $settings['show_light_source30'],
+                        'show_light_source40' => $settings['show_light_source40'],
+                        'show_light_source50' => $settings['show_light_source50'],
+                        'show_light_source60' => $settings['show_light_source60'],
+                        'show_light_source70' => $settings['show_light_source70'],
+                        'show_light_source80' => $settings['show_light_source80'],
+                        'show_light_source90' => $settings['show_light_source90'],
+                        'show_ground' => $settings['show_ground'],
+                        'show_fog' => $settings['show_fog'],
+                        'ground_mirror' => $settings['ground_mirror'],
+                        'model_default_color' => str_replace( '#', '0x', $settings['model_default_color'] ),
+                        'model_default_shininess' => $settings['model_default_shininess'],
+                        'model_default_transparency' => $settings['model_default_transparency'],
+                        'background1' => str_replace( '#', '0x', $settings['background1']),
+                        'grid_color' => str_replace( '#', '0x', $settings['grid_color'] ),
+                        'fog_color' => str_replace( '#', '0x', $settings['fog_color'] ),
+                        'ground_color' => str_replace( '#', '0x', $settings['ground_color'] ),
+                        'auto_rotation' => $settings['auto_rotation'],
+                        'auto_rotation_speed' => $settings['auto_rotation_speed'],
+                        'auto_rotation_direction' => $settings['auto_rotation_direction'],
+                        'default_rotation_x' => $settings['default_rotation_x'],
+                        'default_rotation_y' => $settings['default_rotation_y'],
+                        'show_grid' => $settings['show_grid'],
+                        'file_chunk_size' => $settings['file_chunk_size'],
+                        'post_max_size' => ini_get('post_max_size'),
+                        'text_not_available' => __('Not available in your browser', 'woo3dv'),
+                        'text_model_not_found' => __('Model not found!', 'woo3dv'),
+                        'text_enable_preview' => __('Please enable Preview Model in the settings of the plugin', 'woo3dv'),
+                        'text_upload_model' => __('Please upload the model first', 'woo3dv'),
+                        'text_webm_chrome' => __('WEBM rendering works only in Chrome browser', 'woo3dv'),
+                        'text_switch_tabs' => __("Please don't switch to other tabs while rendering", 'woo3dv'),
+                        'text_post_max_size' => __('The amount of data we are going to submit is larger than post_max_size in php.ini ('.ini_get('post_max_size').'). Either increase post_max_size value or decrease resolution or quality of gif/video', 'woo3dv'),
+                        'text_repairing_model' => __( "Repairing..", 'woo3dv' ),
+                        'text_model_repaired' => __( "Repairing.. done!", 'woo3dv' ),
+                        'text_model_repair_report' => __( 'Error report:', 'woo3dv' ),
+                        'text_model_repair_failed' => __( "Repairing.. fail!", 'woo3dv' ),
+                        'text_model_no_repair_needed' => __( 'No errors found.', 'woo3dv' ),
+                        'text_model_repair_degenerate_facets' => __( 'Degenerate facets', 'woo3dv' ),
+                        'text_model_repair_edges_fixed' => __( 'Edges fixed', 'woo3dv' ),
+                        'text_model_repair_facets_removed' => __( 'Facets removed', 'woo3dv' ),
+                        'text_model_repair_facets_added' => __( 'Facets added', 'woo3dv' ),
+                        'text_model_repair_facets_reversed' => __( 'Facets reversed', 'woo3dv' ),
+                        'text_model_repair_backwards_edges' => __( 'Backwards edges', 'woo3dv' ),
+        //              'text_upload_model' => __( "Please upload the model first!", 'woo3dv' ),
+                        'text_repairing_mtl' => __( 'Can not repair textured models yet!', 'woo3dv' ),
+                        'text_repairing_only' => __( 'Can repair only STL and OBJ models', 'woo3dv' ),
+                        'text_repairing_alert' => __( "The model will be sent to our server for repair.\nRepairing some models with very faulty geometries may result in broken models.\nClick OK if you agree.", 'woo3dv' ),
+                        'text_reducing_model' => __( "Reducing..", 'woo3dv' ),
+                        'text_model_reduced' => __( "Reducing.. done!", 'woo3dv' ),
+                        'text_model_no_reduction_needed' => __( "No reduction needed", 'woo3dv' ),
+                        'text_enter_polygon_cap' => __( "% of triangles to reduce", 'woo3dv' ),
+                        'text_reducing_mtl' => __( 'Can not reduce textured models yet!', 'woo3dv' ),
+                        'text_reducing_only' => __( 'Can reduce only STL and OBJ models', 'woo3dv' ),
+                        'text_reducing_alert' => __( "The model will be sent to our server for polygon reduction.\n Click OK if you agree.", 'woo3dv' ),
+                        'upload_file_nonce' => wp_create_nonce( 'woo3dv-file-upload' )
+                    )
+                );
+            });
+            add_action( 'admin_enqueue_scripts', 'woo3dv_enqueue_scripts_backend' );
+            add_action( 'wp_ajax_woo3dv_handle_upload', 'woo3dv_handle_upload' );
+            add_action( 'wp_ajax_woo3dv_handle_process', 'woo3dv_handle_process' );
+            add_action( 'wp_ajax_woo3dv_handle_process_check', 'woo3dv_handle_process_check' );
+            add_action( 'wp_ajax_woo3dv_handle_zip', 'woo3dv_handle_zip' );
+            add_action( 'wp_ajax_woo3dv_save_thumbnail_ajax', 'woo3dv_save_thumbnail_ajax' );
+            add_action( 'wp_ajax_nopriv_woo3dv_save_thumbnail_ajax', 'woo3dv_save_thumbnail_ajax' );
+
+            require_once WP_CONTENT_DIR.'/plugins/woo-3d-viewer/includes/woo3dv-admin.php';
+
+        }
+
+                        
 
         // QR Codes
         if (apply_filters('marketking_enable_qrcodes_integration', true)){
@@ -1526,6 +1931,7 @@ defined( 'ABSPATH' ) || exit;
 
             $all_virtual = marketking()->vendor_all_products_virtual($vendor_id);
             $all_downloadable = marketking()->vendor_all_products_downloadable($vendor_id);      
+            $all_individually = marketking()->vendor_all_products_individually($vendor_id);      
 
             ?>
             <style type="text/css">
@@ -1541,6 +1947,14 @@ defined( 'ABSPATH' ) || exit;
               if (intval($all_downloadable ) === 1){
                 ?>
                 label[for="_downloadable"]{
+                  display:none !important;
+                }
+                <?php
+              }
+
+              if (intval($all_individually ) === 1){
+                ?>
+                .inventory_sold_individually{
                   display:none !important;
                 }
                 <?php
@@ -1623,9 +2037,18 @@ defined( 'ABSPATH' ) || exit;
 
                                                             ?> <button class="close" data-dismiss="alert"></button></div>
                                                     </div><br />
-                                                <a href="<?php echo esc_url(wp_logout_url()); ?>">
-                                                    <button id="wp-submit" type="submit" value="Login" name="wp-submit" class="btn btn-lg btn-primary btn-block"><?php esc_html_e('Log out','marketking-multivendor-marketplace-for-woocommerce');?></button>
-                                                </a>
+                                                <?php
+                                                if (apply_filters('marketking_show_dashboard_logout_button', true)){
+                                                    ?>
+                                                    <a href="<?php echo esc_url(wp_logout_url()); ?>">
+                                                        <button id="wp-submit" type="submit" value="Login" name="wp-submit" class="btn btn-lg btn-primary btn-block"><?php esc_html_e('Log out','marketking-multivendor-marketplace-for-woocommerce');?></button>
+                                                    </a>
+                                                    <?php
+                                                }
+
+                                                do_action('marketking_dashboard_after_logout_button');
+                                                ?>
+                                                
                                             </div>
                                         </div>
                                     </div>
@@ -1721,7 +2144,7 @@ defined( 'ABSPATH' ) || exit;
                                                     </a>
                                                     <input type="password" class="form-control form-control-lg" id="user_pass" placeholder="<?php esc_attr_e('Enter your password','marketking-multivendor-marketplace-for-woocommerce');?>" name="pwd" value="<?php echo apply_filters('marketking_default_vendor_password', '');?>">
                                                     <input type="hidden" name="marketking_dashboard_login" value="1">
-                                                    <input type="hidden" value="<?php echo esc_attr( get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true)) ); ?>" name="redirect_to">
+                                                    <input type="hidden" value="<?php echo esc_attr( trailingslashit(get_page_link(apply_filters( 'wpml_object_id', get_option( 'marketking_vendordash_page_setting', 'disabled' ), 'post' , true))) ); ?>" name="redirect_to">
                                                 </div>
                                             </div>
                                             <div class="form-group">

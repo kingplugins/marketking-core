@@ -13,6 +13,12 @@
 
 		let ajaxtables = parseInt(marketking_display_settings.load_tables_with_ajax);
 
+		setTimeout(function(){
+			// trigger product type change to clear "show_if_simple" and others
+			jQuery('#product-type').trigger('change');
+		}, 10);
+		
+
 		// Fix for pluginrepublic addons sortable issue mobile click
 		setTimeout(function(){
 			if ($(window). width() < 1460) {
@@ -79,19 +85,20 @@
 			if(marketking_display_settings.pagetab !== '' || marketking_display_settings.pagetab == 1){
 				// go to tab
 
-				//save link
-				let link = window.location.href;
+				if (jQuery('.marketking_tablinks').length != 0){
+					//save link
+					let link = window.location.href;
 
-				if (marketking_display_settings.pagetab == 1){
-					$('.marketking_tablinks[value="marketking_vendor_tab_'+marketking_display_settings.defaulttab+'"]').click();
-				} else {
-					$('.marketking_tablinks[value="marketking_vendor_tab_'+marketking_display_settings.pagetab+'"]').click();
+					if (marketking_display_settings.pagetab == 1){
+						$('.marketking_tablinks[value="marketking_vendor_tab_'+marketking_display_settings.defaulttab+'"]').click();
+					} else {
+						$('.marketking_tablinks[value="marketking_vendor_tab_'+marketking_display_settings.pagetab+'"]').click();
 
+					}
+
+					// restore link 
+					window.history.pushState('marketking-multivendor-marketplace-for-woocommerce', '', link);
 				}
-
-				// restore link 
-				window.history.pushState('marketking-multivendor-marketplace-for-woocommerce', '', link);
-
 			} else {
 				// default page is products
 
@@ -100,6 +107,7 @@
 					$('.marketking_tablinks[value="marketking_vendor_tab_'+marketking_display_settings.defaulttab+'"]').click();
 				}
 			}
+
 		}, 10);
 
 		function endsWithNumber( str ){
@@ -237,27 +245,39 @@
 		    }
 		});
 
+
+
 		$('#marketking_create_shipment_button').on('click', function(){
 			if ($('#marketking_create_shipment_tracking_number').val() !== ''){
-		    	if (confirm(marketking_display_settings.sure_create_shipment)){
-		    		// delete product
-		    		var datavar = {
-			            action: 'marketkingcreateshipment',
-			            security: marketking_display_settings.security,
-			           	orderid: $(this).attr('value'),
-			           	provider: $('#marketking_create_shipment_provider').val(),
-			           	providername: $('#marketking_create_shipment_provider_name').val(),
-			           	trackingnr: $('#marketking_create_shipment_tracking_number').val(),
-			           	trackingurl: $('#marketking_create_shipment_tracking_url').val(),
-			        };
+
+		        Swal.fire({
+		            title: marketking_display_settings.sure_create_shipment,
+		            text: "",
+		            icon: 'warning',
+		            showCancelButton: true,
+		            cancelButtonText:  marketking_display_settings.cancel,
+		            confirmButtonText: marketking_display_settings.yes_continue
+		          }).then((result) => {
+		            if (result.value) {
+			    		// delete product
+			    		var datavar = {
+				            action: 'marketkingcreateshipment',
+				            security: marketking_display_settings.security,
+				           	orderid: $(this).attr('value'),
+				           	provider: $('#marketking_create_shipment_provider').val(),
+				           	providername: $('#marketking_create_shipment_provider_name').val(),
+				           	trackingnr: $('#marketking_create_shipment_tracking_number').val(),
+				           	trackingurl: $('#marketking_create_shipment_tracking_url').val(),
+				        };
 
 
-			        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-			        	setTimeout(function(){
-			        		location.reload();
-			        	}, 250);
-			        });
-			    }
+				        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+				        	setTimeout(function(){
+				        		location.reload();
+				        	}, 250);
+				        });
+		            }
+		          });
 			}
 		});
 
@@ -386,29 +406,6 @@
 		jQuery('.marketking_manage_order_page #woocommerce-order-items #order_line_items a').removeAttr('href');
 
 
-		$('#marketking_edit_product_status, #marketking_edit_coupon_status').on('change', function(){
-			let selectedval = $(this).children("option:selected").val();
-			if (selectedval==='publish'){
-				$('#marketking_edit_product_status, #marketking_edit_coupon_status').removeClass('marketking_status_pending');
-				$('#marketking_edit_product_status, #marketking_edit_coupon_status').removeClass('marketking_status_draft');
-				$('#marketking_edit_product_status, #marketking_edit_coupon_status').addClass('marketking_status_publish');
-			}
-
-			if (selectedval==='pending'){
-				$('#marketking_edit_product_status, #marketking_edit_coupon_status').removeClass('marketking_status_publish');
-				$('#marketking_edit_product_status, #marketking_edit_coupon_status').removeClass('marketking_status_draft');
-				$('#marketking_edit_product_status, #marketking_edit_coupon_status').addClass('marketking_status_pending');
-			}
-
-			if (selectedval==='draft'){
-				$('#marketking_edit_product_status, #marketking_edit_coupon_status').removeClass('marketking_status_publish');
-				$('#marketking_edit_product_status, #marketking_edit_coupon_status').removeClass('marketking_status_pending');
-				$('#marketking_edit_product_status, #marketking_edit_coupon_status').addClass('marketking_status_draft');
-			}
-
-
-		});
-
 		setTimeout(function(){
 			jQuery('.add_product_images .woocommerce-help-tip').remove();
 		}, 300);
@@ -436,10 +433,42 @@
 	    	jQuery('._tax_status_field').parent().remove();
 	    }
 
+	    function remove_new_attribute(){
+	    	if (parseInt(marketking_display_settings.can_new_attributes) !== 1){
+		    	jQuery('select[name="attribute_taxonomy"] option[value=""]').remove();
+		    	jQuery('.add_custom_attribute').remove();
+		    	jQuery('.attribute_name.placeholder').parent().find('.remove_row.delete').click();
+		    }
+	    }
+
 	    // new attributes
 	    if (parseInt(marketking_display_settings.can_new_attributes) !== 1){
-	    	jQuery('select[name="attribute_taxonomy"] option[value=""]').remove();
+	    	remove_new_attribute();
 	    }
+	    jQuery('body').on('click','.attribute_options', function(){
+	    	remove_new_attribute();
+	    	setTimeout(function(){
+	    		remove_new_attribute();
+	    	}, 50);
+	    	setTimeout(function(){
+	    		remove_new_attribute();
+	    	}, 100);
+	    	setTimeout(function(){
+	    		remove_new_attribute();
+	    	}, 200);
+	    	setTimeout(function(){
+	    		remove_new_attribute();
+	    	}, 400);
+	    	setTimeout(function(){
+	    		remove_new_attribute();
+	    	}, 600);
+	    });
+	    jQuery('body').on('woocommerce_added_attribute', function(){
+	    	remove_new_attribute();
+	    	setTimeout(function(){
+	    		remove_new_attribute();
+	    	}, 100);
+	    });
 
 	    $( 'button.add_attribute' ).on( 'click', function(e) {
 	    	if (jQuery('select[name="attribute_taxonomy"]').children("option:selected").prop('disabled') || jQuery('select[name="attribute_taxonomy"]').children("option:selected").prop('disabled') === undefined){
@@ -552,22 +581,34 @@
 	    	jQuery('#_virtual').parent().remove();
 	    }
 
-	    // if all virtual, we need to hide it (remove it), but first enable it
-	    if(parseInt(marketking_display_settings.all_virtual) === 1){
-	    	jQuery('#_virtual').prop('checked', true);
-	    	setTimeout(function(){
-	    		jQuery('#_virtual').parent().remove();
-	    		jQuery('.shipping_options').remove();
-	    	}, 450);
+	    function auto_set_virtual_downloadable(){
+	    	// if all virtual, we need to hide it (remove it), but first enable it
+	    	if(parseInt(marketking_display_settings.all_virtual) === 1){
+	    		jQuery('#_virtual').prop('checked', true);
+	    		jQuery('#_virtual').parent().css('display','none');
+	    		jQuery('.shipping_options').css('display','none');
+	    		setTimeout(function(){
+	    			jQuery('#_virtual').parent().css('display','none');
+	    			jQuery('.shipping_options').css('display','none');
+	    		}, 50);
+	    	}
+	    	// if all downloadable, we need to hide it (remove it), but first enable it
+	    	if(parseInt(marketking_display_settings.all_downloadable) === 1){
+	    		jQuery('#_downloadable').prop('checked', true);
+	    		jQuery('#_downloadable').parent().css('display','none');
+
+	    		setTimeout(function(){
+	    			jQuery('#_downloadable').parent().css('display','none');
+	    		}, 50);
+	    	}
 	    }
 
-	    // if all downloadable, we need to hide it (remove it), but first enable it
-	    if(parseInt(marketking_display_settings.all_downloadable) === 1){
-	    	jQuery('#_downloadable').prop('checked', true);
-	    	setTimeout(function(){
-	    		jQuery('#_downloadable').parent().remove();
-	    	}, 450);
-	    }
+	    auto_set_virtual_downloadable();
+
+	    jQuery('#product-type').on('change', function(){
+	    	auto_set_virtual_downloadable();
+	    });
+	    
 
 	    // remove b2bking tab optional
 	    if(parseInt(marketking_display_settings.remove_tab_b2bking) === 1){
@@ -617,42 +658,58 @@
 
 	    // Delete product
 	    $('body').on('click', '.marketking_delete_button', function(){
-	    	if (confirm(marketking_display_settings.sure_delete_product)){
-	    		// delete product
-	    		var datavar = {
-		            action: 'marketkingdeleteproduct',
-		            security: marketking_display_settings.security,
-		           	id: $(this).attr('value'),
-		        };
+
+	        Swal.fire({
+	            title: marketking_display_settings.sure_delete_product,
+	            text: "",
+	            icon: 'warning',
+	            showCancelButton: true,
+	            cancelButtonText:  marketking_display_settings.cancel,
+	            confirmButtonText: marketking_display_settings.yes_continue
+	          }).then((result) => {
+	            if (result.value) {
+		    		// delete product
+		    		var datavar = {
+			            action: 'marketkingdeleteproduct',
+			            security: marketking_display_settings.security,
+			           	id: $(this).attr('value'),
+			        };
 
 
-		        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-		        	// redirect to products page
-		        	window.location = marketking_display_settings.products_dashboard_page;
-		        });
-
-	    		
-	    	}
+			        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+			        	// redirect to products page
+			        	window.location = marketking_display_settings.products_dashboard_page;
+			        });
+	            }
+	          });
 	    });
 
 	    // Delete coupon
 	    $('body').on('click', '.marketking_delete_button_coupon', function(){
-	    	if (confirm(marketking_display_settings.sure_delete_coupon)){
-	    		// delete product
-	    		var datavar = {
-		            action: 'marketkingdeleteproduct',
-		            security: marketking_display_settings.security,
-		           	id: $(this).attr('value'),
-		        };
+
+	        Swal.fire({
+	            title: marketking_display_settings.sure_delete_coupon,
+	            text: "",
+	            icon: 'warning',
+	            showCancelButton: true,
+	            cancelButtonText:  marketking_display_settings.cancel,
+	            confirmButtonText: marketking_display_settings.yes_continue
+	          }).then((result) => {
+	            if (result.value) {
+		    		// delete product
+		    		var datavar = {
+			            action: 'marketkingdeleteproduct',
+			            security: marketking_display_settings.security,
+			           	id: $(this).attr('value'),
+			        };
 
 
-		        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-		        	// redirect to products page
-		        	window.location = marketking_display_settings.coupons_dashboard_page;
-		        });
-
-	    		
-	    	}
+			        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+			        	// redirect to products page
+			        	window.location = marketking_display_settings.coupons_dashboard_page;
+			        });
+	            }
+	          });
 	    });
 
 	    // Save / Update Order
@@ -668,9 +725,7 @@
 	        };
 
 	        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-
 	        	window.location = marketking_display_settings.order_edit_link+response+'?update=success';
-
 	        });
 	    });
 
@@ -679,21 +734,88 @@
 	    setTimeout(function(){
 	    	$('.switch-tmce').click();
 	    }, 250);
+
+
+	    $('#marketking_save_as_draft_button').on('click', function(){
+
+	    	if ($('#marketking_save_product_form')[0].checkValidity()){
+		    	
+		    	// if product status is published, first confirm saving as draft
+		    	if (jQuery('#marketking_edit_product_status').val() === 'publish'){
+			    	Swal.fire({
+		                title: marketking_display_settings.sure_save_draft_from_publish,
+		                text: "",
+		                icon: 'warning',
+		                showCancelButton: true,
+		                cancelButtonText:  marketking_display_settings.cancel,
+		                confirmButtonText: marketking_display_settings.yes_continue
+		              }).then((result) => {
+		                if (result.value) {
+		                	if (jQuery('#marketking_edit_product_status').val() !== 'draft'){
+    		                	jQuery('#marketking_edit_product_status').prop('disabled', false);
+    		    	    		jQuery('#marketking_edit_product_status option[value="draft"]').prop('selected','selected').trigger('change');
+    			    		 	jQuery('#marketking_edit_product_status').removeClass('marketking_status_pending').removeClass('marketking_status_publish').addClass('marketking_status_draft');
+    			    		 }
+		                	
+			    			save_product_form();
+
+		                }
+		              });
+		    	} else {
+		    		if (jQuery('#marketking_edit_product_status').val() !== 'draft'){
+			    		jQuery('#marketking_edit_product_status').prop('disabled', false);
+		    		 	jQuery('#marketking_edit_product_status option[value="draft"]').prop('selected','selected').trigger('change');
+		    		 	jQuery('#marketking_edit_product_status').removeClass('marketking_status_pending').removeClass('marketking_status_publish').addClass('marketking_status_draft');
+		    		}
+
+	    			save_product_form();
+		    	}
+		    } else {
+		    	$('#marketking_save_product_form')[0].reportValidity();
+		    }
+	    	
+	    	
+
+	    });
 	    // Save / Update product
 	    $('#marketking_save_product_button').on('click', function(){
 
 	    	if ($('#marketking_save_product_form')[0].checkValidity()){
 
+		    	let can_publish = jQuery('#marketking_can_publish_products').val();
+		    	if (can_publish === 'yes'){
+		    		jQuery('#marketking_edit_product_status').prop('disabled', false);
+		    		jQuery('#marketking_edit_product_status option[value="publish"]').prop('selected','selected').trigger('change');
+	    		 	jQuery('#marketking_edit_product_status').removeClass('marketking_status_pending').removeClass('marketking_status_draft').addClass('marketking_status_publish');
+	    		} else if (can_publish === 'no') {
+	    			jQuery('#marketking_edit_product_status').prop('disabled', false);
+		    		jQuery('#marketking_edit_product_status option[value="pending"]').prop('selected','selected').trigger('change');
+	    		 	jQuery('#marketking_edit_product_status').removeClass('marketking_status_draft').removeClass('marketking_status_publish').addClass('marketking_status_pending');
+	    			
+	    		}
+	    	}
+	    	save_product_form();
+	    });
+
+	    function save_product_form(){
+	    	if ($('#marketking_save_product_form')[0].checkValidity()){
+
 		    	if ($('#marketking_product_title').val() !== ''){
 
-		    		jQuery('#marketking_save_product_button .btn-primary').addClass('disabled');
-		    		$(this).off('click');
-
+		    		jQuery('#marketking_save_product_button .btn-primary').css('opacity', 0.7);
+		    		jQuery('#marketking_save_as_draft_button .btn-gray').css('opacity', 0.7);
+		    		jQuery('#marketking_save_product_button .btn-primary').off('click');
+		    		jQuery('#marketking_save_as_draft_button .btn-gray').off('click');		    		
 
 			    	// switch descriptions to html before saving, helps pass the data correctly
 			    	$('.switch-html').click();
 
 			    	var title = $('#marketking_product_title').val();
+			    	title = title.replaceAll('%', '%25');
+			    	title = title.replaceAll('&', '%26');
+			    	title = title.replaceAll('+', '*plus*');
+
+
 			    	var actionedit = $('#marketking_edit_product_action_edit').val();
 			    	var formprev = 'action=marketkingsaveproduct&security='+marketking_display_settings.security+'&id='+$('#marketking_save_product_button_id').val()+'&actionedit='+actionedit+'&title='+title+'&';
 			    	var formdata = $('#marketking_save_product_form').serialize();
@@ -710,16 +832,18 @@
 			    		}
 			    	});
 			    } else {
-			    	alert(marketking_display_settings.product_must_name);
+			    	Swal.fire(
+	    	            marketking_display_settings.product_must_name, 
+	    	            "", 
+	    	            "info"
+	    	        );
 			    }
 			} else {
 				$('#marketking_save_product_form')[0].reportValidity();
-
 			}
-	    });
+	    }
 
-	    // Save / Update coupon
-	    $('#marketking_save_coupon_button').on('click', function(){
+	    function save_coupon_form(){
 	    	if ($('#marketking_save_coupon_form')[0].checkValidity()){
 		    	// switch descriptions to html before saving, helps pass the data correctly
 		    	var title = $('#marketking_coupon_code').val();
@@ -740,7 +864,50 @@
 		    	jQuery('.usage_restriction_tab a').click();
 		    	$('#marketking_save_coupon_form')[0].reportValidity();
 		    }
-		   });
+	    }
+
+	    // coupon select all products
+	   // on click Select all
+	   $('#marketking_select_all').on('click', function(){
+	       let content = $('#marketking_coupon_products_select').html();
+	       jQuery('select[name="product_ids[]"]').select2('destroy');
+	       jQuery('select[name="product_ids[]"]').html(content);
+	       jQuery('select[name="product_ids[]"]').select2();
+	   });
+	   $('#marketking_unselect_all').on('click', function(){
+	       jQuery('select[name="product_ids[]"]').val(null).trigger("change");
+	   });
+	   // add buttons to coupon panel
+	   let select_all_buttons = $('.marketking_coupon_select_all_products').detach();
+	   jQuery('#marketking_save_coupon_form #usage_restriction_coupon_data .options_group:nth-child(2) .form-field:nth-child(1)').append(select_all_buttons);
+
+	    // Save / Update coupon
+	    $('#marketking_save_coupon_button').on('click', function(){
+
+	    	if ($('#marketking_save_coupon_form')[0].checkValidity()){
+	    		jQuery('#marketking_edit_coupon_status').prop('disabled', false);
+	    		jQuery('#marketking_edit_coupon_status option[value="publish"]').prop('selected','selected').trigger('change');
+	    		jQuery('#marketking_edit_coupon_status').removeClass('marketking_status_pending').removeClass('marketking_status_draft').addClass('marketking_status_publish');
+	    	}
+
+	    	save_coupon_form();
+		});
+
+		$('#marketking_save_coupon_draft_button').on('click', function(){
+	    	if ($('#marketking_save_coupon_form')[0].checkValidity()){
+	    		if (jQuery('#marketking_edit_coupon_status').val() !== 'draft'){
+		    		jQuery('#marketking_edit_coupon_status').prop('disabled', false);
+	    		 	jQuery('#marketking_edit_coupon_status option[value="draft"]').prop('selected','selected').trigger('change');
+	    		 	jQuery('#marketking_edit_coupon_status').removeClass('marketking_status_pending').removeClass('marketking_status_publish').addClass('marketking_status_draft');
+	    		}
+
+    			save_coupon_form();
+		    } else {
+		    	jQuery('.usage_restriction_tab a').click();
+		    	$('#marketking_save_coupon_form')[0].reportValidity();
+		    }
+	    	
+		});
 
 
 	    // Initialize category dropdown select
@@ -840,6 +1007,35 @@
 
 		}
 
+		// clear initially to clear savestate
+		if ($(".marketking_orders_page")[0] || $(".marketking_products_page")[0] || $(".marketking_coupons_page")[0] || $(".marketking_reviews_page")[0] || $(".marketking_refunds_page")[0]){
+			setTimeout(function(){
+				$('.marketking_search_column, input[type="search"]').val('').change().trigger('input');
+			}, 100);
+		}
+
+		// Products status 
+		$('.marketking_status_dropdown_menu a').on('click', function(e){
+
+			if ($(this).parent().hasClass('active')){
+				// deactivate the filter
+				$('.marketking_status_option').removeClass('active');
+				$('.marketking_search_column.status').val('').change().trigger('input');
+
+				e.preventDefault();
+				e.stopPropagation();
+				
+			} else {
+				$('.marketking_status_option').removeClass('active');
+				$(this).parent().addClass('active');
+				let value = $(this).find('input.status_value').val();
+				$('.marketking_search_column.status').val(value).change().trigger('input');
+				e.preventDefault();
+				e.stopPropagation();
+			}
+			
+		});
+
 	    // Load Products Table
 		if (typeof $('#marketking_dashboard_products_table').DataTable === "function") {  
 			
@@ -852,10 +1048,11 @@
 		                sSearch: ""
 		            },
 		            dom: 'Bfrtip',
-		            order: [[ 7, "desc" ]],
+		            order: [[ 8, "desc" ]],
 		            columnDefs: [
 		                { "width": "20%", "targets": 0 },
-		                { targets: marketking_display_settings.hidden_columns_products, visible: false}
+		                { targets: marketking_display_settings.hidden_columns_products, visible: false},
+		                { orderable: false, targets: 9 }
 		              ],
 		            stateSave: true,
 		            buttons: {
@@ -870,8 +1067,13 @@
 
 				// Products datatable
 			    $('#marketking_dashboard_products_table tfoot tr:eq(0) th.tb-non-tools').each( function (i) {
+
+			    	let action_column_nr = 9;
+			    	if (marketking_display_settings.advertising_enabled == 'enabled'){
+			    		action_column_nr = 10;
+			    	}
 			    	// except for actions
-			    	if (i!==9){
+			    	if (i!==action_column_nr){
 				        var title = $(this).text();
 				        $(this).html( '<input type="text" class="marketking_search_column '+title+'" placeholder="'+marketking_display_settings.searchtext+title+'..." />' );
 				        $( 'input', this ).on( 'keyup change', function () {
@@ -900,10 +1102,10 @@
 		                sSearch: ""
 		            },
 		            dom: 'Bfrtip',
-		            order: [[ 0, "desc" ]],
 		            columnDefs: [
 		                { "width": "18%", "targets": 0 },
-		                { targets: [4], visible: false}
+		                { targets: marketking_display_settings.hidden_columns_products, visible: false},
+		                { orderable: false, targets: [0,2,9] }
 		              ],
 		            stateSave: true,
 		            buttons: {
@@ -931,11 +1133,14 @@
        		   	        $( row ).find('td').addClass('nk-tb-col');
        		   	        $( row ).find('td:eq(0)').addClass('marketking-column-large');
        		   	        
-       		   	        $( row ).find('td:eq(3), td:eq(4), td:eq(5), td:eq(6), td:eq(7), td:eq(8), td:eq(2)').addClass('tb-col-md');
+       		   	        $( row ).find('td:eq(1), td:eq(3), td:eq(4), td:eq(5), td:eq(6), td:eq(7)').addClass('tb-col-md');
 
        		   	    }
 
 	            });
+
+	            // hide status dropdown in ajax
+	            $('.marketking_status_dropdown_menu_wrapper').css('display','none');
 			}
 			
 
@@ -971,7 +1176,7 @@
 				// Orders datatable
 			    $('#marketking_dashboard_orders_table tfoot tr:eq(0) th').each( function (i) {
 			        var title = $(this).text();
-			        $(this).html( '<input type="text" class="marketking_search_column" placeholder="'+marketking_display_settings.searchtext+title+'..." />' );
+			        $(this).html( '<input type="text" class="marketking_search_column '+title+'" placeholder="'+marketking_display_settings.searchtext+title+'..." />' );
 			 
 			        $( 'input', this ).on( 'keyup change', function () {
 			            if ( abbtable.column(i).search() !== this.value ) {
@@ -1022,6 +1227,9 @@
        		   	    }
 
 				});
+
+				// hide status dropdown in ajax
+				$('.marketking_status_dropdown_menu_wrapper').css('display','none');
 			}
 
 
@@ -1043,7 +1251,7 @@
 		                sSearch: ""
 		            },
 		            dom: 'Bfrtip',
-		            order: [[ 0, "desc" ]],
+		            order: [[ 1, "desc" ]],
 		            stateSave: true,
 		            buttons: {
 		                buttons: [
@@ -1203,7 +1411,92 @@
 			$('#marketking_coupons_search').keyup(function(){
 			      coupontable.search($(this).val()).draw() ;
 			});
+		}
 
+		// Load Subscriptions Table
+		if (typeof $('#marketking_dashboard_subscriptions_table').DataTable === "function") {  
+			
+			if (ajaxtables === 0){
+				var substable = $('#marketking_dashboard_subscriptions_table').DataTable({
+					"language": {
+					    "url": marketking_display_settings.datatables_folder+marketking_display_settings.tables_language_option+'.json'
+					},
+					oLanguage: {
+		                sSearch: ""
+		            },
+		            dom: 'Bfrtip',
+		            order: [[ 0, "desc" ]],
+		            stateSave: true,
+		            buttons: {
+		                buttons: [
+		                    { extend: 'csvHtml5', className: buttonclass, text: '↓ CSV', exportOptions: { columns: ":visible" } },
+		                    { extend: 'pdfHtml5', className: buttonclass, text: '↓ PDF', exportOptions: { columns: ":visible" } },
+		                    { extend: 'print', className: buttonclass, text: marketking_display_settings.print, exportOptions: { columns: ":visible" } },
+		                    { extend: 'colvis', className: buttonclassedit, text: marketking_display_settings.edit_columns },
+		                ]
+		            }
+				});
+
+				// Products datatable
+			    $('#marketking_dashboard_subscriptions_table tfoot tr:eq(0) th.tb-non-tools').each( function (i) {
+
+			        var title = $(this).text();
+			        $(this).html( '<input type="text" class="marketking_search_column" placeholder="'+marketking_display_settings.searchtext+title+'..." />' );
+			        $( 'input', this ).on( 'keyup change', function () {
+			            if ( substable.column(i).search() !== this.value ) {
+			                substable
+			                    .column(i)
+			                    .search( this.value )
+			                    .draw();
+			            }
+			        } );
+			    } );
+			} else {
+				var substable = $('#marketking_dashboard_subscriptions_table').DataTable({
+
+	       			"language": {
+					    "url": marketking_display_settings.datatables_folder+marketking_display_settings.tables_language_option+'.json'
+					},
+					oLanguage: {
+		                sSearch: ""
+		            },
+		            dom: 'Bfrtip',
+		            order: [[ 0, "desc" ]],
+		            stateSave: true,
+		            buttons: {
+		                buttons: [
+		                    { extend: 'csvHtml5', className: buttonclass, text: '↓ CSV', exportOptions: { columns: ":visible" } },
+		                    { extend: 'pdfHtml5', className: buttonclass, text: '↓ PDF', exportOptions: { columns: ":visible" } },
+		                    { extend: 'print', className: buttonclass, text: marketking_display_settings.print, exportOptions: { columns: ":visible" } },
+		                    { extend: 'colvis', className: buttonclassedit, text: marketking_display_settings.edit_columns },
+		                ]
+		            },
+	       			"processing": true,
+	       			"serverSide": true,
+	       			"info": false,
+	       		    "ajax": {
+	       		   		"url": marketking_display_settings.ajaxurl,
+	       		   		"type": "POST",
+	       		   		"data":{
+	       		   			action: 'marketking_subscriptions_table_ajax',
+	       		   			security: marketking_display_settings.security,
+	       		   		}
+	       		   	},
+	       		   	createdRow: function( row, data, dataIndex ) {
+       		   	        // Set the data-status attribute, and add a class
+       		   	        $( row ).addClass('nk-tb-item');
+       		   	        $( row ).find('td').addClass('nk-tb-col');
+       		   	        $( row ).find('td:eq(0)').addClass('marketking-column-large');
+       		   	        
+       		   	    }
+
+	            });
+			}
+			
+
+			$('#marketking_subscriptions_search').keyup(function(){
+			      substable.search($(this).val()).draw() ;
+			});
 		}
 
 		// Load Reviews Table
@@ -1400,31 +1693,51 @@
 		// approve reject buttons
 
 		$('body').on('click', '.marketking_refund_approve', function(){
- 			if (confirm(marketking_display_settings.sure_approve_refund)){
- 				var datavar = {
- 		            action: 'marketking_approve_refund',
- 		            security: marketking_display_settings.security,
- 		            refundid: $(this).val(),
- 		        };
 
- 		        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
- 		        	location.reload();
- 		        });
- 		    }
+            Swal.fire({
+                title: marketking_display_settings.sure_approve_refund,
+                text: "",
+                icon: 'warning',
+                showCancelButton: true,
+                cancelButtonText:  marketking_display_settings.cancel,
+                confirmButtonText: marketking_display_settings.yes_continue
+              }).then((result) => {
+                if (result.value) {
+    	    		var datavar = {
+	 		            action: 'marketking_approve_refund',
+	 		            security: marketking_display_settings.security,
+	 		            refundid: $(this).val(),
+	 		        };
+
+	 		        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+	 		        	location.reload();
+	 		        });
+                }
+              });
 		});
 
 		$('body').on('click', '.marketking_refund_reject', function(){
-			if (confirm(marketking_display_settings.sure_reject_refund)){
-				var datavar = {
-		            action: 'marketking_reject_refund',
-		            security: marketking_display_settings.security,
-		            refundid: $(this).val(),
-		        };
 
-		        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-		        	location.reload();
-		        });
-		    }
+            Swal.fire({
+                title: marketking_display_settings.sure_reject_refund,
+                text: "",
+                icon: 'warning',
+                showCancelButton: true,
+                cancelButtonText:  marketking_display_settings.cancel,
+                confirmButtonText: marketking_display_settings.yes_continue
+              }).then((result) => {
+                if (result.value) {
+	    			var datavar = {
+	    	            action: 'marketking_reject_refund',
+	    	            security: marketking_display_settings.security,
+	    	            refundid: $(this).val(),
+	    	        };
+
+	    	        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+	    	        	location.reload();
+	    	        });
+                }
+              });
 		});
 		
 		/* Payouts */
@@ -1453,71 +1766,181 @@
 		}
 
 		$('#disconnect_stripe').on('click', function(){	
-			if (confirm(marketking_display_settings.sure_disconnect_stripe)){
-				var datavar = {
-		            action: 'marketkingdisconnectstripe',
-		            security: marketking_display_settings.security,
-		        };
 
-
-		        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-		        	location.reload();
-		        });
-			}
-		});
-
-		// save payout info
-		$('#marketking_save_payout').on('click', function(){	
-			if (confirm(marketking_display_settings.sure_save_info)){
-				var datavar = {
-		            action: 'marketkingsaveinfo',
-		            security: marketking_display_settings.security,
-		            chosenmethod: $('input[type=radio][name="marketkingpayoutMethod"]:checked').val(),
-		            paypal: $('#paypal-email').val(),
-		            custom: $('#custom-method').val(),
-		            fullname: $('#full-name').val(),
-		            billingaddress1: $('#billing-address-1').val(),
-		            billingaddress2: $('#billing-address-2').val(),
-		            city: $('#city').val(),
-		            state: $('#state').val(),
-		            postcode: $('#postcode').val(),
-		            country: $('#country').val(),
-		            bankholdername: $('#bank-account-holder-name').val(),
-		            bankaccountnumber: $('#bank-account-number').val(),
-		            branchcity: $('#bank-branch-city').val(),
-		            branchcountry: $('#bank-branch-country').val(),
-		            intermediarycode: $('#intermediary-bank-bank-code').val(),
-		            intermediaryname: $('#intermediary-bank-name').val(),
-		            intermediarycity: $('#intermediary-bank-city').val(),
-		            intermediarycountry: $('#intermediary-bank-country').val(),
-		        };
-
-
-		        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-		        	location.reload();
-		        });
-		    }
-		});
-
-		// make withdrawal
-		$('#marketking_make_withdrawal').on('click', function(){	
-			let max = $('#marketking_max_withdraw').val();
-				if (parseFloat(max) >= parseFloat($('#withdrawal-amount').val())){
-					if (confirm(marketking_display_settings.sure_withdraw)){
+            Swal.fire({
+                title: marketking_display_settings.sure_disconnect_stripe,
+                text: "",
+                icon: 'warning',
+                showCancelButton: true,
+                cancelButtonText:  marketking_display_settings.cancel,
+                confirmButtonText: marketking_display_settings.yes_continue
+              }).then((result) => {
+                if (result.value) {
 					var datavar = {
-			            action: 'marketking_make_withdrawal',
+			            action: 'marketkingdisconnectstripe',
 			            security: marketking_display_settings.security,
-			            amount: $('#withdrawal-amount').val(),
 			        };
+
 
 			        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
 			        	location.reload();
 			        });
-			    }
-			} else {
-				alert(marketking_display_settings.not_enough_funds);
+                }
+              });
+		});
+
+		// save payout info
+		$('#marketking_save_payout').on('click', function(){	
+
+			// required validation
+
+			var required = [];
+			let chosen = $('input[type=radio][name="marketkingpayoutMethod"]:checked').val();
+			if (chosen === 'paypal'){
+				required = ['paypal-email'];
 			}
-			
+			if (chosen === 'bank'){
+				required = ['full-name','billing-address-1','city','state','postcode','bank-account-holder-name','bank-account-number'];
+			}
+
+			let isvalid = true;
+			required.forEach( function (i) { 
+				if ($('#'+i).val() === ''){
+					isvalid = false;
+				}
+			});
+
+			if (isvalid === true){
+	            Swal.fire({
+	                title: marketking_display_settings.sure_save_info,
+	                text: "",
+	                icon: 'warning',
+	                showCancelButton: true,
+	                cancelButtonText:  marketking_display_settings.cancel,
+	                confirmButtonText: marketking_display_settings.yes_continue
+	              }).then((result) => {
+	                if (result.value) {
+						var datavar = {
+				            action: 'marketkingsaveinfo',
+				            security: marketking_display_settings.security,
+				            chosenmethod: $('input[type=radio][name="marketkingpayoutMethod"]:checked').val(),
+				            paypal: $('#paypal-email').val(),
+				            custom: $('#custom-method').val(),
+				            fullname: $('#full-name').val(),
+				            billingaddress1: $('#billing-address-1').val(),
+				            billingaddress2: $('#billing-address-2').val(),
+				            city: $('#city').val(),
+				            state: $('#state').val(),
+				            postcode: $('#postcode').val(),
+				            country: $('#country').val(),
+				            bankholdername: $('#bank-account-holder-name').val(),
+				            bankaccountnumber: $('#bank-account-number').val(),
+				            branchcity: $('#bank-branch-city').val(),
+				            branchcountry: $('#bank-branch-country').val(),
+				            intermediarycode: $('#intermediary-bank-bank-code').val(),
+				            intermediaryname: $('#intermediary-bank-name').val(),
+				            intermediarycity: $('#intermediary-bank-city').val(),
+				            intermediarycountry: $('#intermediary-bank-country').val(),
+				            bankname: $('#bankname').val(),
+				            bankswift: $('#bankswift').val(),
+				        };
+
+				        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+				        	location.reload();
+				        });
+	                }
+	              });
+			} else {
+		    	Swal.fire(
+    	            marketking_display_settings.fill_all_required, 
+    	            "", 
+    	            "error"
+    	        );
+			}
+            
+		});
+
+		// make withdrawal
+		$('#marketking_make_withdrawal').on('click', function(){	
+
+			// if cancel request
+			if (parseInt($('#cancel_request').val()) === 1){
+
+				Swal.fire({
+				    title: marketking_display_settings.sure_withdraw_cancel,
+				    text: "",
+				    icon: 'warning',
+				    showCancelButton: true,
+				    cancelButtonText:  marketking_display_settings.cancel,
+				    confirmButtonText: marketking_display_settings.yes_continue
+				  }).then((result) => {
+				    if (result.value) {
+			      		var datavar = {
+			                  action: 'marketking_make_withdrawal',
+			                  security: marketking_display_settings.security,
+			                  amount: $('#withdrawal-amount').val(),
+			              };
+
+			              $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+			              	location.reload();
+			              });
+
+			              return;
+				    }
+				  });
+			}
+
+			let max = $('#marketking_max_withdraw').val();
+			let min = $('#marketking_min_withdraw').val();
+			let amount = parseFloat($('#withdrawal-amount').val());
+
+			// allow 0 because 0 = cancel request
+
+			if ( (parseFloat(max) >= amount && parseFloat(min) <= amount) || amount == 0){
+
+				Swal.fire({
+				    title: marketking_display_settings.sure_withdraw,
+				    text: "",
+				    icon: 'warning',
+				    showCancelButton: true,
+				    cancelButtonText:  marketking_display_settings.cancel,
+				    confirmButtonText: marketking_display_settings.yes_continue
+				  }).then((result) => {
+				    if (result.value) {
+			      		var datavar = {
+					            action: 'marketking_make_withdrawal',
+					            security: marketking_display_settings.security,
+					            amount: $('#withdrawal-amount').val(),
+					        };
+
+					        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+					        	location.reload();
+					        });
+				    }
+				  });
+		    }
+
+
+			if (parseFloat(max) < amount){
+		    	Swal.fire(
+    	            marketking_display_settings.not_enough_funds, 
+    	            "", 
+    	            "error"
+    	        );
+			}
+
+			if (parseFloat(min) > amount && amount != 0){
+		    	Swal.fire(
+    	            marketking_display_settings.withdrawal_below_limit, 
+    	            "", 
+    	            "error"
+    	        );
+			}
+		});
+
+		$('#marketking_withdrawal_max').on('click', function() {
+			var maxWithdrawal = $('#marketking_max_withdraw').val();
+			$('#withdrawal-amount').val(maxWithdrawal);
 		});
 
 		// save user profile settings
@@ -1535,7 +1958,8 @@
 
 
 	        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-	        	location.reload();
+	        	window.location = marketking_display_settings.profilesettings_link+'?update=success';
+
 	        });
 
 		});
@@ -1567,7 +1991,8 @@
 	        };
 
 	        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-	        	location.reload();
+	        	window.location = marketking_display_settings.profile_link+'?update=success';
+
 	        });
 
 		});
@@ -1608,7 +2033,7 @@
 	       e.preventDefault();
 
 	       var image = wp.media({ 
-	           title: 'Upload Image',
+	           title: marketking_display_settings.upload_image,
 	           multiple: false
 	       }).open()
 	       .on('select', function(e){
@@ -1628,7 +2053,7 @@
 	       e.preventDefault();
 
 	       var image = wp.media({ 
-	           title: 'Upload Image',
+	           title: marketking_display_settings.upload_image,
 	           multiple: false
 	       }).open()
 	       .on('select', function(e){
@@ -1648,7 +2073,7 @@
 	       e.preventDefault();
 
 	       var image = wp.media({ 
-	           title: 'Upload Image',
+	           title: marketking_display_settings.upload_image,
 	           multiple: false
 	       }).open()
 	       .on('select', function(e){
@@ -1668,7 +2093,7 @@
 	       e.preventDefault();
 
 	       var image = wp.media({ 
-	           title: 'Upload Image',
+	           title: marketking_display_settings.upload_image,
 	           multiple: false
 	       }).open()
 	       .on('select', function(e){
@@ -1741,7 +2166,7 @@
 		    }	
 
 		    // max 25 characters
-		    if ($('.billing_store_url').val().length > 25){
+		    if ($('.billing_store_url').val().length > marketking_display_settings.storenamelength){
 		    	e.preventDefault();
 		    }
 
@@ -1926,6 +2351,22 @@
 			});
 		});
 
+		// On click Send in existing conversation
+		$('#marketking_dashboard_reply_message_mobile').on('click', function(){
+
+			// Run ajax request
+			var datavar = {
+	            action: 'marketkingreplymessage',
+	            security: marketking_display_settings.security,
+	            messagecontent: $('#marketking_dashboard_reply_message_content_mobile').val(),
+	            messageid: $(this).val(),
+	        };
+
+			$.post(marketking_display_settings.ajaxurl, datavar, function(response){
+				location.reload();
+			});
+		});
+
 		// On clicking send (compose message)
 		$('#marketking_compose_send_message').on('click', function(){
 
@@ -1944,8 +2385,17 @@
 		});
 
 		/* Coupons */
-		$('.marketking_edit_coupon_page #discount_type option[value="fixed_cart"]').remove();
-		$('.marketking_edit_coupon_page .free_shipping_field').remove();
+		
+		// remove disallowed coupon types
+		if (marketking_display_settings.remove_coupon_types !== undefined){
+			let disallowed_coupon_types = JSON.parse(marketking_display_settings.remove_coupon_types);
+			$(disallowed_coupon_types).each( function (i) {
+				$('.marketking_edit_coupon_page #discount_type option[value="'+disallowed_coupon_types[i]+'"]').remove();
+			});
+		}
+
+
+		//$('.marketking_edit_coupon_page .free_shipping_field').remove();
 		$('#product_categories').parent().parent().remove();
 
 		/* Product Vendor Inquiries*/
@@ -1978,6 +2428,7 @@
 						let discussionurl = response;
 
 						alert(marketking_display_settings.inquiry_success);
+
 						if (parseInt(marketking_display_settings.loggedin) === 1){
 							// go to my account conversation
 							if (parseInt(discussionurl) !== 0){
@@ -2116,7 +2567,7 @@
 	        };
 
 	        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-	        	location.reload();
+	        	window.location = marketking_display_settings.notice_link+'?update=success';
 	        });
 
 		});
@@ -2134,7 +2585,8 @@
 	        };
 
 	        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-	        	location.reload();
+	        	window.location = marketking_display_settings.storepolicy_link+'?update=success';
+
 	        });
 
 		});
@@ -2151,12 +2603,35 @@
 	        };
 
 	        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-	        	location.reload();
+	        	window.location = marketking_display_settings.storecategories_link+'?update=success';
 	        });
 
 		});
 
 		/* Store Categories END */
+
+		/* Social Profiles START */
+
+		$('#marketking_save_social_settings').on('click', function(){	
+			var datavar = {
+		        action: 'marketking_save_social_settings',
+		        security: marketking_display_settings.security,
+		        facebook: $('#facebook').val(),
+		        youtube: $('#youtube').val(),
+		        twitter: $('#twitter').val(),
+		        instagram: $('#instagram').val(),
+		        linkedin: $('#linkedin').val(),
+		        pinterest: $('#pinterest').val(),
+		    };
+
+		    $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+		    	window.location = marketking_display_settings.social_link+'?update=success';
+
+		    });
+
+		});
+
+		/* Social Profiles END */
 
 		/* Store SEO START */
 
@@ -2170,7 +2645,8 @@
 		    };
 
 		    $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-		    	location.reload();
+		    	window.location = marketking_display_settings.storeseo_link+'?update=success';
+
 		    });
 
 		});
@@ -2209,7 +2685,8 @@
 		    };
 
 		    $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-		    	location.reload();
+		    	window.location = marketking_display_settings.invoice_link+'?update=success';
+
 		    });
 
 		});
@@ -2238,7 +2715,7 @@
 	        };
 
 	        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-	        	location.reload();
+	        	window.location = marketking_display_settings.vacation_link+'?update=success';
 	        });
 		});
 
@@ -2388,7 +2865,11 @@
 	        };
 
 			$.post(marketking_display_settings.ajaxurl, datavar, function(response){
-				alert(marketking_display_settings.review_report_submitted);
+		    	Swal.fire(
+    	            marketking_display_settings.review_report_submitted, 
+    	            "", 
+    	            "success"
+    	        );
 				location.reload();
 			});
 		});
@@ -2396,22 +2877,35 @@
 			// On clicking send report review
 		$('body').on('click', '#marketking_reply_review', function(event) {
 
-			if (confirm(marketking_display_settings.sure_reply_review)){
-				// Run ajax request
-				var datavar = {
-		            action: 'marketkingreplyreview',
-		            security: marketking_display_settings.security,
-		            messagecontent: $('#marketking_reply_review_content').val(),
-		            reviewid: $('#review_id').val(),
-		        };
+			Swal.fire({
+			    title: marketking_display_settings.sure_reply_review,
+			    text: "",
+			    icon: 'warning',
+			    showCancelButton: true,
+			    cancelButtonText:  marketking_display_settings.cancel,
+			    confirmButtonText: marketking_display_settings.yes_continue
+			  }).then((result) => {
+			    if (result.value) {
+  					// Run ajax request
+  					var datavar = {
+  			            action: 'marketkingreplyreview',
+  			            security: marketking_display_settings.security,
+  			            messagecontent: $('#marketking_reply_review_content').val(),
+  			            reviewid: $('#review_id').val(),
+  			        };
 
-				$.post(marketking_display_settings.ajaxurl, datavar, function(response){
-					alert(marketking_display_settings.review_reply_submitted);
+  					$.post(marketking_display_settings.ajaxurl, datavar, function(response){
 
-					location.reload();
-				});	
-			}
-			
+  				    	Swal.fire(
+  		    	            marketking_display_settings.review_reply_submitted, 
+  		    	            "", 
+  		    	            "success"
+  		    	        );
+
+  						location.reload();
+  					});	
+			    }
+			  });
 		});
 
 		// Refunds
@@ -2475,21 +2969,39 @@
 			let id = $('#marketking_upload_verification_id').val();
 			let file_url = $('#marketking_upload_file_verification').val();
 
-			if (confirm(marketking_display_settings.sure_send_verification)){
+			if (file_url.trim().length !== 0){
 
-				// Run ajax request
-				var datavar = {
-		            action: 'marketkingsendverification',
-		            security: marketking_display_settings.security,
-		            vitem: id,
-		            fileurl: file_url
-		        };
+				Swal.fire({
+				    title: marketking_display_settings.sure_send_verification,
+				    text: "",
+				    icon: 'warning',
+				    showCancelButton: true,
+				    cancelButtonText:  marketking_display_settings.cancel,
+				    confirmButtonText: marketking_display_settings.yes_continue
+				  }).then((result) => {
+				    if (result.value) {
+						// Run ajax request
+						var datavar = {
+				            action: 'marketkingsendverification',
+				            security: marketking_display_settings.security,
+				            vitem: id,
+				            fileurl: file_url
+				        };
 
-				$.post(marketking_display_settings.ajaxurl, datavar, function(response){
+						$.post(marketking_display_settings.ajaxurl, datavar, function(response){
 
-					location.reload();
-				});	
+							location.reload();
+						});	
+				    }
+				  });
+			} else {
+		    	Swal.fire(
+    	            marketking_display_settings.empty_file, 
+    	            "", 
+    	            "error"
+    	        );
 			}
+			
 		});
 
 		// Vendor Verification Upload
@@ -2497,7 +3009,7 @@
 	       e.preventDefault();
 
 	       var image = wp.media({ 
-	           title: 'Upload Image',
+	           title: marketking_display_settings.upload_image,
 	           multiple: false
 	       }).open()
 	       .on('select', function(e){
@@ -2632,8 +3144,8 @@
 				var zdelimiter = jQuery('#delimiter').val();
 				var zimport_nonce = jQuery('#import_nonce').val();
 				var mapping_from = JSON.parse(jQuery('#mapping_from').val());
+				var zcharacter_encoding = jQuery('#character_encoding').val();
 				var mapping_to = JSON.parse(jQuery('#mapping_to').val());
-
 				var zmapping = {'from':mapping_from, 'to':mapping_to};
 			}
 
@@ -2646,6 +3158,8 @@
 				this.update_existing = zupdate_existing;
 				this.delimiter       = zdelimiter;
 				this.security        = zimport_nonce;
+				this.character_encoding = zcharacter_encoding;
+
 
 				// Number of import successes/failures.
 				this.imported = 0;
@@ -2676,8 +3190,10 @@
 						file            : $this.file,
 						update_existing : $this.update_existing,
 						delimiter       : $this.delimiter,
-						security        : $this.security
+						security        : $this.security,
+						character_encoding: $this.character_encoding
 					},
+
 					dataType: 'json',
 					success: function( response ) {
 						if ( response.success ) {
@@ -2722,34 +3238,54 @@
 
 			if ($('#marketking_add_member_form')[0].checkValidity()){
 
-				if (confirm(marketking_display_settings.sure_add_member)){
-					var datavar = {
-			            action: 'marketkingaddmember',
-			            security: marketking_display_settings.security,
-			            firstname: $('#first-name').val(),
-			            description: $('#description').val(),
-			            lastname: $('#last-name').val(),
-			            phoneno: $('#phone-no').val(),
-			            username: $('#username').val(),
-			            emailaddress: $('#email-address').val(),
-			            password: $('#password').val(),
+				Swal.fire({
+				    title: marketking_display_settings.sure_add_member,
+				    text: "",
+				    icon: 'warning',
+				    showCancelButton: true,
+				    cancelButtonText:  marketking_display_settings.cancel,
+				    confirmButtonText: marketking_display_settings.yes_continue
+				  }).then((result) => {
+				    if (result.value) {
+						var datavar = {
+				            action: 'marketkingaddmember',
+				            security: marketking_display_settings.security,
+				            firstname: $('#first-name').val(),
+				            description: $('#description').val(),
+				            lastname: $('#last-name').val(),
+				            phoneno: $('#phone-no').val(),
+				            username: $('#username').val(),
+				            emailaddress: $('#email-address').val(),
+				            password: $('#password').val(),
 
-			        };
+				        };
 
-			        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-			        	if (response.startsWith('error')){
-			        		alert(marketking_display_settings.member_created_error+' '+response);
-			        		console.log(response);
-			        	} else {
-			        		alert(marketking_display_settings.member_created);
-			        		window.location = marketking_display_settings.team_members_link+'?add=success';
-			        	}
-			        	
-			        });
-			    }
+				        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+				        	if (response.startsWith('error')){
+	    				    	Swal.fire(
+	    		    	            marketking_display_settings.member_created_error+' '+response, 
+	    		    	            "", 
+	    		    	            "error"
+	    		    	        );
+
+				        		console.log(response);
+				        	} else {
+	    				    	Swal.fire(
+	    		    	            marketking_display_settings.member_created, 
+	    		    	            "", 
+	    		    	            "success"
+	    		    	        );
+
+				        		window.location = marketking_display_settings.team_members_link+'?add=success';
+				        	}
+				        	
+				        });
+				    }
+				  });
+
 			} else {
 				$('#marketking_add_member_form')[0].reportValidity();
-				alert(marketking_display_settings.fill_all_required);
+
 			}
 
 		});
@@ -2786,20 +3322,26 @@
 		$('.marketking_delete_team').on('click', function(){
 			let userid = $(this).val();
 
-			if (confirm(marketking_display_settings.sure_delete_team)){
+			Swal.fire({
+			    title: marketking_display_settings.sure_delete_team,
+			    text: "",
+			    icon: 'warning',
+			    showCancelButton: true,
+			    cancelButtonText:  marketking_display_settings.cancel,
+			    confirmButtonText: marketking_display_settings.yes_continue
+			  }).then((result) => {
+			    if (result.value) {
+					var datavar = {
+			            action: 'marketking_delete_team_member',
+			            security: marketking_display_settings.security,
+			           	id: userid
+			        };
 
-
-				var datavar = {
-		            action: 'marketking_delete_team_member',
-		            security: marketking_display_settings.security,
-		           	id: userid
-		        };
-
-				$.post(marketking_display_settings.ajaxurl, datavar, function(response){
-					location.reload();
-				});
-
-			}
+					$.post(marketking_display_settings.ajaxurl, datavar, function(response){
+						location.reload();
+					});
+			    }
+			  });
 
 		});
 
@@ -2873,7 +3415,8 @@
 	        };
 
 	        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-	        	location.reload();
+	        	window.location = marketking_display_settings.support_link+'?update=success';
+
 	        });
 		});
 
@@ -2922,38 +3465,55 @@
 		// add new method
 		$('#marketking_add_shipping_method_insert').on('click', function(){
 
-			if (confirm(marketking_display_settings.sure_add_shipping_method)){
+		    Swal.fire({
+		        title: marketking_display_settings.sure_add_shipping_method,
+		        text: "",
+		        icon: 'warning',
+		        showCancelButton: true,
+		        cancelButtonText:  marketking_display_settings.cancel,
+		        confirmButtonText: marketking_display_settings.yes_continue
+		      }).then((result) => {
+		        if (result.value) {
+    				var datavar = {
+    		            action: 'marketking_add_shipping_method_vendor',
+    		            security: marketking_display_settings.security,
+    		            method_value: $('#marketking_add_shipping_method_select').val(),      
+    		            method_name: $('#marketking_add_shipping_method_select option:selected').text(),
+    		            zone_id: $('#marketking_current_zone_id').val()      
+    		        };
 
-				var datavar = {
-		            action: 'marketking_add_shipping_method_vendor',
-		            security: marketking_display_settings.security,
-		            method_value: $('#marketking_add_shipping_method_select').val(),      
-		            method_name: $('#marketking_add_shipping_method_select option:selected').text(),
-		            zone_id: $('#marketking_current_zone_id').val()      
-		        };
+    		        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+    		        	location.reload();
+    		        });
+		        }
+		      });
 
-		        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-		        	location.reload();
-		        });
-		    }
 		});
 
 	
 		// delete method
 		$('.marketking_delete_shipping_button').on('click', function(){
 
-			if (confirm(marketking_display_settings.sure_delete_shipping_method)){
+		    Swal.fire({
+		        title: marketking_display_settings.sure_delete_shipping_method,
+		        text: "",
+		        icon: 'warning',
+		        showCancelButton: true,
+		        cancelButtonText:  marketking_display_settings.cancel,
+		        confirmButtonText: marketking_display_settings.yes_continue
+		      }).then((result) => {
+		        if (result.value) {
+					var datavar = {
+			            action: 'marketking_delete_shipping_method_vendor',
+			            security: marketking_display_settings.security,
+			            deletedid: $(this).val(),
+			        };
 
-				var datavar = {
-		            action: 'marketking_delete_shipping_method_vendor',
-		            security: marketking_display_settings.security,
-		            deletedid: $(this).val(),
-		        };
-
-		        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
-		        	location.reload();
-		        });
-		    }
+			        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+			        	location.reload();
+			        });
+		        }
+		      });
 		});
 
 		// retrieve content when clicking configure
@@ -2969,9 +3529,12 @@
 	        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
 	        	$('#marketking_configure_method_details_content').html(response);
 	        	// remove unwanted free shipping options
+
+	        	/*
 	        	$('#woocommerce_free_shipping_requires option[value="coupon"]').remove();
 	        	$('#woocommerce_free_shipping_requires option[value="either"]').remove();
 	        	$('#woocommerce_free_shipping_requires option[value="both"]').remove();
+	        	*/
 
 	        	$('label[for="woocommerce_free_shipping_ignore_discounts"]').parent().parent().remove();
 
@@ -3028,6 +3591,178 @@
 		
 		
 		/* Advanced Shipping END */
+
+		// on click on <a href="3"> do not change
+		$('body').on('click', 'a', function(e){
+			let href = $(this).attr('href');
+			if (href === '#'){
+				e.preventDefault();
+			}
+		});
+
+
+		// filler functions, blocks-related, prevents errors when clicking on generate variations
+		if (window.wp !== undefined){
+			if (window.wp.dispatch === undefined){
+				window.wp.data = {
+					dispatch: function(){
+						return {createSuccessNotice: function(){
+							return ' ';
+						}};
+					}
+				};
+				
+			}
+		}
+		//
+
+	    // Subscription actions
+	    $('body').on('click', '.marketking_pause_button_subscription', function(){
+
+    		// delete product
+    		var datavar = {
+	            action: 'marketkingsubscriptionaction',
+	            value: 'pause',
+	            security: marketking_display_settings.security,
+	           	id: $(this).attr('value'),
+	        };
+
+
+	        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+	        	// redirect to products page
+	        	location.reload();
+	        });
+	    });
+
+	    $('body').on('click', '.marketking_reactivate_button_subscription', function(){
+
+    		// delete product
+    		var datavar = {
+	            action: 'marketkingsubscriptionaction',
+	            value: 'reactivate',
+	            security: marketking_display_settings.security,
+	           	id: $(this).attr('value'),
+	        };
+
+
+	        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+	        	// redirect to products page
+	        	location.reload();
+	        });
+	    });
+
+
+        $('body').on('click', '.marketking_cancel_button_subscription', function(){
+
+            Swal.fire({
+                title: marketking_display_settings.sure_cancel_subscription,
+                text: "",
+                icon: 'warning',
+                showCancelButton: true,
+                cancelButtonText:  marketking_display_settings.cancel,
+                confirmButtonText: marketking_display_settings.yes_continue
+              }).then((result) => {
+                if (result.value) {
+    	    		// delete product
+    	    		var datavar = {
+    		            action: 'marketkingsubscriptionaction',
+    		            value: 'cancel',
+    		            security: marketking_display_settings.security,
+    		           	id: $(this).attr('value'),
+    		        };
+
+
+    		        $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+    		        	// redirect to products page
+    		        	location.reload();
+    		        });
+                }
+              });
+        });
+
+        /* advertising */
+        jQuery('.buy_credits_initial_button').on('click', function(){
+        	$('.buy_credits_initial').css('display','none');
+        	$('.buy_credits_second').css('display','inline-grid');
+        });
+
+        jQuery('.advertise_initial_button').on('click', function(){
+        	$('.advertise_initial').css('display','none');
+        	$('.advertise_second').css('display','inline-grid');
+        });
+
+        // On clicking add credit to cart
+        $('.add_credits_cart_button').on('click', function(){
+            var amountt = parseInt($('.add_credits_cart_input').val());
+
+            var datavar = {
+                action: 'marketkingaddcredit',
+                security: marketking_display_settings.security,
+                amount: amountt,
+            };
+
+            $.post(marketking_display_settings.ajaxurl, datavar, function(response){
+                window.location = marketking_display_settings.carturl;
+            });
+        });
+
+        // On clicking purchase ad button
+        $('.purchase_ads_button').on('click', function(){
+            var amountt = parseInt($('.advertising_days_input').val());
+
+            if (amountt >= 1){
+	            var datavar = {
+	                action: 'marketking_purchase_ad',
+	                security: marketking_display_settings.security,
+	                days: amountt,
+	                productid: parseInt($('#post_ID').val())
+	            };
+
+	            // confirm
+	            Swal.fire({
+	                title: marketking_display_settings.sure_advertise,
+	                text: "",
+	                icon: 'warning',
+	                showCancelButton: true,
+	                cancelButtonText:  marketking_display_settings.cancel,
+	                confirmButtonText: marketking_display_settings.yes_continue
+	              }).then((result) => {
+	                if (result.value) {
+	    	    		
+	    	    		$.post(marketking_display_settings.ajaxurl, datavar, function(response){
+	    	    		    if (response == 'insufficient_funds'){
+		    			    	Swal.fire(
+		    	    	            marketking_display_settings.insufficient_funds_advertise, 
+		    	    	            "", 
+		    	    	            "error"
+		    	    	        );
+	    	    		    } else if (response == 'success'){
+		    			    	Swal.fire(
+		    	    	            marketking_display_settings.advertisement_success, 
+		    	    	            "", 
+		    	    	            "success"
+		    	    	        );
+		    	    	        setTimeout(function(){
+		    	    	        	location.reload();
+		    	    	        }, 1500);
+	    	    		    }
+	    	    		});
+	                }
+	              });
+            }
+
+            
+
+            
+        });
+
+        // download credit log
+
+    	$('.download_credit_history').on('click', function(){
+	        let user_id = $(this).attr('value');
+	        window.location = marketking_display_settings.ajaxurl + '?action=marketking_download_vendor_credit_history&userid='+user_id+'&security='+marketking_display_settings.security;
+    	});
+
 
 
 	});

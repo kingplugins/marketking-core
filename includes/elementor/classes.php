@@ -648,6 +648,9 @@ class Elementor_Store_Tabs_Follow_Widget extends \Elementor\Widget_Base {
 				  				
 				  			?></button>
 				  			<?php
+
+				  			do_action('marketking_store_page_tabright', $vendor_id);
+
 				  		}
 				  	}
 				}
@@ -850,96 +853,124 @@ class Elementor_Store_Tabs_Content_Widget extends \Elementor\Widget_Base {
 
 			  	<?php
 
-			  	echo '<strong>'.esc_html__('Vendor: ','marketking-multivendor-marketplace-for-woocommerce').'</strong>';
-			  	$store_name = marketking()->get_store_name_display($vendor_id);
-			  	echo esc_html($store_name).'<br>';
+			  	if (apply_filters('marketking_vendor_details_show_vendor', true)){
+
+				  	echo '<strong>'.esc_html__('Vendor: ','marketking-multivendor-marketplace-for-woocommerce').'</strong>';
+				  	$store_name = marketking()->get_store_name_display($vendor_id);
+				  	echo esc_html($store_name).'<br>';
+				  }
 
 			  	// display badges if applicable
-			  	if (defined('MARKETKINGPRO_DIR')){
-			  		if (intval(get_option('marketking_enable_badges_setting', 1)) === 1){
-			  			marketkingpro()->display_vendor_badges($vendor_id);
-			  		}
-			  	}
+				if (apply_filters('marketking_vendor_details_show_badges', true)){
 
+				  	if (defined('MARKETKINGPRO_DIR')){
+				  		if (intval(get_option('marketking_enable_badges_setting', 1)) === 1){
+				  			marketkingpro()->display_vendor_badges($vendor_id);
+				  		}
+				  	}
+				}
 			  	marketking()->display_about_us($vendor_id);
 
 			  	  	
 			  	?>
 			  	<?php
-			  	// rating
-			  	$rating = marketking()->get_vendor_rating($vendor_id);
-			  	// if there's any rating
-			  	if (intval($rating['count'])!==0){
-			  		// show rating
-			  		if (intval($rating['count']) === 1){
-			  			$review = esc_html__('review','marketking-multivendor-marketplace-for-woocommerce');
-			  		} else {
-			  			$review = esc_html__('reviews','marketking-multivendor-marketplace-for-woocommerce');
-			  		}
-			  		echo '<strong>'.esc_html__('Rating:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($rating['rating']).' '.esc_html__('rating from','marketking-multivendor-marketplace-for-woocommerce').' '.esc_html($rating['count']).' '.esc_html($review);
-			  		echo '<br>';
-			  	}
+
+			  	if (apply_filters('marketking_vendor_details_show_rating', true)){
+
+				  	// rating
+				  	$rating = marketking()->get_vendor_rating($vendor_id);
+				  	// if there's any rating
+				  	if (intval($rating['count'])!==0){
+				  		// show rating
+				  		if (intval($rating['count']) === 1){
+				  			$review = esc_html__('review','marketking-multivendor-marketplace-for-woocommerce');
+				  		} else {
+				  			$review = esc_html__('reviews','marketking-multivendor-marketplace-for-woocommerce');
+				  		}
+				  		echo '<strong>'.esc_html__('Rating:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($rating['rating']).' '.esc_html__('rating from','marketking-multivendor-marketplace-for-woocommerce').' '.esc_html($rating['count']).' '.esc_html($review);
+				  		echo '<br>';
+				  	}
+				  }
 			  	
 			  	?>
 			  	<?php
-			  	if (!empty($company)){
-			  		echo '<br><strong>'.esc_html__('Company:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($company).'<br>';
-			  	}
+
+			  	if (apply_filters('marketking_vendor_details_show_company', true)){
+
+				  	if (!empty($company)){
+				  		echo '<br><strong>'.esc_html__('Company:','marketking-multivendor-marketplace-for-woocommerce').'</strong> ';
+
+				  		echo apply_filters('marketking_vendor_company_name', $company, $vendor_id);
+
+				  		echo '<br>';
+				  	}
+				  }
 
 			  	$customer = new WC_Customer($vendor_id);
 			  	if (is_a($customer,'WC_Customer')){
 			  		$address = $customer->get_billing();
 
-			  		if (is_array($address)){
-				  		if (!empty($address['address_1']) || !empty($address['address_2'])){
-				  			echo '<strong>'.esc_html__('Address:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($address['address_1']).' '.esc_html($address['address_2']).', '.esc_html($address['city']).', '.esc_html($address['postcode']);
+			  		if (apply_filters('marketking_vendor_details_show_address', true)){
 
-				  			if (!empty($address['country'])){
-				  				if (isset($address['state']) && isset($address['country'])){
-				  					$countrystates = WC()->countries->get_states( $address['country'] );
-				  					$countrycountry = WC()->countries->countries;
-				  					if (isset($countrystates[$address['state']]) && isset($countrycountry[ $address['country'] ])){
-				  						echo ', '.$countrystates[$address['state']].', '.$countrycountry[ $address['country'] ].'<br>';
-				  					}
-				  				}
-				  			}
-				  		}
-				  	}
+				  		if (is_array($address)){
+					  		if (!empty($address['address_1']) || !empty($address['address_2'])){
+					  			echo '<strong>'.esc_html__('Address:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($address['address_1']).' '.esc_html($address['address_2']).', '.esc_html($address['city']).', '.esc_html($address['postcode']);
+
+					  			if (!empty($address['country'])){
+					  				if (isset($address['state']) && isset($address['country'])){
+					  					$countrystates = WC()->countries->get_states( $address['country'] );
+					  					$countrycountry = WC()->countries->countries;
+					  					if (isset($countrystates[$address['state']]) && isset($countrycountry[ $address['country'] ])){
+					  						echo ', '.$countrystates[$address['state']].', '.$countrycountry[ $address['country'] ].'<br>';
+					  					}
+					  				}
+					  			}
+					  		}
+					  	}
+					}
 			  	}
 
 			  	  	// Store Cat
 			  	  	if (defined('MARKETKINGPRO_DIR')){
+			  	  		if (apply_filters('marketking_vendor_details_show_categories', true)){
 
-			  		  	if (intval(get_option('marketking_enable_storecategories_setting', 1)) === 1){
-			  		  		$selectedarr = get_user_meta($vendor_id,'marketking_store_categories', true);
-			  		  		if (empty($selectedarr)){
-			  		  			$selectedarr = array();
-			  		  		}
-			  		  		
-			  		  		if (count($selectedarr) == 1){
-			  		  			$text = esc_html__('Store Category','marketking-multivendor-marketplace-for-woocommerce');
-			  		  		} else {
-			  		  			$text = esc_html__('Store Categories','marketking-multivendor-marketplace-for-woocommerce');
-			  		  		}
 
-			  		  		foreach ($selectedarr as $index => $catid){
-			  		  			$catname = get_term($catid)->name;
-			  		  			$selectedarr[$index] = $catname;
-			  		  		}
+				  		  	if (intval(get_option('marketking_enable_storecategories_setting', 1)) === 1){
+				  		  		$selectedarr = get_user_meta($vendor_id,'marketking_store_categories', true);
+				  		  		if (empty($selectedarr)){
+				  		  			$selectedarr = array();
+				  		  		}
+				  		  		
+				  		  		if (count($selectedarr) == 1){
+				  		  			$text = esc_html__('Store Category','marketking-multivendor-marketplace-for-woocommerce');
+				  		  		} else {
+				  		  			$text = esc_html__('Store Categories','marketking-multivendor-marketplace-for-woocommerce');
+				  		  		}
 
-			  		  		$cats = implode(', ',$selectedarr);
-			  		  		echo '<strong>'.$text.':</strong> '.$cats.'<br>';
+				  		  		foreach ($selectedarr as $index => $catid){
+				  		  			$catname = get_term($catid)->name;
+				  		  			$selectedarr[$index] = $catname;
+				  		  		}
 
-			  		  	}
+				  		  		$cats = implode(', ',$selectedarr);
+				  		  		echo '<strong>'.$text.':</strong> '.$cats.'<br>';
+
+				  		  	}
+				  		  }
 			  		  }
-			  
-					if ($showphone === 'yes'){
-						echo '<strong>'.esc_html__('Phone:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($phone).'<br>';
+			  		
+			  		if (apply_filters('marketking_vendor_details_show_phone', true)){
+
+						if ($showphone === 'yes'){
+							echo '<strong>'.esc_html__('Phone:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($phone).'<br>';
+						}
 					}
-					if ($showemail === 'yes'){
-						echo '<strong>'.esc_html__('Email:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($email).'<br>';
-					}
-			  	
+					if (apply_filters('marketking_vendor_details_show_email', true)){
+
+						if ($showemail === 'yes'){
+							echo '<strong>'.esc_html__('Email:','marketking-multivendor-marketplace-for-woocommerce').'</strong> '.esc_html($email).'<br>';
+						}
+				  	}
 			  	echo '<br>';
 
 			  	
@@ -1004,11 +1035,121 @@ class Elementor_Store_Notice_Widget extends \Elementor\Widget_Base {
 				if ($notice_enabled === 'yes'){
 					$notice_message = get_user_meta($vendor_id,'marketking_notice_message', true);
 					if (!empty($notice_message)){
-						wc_print_notice($notice_message,'notice');
+						if (function_exists('wc_print_notice')){
+							wc_print_notice($notice_message,'notice');
+						}
 					}
 				}
 			}
 	  	}
+	}
+}
+
+
+class Elementor_Social_Icons_Widget extends \Elementor\Widget_Base {
+
+	public function get_name() {
+		return 'marketking_social_icons_widget';
+	}
+
+	public function get_title() {
+		return esc_html__( 'Social Icons', 'marketking-multivendor-marketplace-for-woocommerce' );
+	}
+
+	public function get_icon() {
+		return 'eicon-social-icons';
+	}
+
+	public function get_categories() {
+		return [ 'marketking' ];
+	}
+
+	public function get_keywords() {
+		return [ 'marketking', 'store', 'multivendor', 'marketplace' ];
+	}
+
+	protected function register_controls() {
+
+		$this->start_controls_section(
+			'section_style',
+			[
+				'label' => esc_html__( 'Style', 'marketking-multivendor-plugin-for-woocommerce' ),
+				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_responsive_control(
+			'align',
+			[
+				'label' => esc_html__( 'Alignment', 'elementor' ),
+				'type' => \Elementor\Controls_Manager::CHOOSE,
+				'options' => [
+					'left' => [
+						'title' => esc_html__( 'Left', 'elementor' ),
+						'icon' => 'eicon-text-align-left',
+					],
+					'center' => [
+						'title' => esc_html__( 'Center', 'elementor' ),
+						'icon' => 'eicon-text-align-center',
+					],
+					'right' => [
+						'title' => esc_html__( 'Right', 'elementor' ),
+						'icon' => 'eicon-text-align-right',
+					],
+				],
+				'selectors' => [
+					'{{WRAPPER}} .marketking_elementor_social_container' => 'text-align: {{VALUE}};',
+				],
+			]
+		);
+
+		$this->add_control(
+			'width',
+			[
+				'label' => esc_html__( 'Width', 'plugin-name' ),
+				'type' => \Elementor\Controls_Manager::SLIDER,
+				'size_units' => [ 'px', '%' ],
+				'range' => [
+					'px' => [
+						'min' => 0,
+						'max' => 200,
+						'step' => 1,
+					],
+					'%' => [
+						'min' => 0,
+						'max' => 100,
+					],
+				],
+				'default' => [
+					'unit' => '%',
+					'size' => 50,
+				],
+				'selectors' => [
+					'.marketking_vendor_social_display' => 'width: {{SIZE}}{{UNIT}};',
+				],
+			]
+		);
+
+		$this->end_controls_section();
+
+	}
+
+
+
+	protected function render() {
+		$vendor_id = marketking()->get_vendor_id_in_store_url();
+
+		$title = marketking()->get_store_name_display($vendor_id);
+
+		$settings = $this->get_settings_for_display();
+		
+		?>
+		<div class="marketking_elementor_social_container">
+		<?php
+		marketkingpro()->display_social_links($vendor_id, 10, 20);
+		?>
+		</div>
+		<?php
 	}
 }
 
